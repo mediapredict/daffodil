@@ -5,6 +5,11 @@ from parsimonious.grammar import Grammar
 # loosely based on https://github.com/halst/mini/blob/master/mini.py
 class Daffodil(object):
     """
+    Naming:
+        "Data Filtering" -> "DataFil" -> "Daffodil"
+                (shortened to)    (sounds like)
+        
+    
     {} - all
     [] - any
     
