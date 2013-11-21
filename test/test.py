@@ -141,14 +141,6 @@ class SATDataTests(unittest.TestCase):
         """)
     
     def test_string_ne(self):
-        results = self.filter("""
-            school_name != "EAST SIDE COMMUNITY SCHOOL"
-        """)
-        result_dbns = set(r['dbn'] for r in results)
-        not_filtered = [dp for dp in self.d 
-                        if dp['dbn'] not in result_dbns]
-        print not_filtered
-        
         self.assert_filter_has_n_results(420, """
             school_name != "EAST SIDE COMMUNITY SCHOOL"
         """)
