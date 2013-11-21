@@ -74,12 +74,36 @@ class Daffodil(object):
     def condition(self, node, children):
         'condition = _ key _ test _ value _'
         _, key, _, test, _, val, _ = children
+        
         def test_data_point(data_point):
-            try:
-                return test(data_point[key], val)
-            except:
-                try: return test(type(val)(data_point[key]), val)
-                except: return False
+            cmp_val = val
+            err_ret_val = getattr(test, "onerror", False)
+            
+            try: dp_val = data_point[key]
+            except KeyError: return err_ret_val 
+            
+            # if only one value is a string try to coerce the string
+            #   to the other value's type
+            def coerce(val, fallback_type):
+                try: return float(val)
+                except: pass
+                return fallback_type(val)
+            
+            if isinstance(cmp_val, basestring) != isinstance(dp_val, basestring):
+                try:
+                    if isinstance(cmp_val, basestring):
+                        cmp_val = coerce(cmp_val, type(dp_val))
+                    else:
+                        dp_val = coerce(dp_val, type(cmp_val))
+                except: return err_ret_val
+                    
+                
+            try: return test(dp_val, cmp_val)
+            except: pass
+            
+            try: return test(type(cmp_val)(data_point[key]), cmp_val)
+            except: return err_ret_val
+            
         return test_data_point
 
     def key(self, node, children):
@@ -93,10 +117,8 @@ class Daffodil(object):
     def test(self, node, children):
         'test = "!=" / "<=" / ">=" / "=" / "<" / ">"'
         
-        def ne(val1, val2):
-            try: type(val1)(val2)
-            except: return True
-            return op.ne(val1, val2)
+        ne = lambda *a: op.ne(*a)
+        ne.onerror = True
             
         ops = {
           '=':  op.eq,
