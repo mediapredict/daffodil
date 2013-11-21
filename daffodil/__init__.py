@@ -49,7 +49,7 @@ class Daffodil(object):
         return Grammar(grammar)['program'].parse(source)
 
     def eval(self, source):
-        node = self.parse(source) if isinstance(source, str) else source
+        node = self.parse(source) if isinstance(source, basestring) else source
         method = getattr(self, node.expr_name, lambda node, children: children)
         return method(node, [self.eval(n) for n in node])
 
