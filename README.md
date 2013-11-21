@@ -62,3 +62,33 @@ gender = "female"
   }
 ]
 ```
+
+Quotes around the Field names are optional when the name is only letters, numbers, dashes, and underscores. The following three examples are all exactly equivalent:
+
+```
+gender = "female"
+```
+
+```
+"gender" = "female"
+```
+
+```
+'gender' = "female"
+```
+
+## Empty "AND" Blocks and "OR" blocks
+
+An empty "AND" block will match **all** users
+
+```
+{}
+```
+
+An empty "OR" block will match **no** users
+
+```
+[]
+```
+
+This means you can set `{}` as your last filter in cases where you want to match various groups and then have an "everybody else" group.
