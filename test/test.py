@@ -28,6 +28,9 @@ class SATDataTests(unittest.TestCase):
 
     def test_no_filters(self):
         self.assertEqual(len(self.d), 421)
+    
+    def test_empty(self):
+        self.assert_filter_has_n_results(421, "")
         
     def test_int_eq(self):
         self.assert_filter_has_n_results(4, """
