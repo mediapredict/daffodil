@@ -111,7 +111,7 @@ class Daffodil(object):
         
     def string(self, node, children):
         'string = doubleString / singleString'
-        return node.text[1:-1]
+        return unicode(node.text[1:-1])
         
     def doubleString(self, node, children):
         '''
