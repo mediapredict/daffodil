@@ -111,7 +111,7 @@ class Daffodil(object):
         return children[0]
         
     def bare_key(self, node, children):
-        'bare_key = ~"[a-z0-9_-]+"'
+        'bare_key = ~"[a-zA-Z0-9_-]+"'
         return node.text
         
     def test(self, node, children):

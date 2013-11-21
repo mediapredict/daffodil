@@ -193,6 +193,20 @@ class SATDataTests(unittest.TestCase):
             num_of_sat_test_takers != "50.0"
         """)
     
+    def test_missing_field(self):
+        self.assert_filter_has_n_results(0, """
+            numOfSatTestTakers-9-17-2013 = 99
+        """)
+        self.assert_filter_has_n_results(421, """
+            numOfSatTestTakers_9-17-2013 != 99
+        """)
+        self.assert_filter_has_n_results(0, """
+            "number of SAT Test Takers 9-17-2013" = 99
+        """)
+        self.assert_filter_has_n_results(421, """
+            "number of SAT Test Takers 9-17-2013" != 99
+        """)
+    
 
 if __name__ == "__main__":
     unittest.main()
