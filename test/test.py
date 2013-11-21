@@ -3,6 +3,7 @@ import json
 import unittest
 
 from daffodil import Daffodil
+from daffodil.exceptions import ParseError
 
 
 def load_test_data(dataset):
@@ -205,6 +206,11 @@ class SATDataTests(unittest.TestCase):
         """)
         self.assert_filter_has_n_results(421, """
             "number of SAT Test Takers 9-17-2013" != 99
+        """)
+    
+    def test_invalid_filter(self):
+        self.assertRaises(ParseError, Daffodil, """
+            [
         """)
     
 
