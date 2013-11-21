@@ -81,7 +81,7 @@ class Daffodil(object):
 
     def key(self, node, children):
         'key = string / bare_key'
-        return node.text
+        return children[0]
         
     def bare_key(self, node, children):
         'bare_key = ~"[a-z0-9_-]+"'
@@ -89,9 +89,15 @@ class Daffodil(object):
         
     def test(self, node, children):
         'test = "!=" / "<=" / ">=" / "=" / "<" / ">"'
+        
+        def ne(val1, val2):
+            try: type(val1)(val2)
+            except: return True
+            return op.ne(val1, val2)
+            
         ops = {
           '=':  op.eq,
-          '!=': op.sub,
+          '!=': ne,
           '<':  op.lt,
           '<=': op.le,
           '>':  op.gt,

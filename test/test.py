@@ -121,7 +121,40 @@ class SATDataTests(unittest.TestCase):
                 num_of_sat_test_takers = 12
             ]
         """)
-
+    
+    def test_single_quoted_fields(self):
+        self.assert_filter_has_n_results(417, """
+            'num_of_sat_test_takers' != 50
+        """)
+    
+    def test_double_quoted_fields(self):
+        self.assert_filter_has_n_results(417, """
+            "num_of_sat_test_takers" != 50
+        """)
+    
+    def test_string_eq(self):
+        self.assert_filter_has_n_results(1, """
+            school_name = "EAST SIDE COMMUNITY SCHOOL"
+        """)
+        self.assert_filter_has_n_results(1, """
+            school_name = 'EAST SIDE COMMUNITY SCHOOL'
+        """)
+    
+    def test_string_ne(self):
+        results = self.filter("""
+            school_name != "EAST SIDE COMMUNITY SCHOOL"
+        """)
+        result_dbns = set(r['dbn'] for r in results)
+        not_filtered = [dp for dp in self.d 
+                        if dp['dbn'] not in result_dbns]
+        print not_filtered
+        
+        self.assert_filter_has_n_results(420, """
+            school_name != "EAST SIDE COMMUNITY SCHOOL"
+        """)
+        self.assert_filter_has_n_results(420, """
+            school_name != 'EAST SIDE COMMUNITY SCHOOL'
+        """)
 
 if __name__ == "__main__":
     unittest.main()
