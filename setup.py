@@ -9,6 +9,9 @@ setup(
     keywords='data filtering',
     url='https://github.com/mediapredict/daffodil',
     packages=['daffodil'],
+    install_requires=[
+        "parsimonious",
+    ],
     long_description='A Super-simple DSL for filtering datasets',
     classifiers=[
         'License :: OSI Approved :: MIT License',

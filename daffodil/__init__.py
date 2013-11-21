@@ -74,10 +74,10 @@ class Daffodil(object):
     def condition(self, node, children):
         'condition = _ key _ test _ value _'
         _, key, _, test, _, val, _ = children
-        def test(data_point):
+        def test_data_point(data_point):
             try: return test(type(val)(data_point[key]), val)
             except: return False
-        return lambda data_point: test(type(val)(data_point[key]), val)
+        return test_data_point
 
     def key(self, node, children):
         'key = string / bare_key'
@@ -88,7 +88,7 @@ class Daffodil(object):
         return node.text
         
     def test(self, node, children):
-        'test = "=" / "!=" / "<" / "<=" / ">" / ">="'
+        'test = "!=" / "<=" / ">=" / "=" / "<" / ">"'
         ops = {
           '=':  op.eq,
           '!=': op.sub,
