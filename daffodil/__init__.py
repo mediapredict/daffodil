@@ -75,8 +75,11 @@ class Daffodil(object):
         'condition = _ key _ test _ value _'
         _, key, _, test, _, val, _ = children
         def test_data_point(data_point):
-            try: return test(type(val)(data_point[key]), val)
-            except: return False
+            try:
+                return test(data_point[key], val)
+            except:
+                try: return test(type(val)(data_point[key]), val)
+                except: return False
         return test_data_point
 
     def key(self, node, children):
@@ -126,8 +129,16 @@ class Daffodil(object):
         return node.text    
 
     def number(self, node, children):
-        'number = ~"[0-9]+"'
+        'number =  float / integer'
+        return children[0]
+    
+    def integer(self, node, children):
+        'integer = ~"[0-9]+"'
         return int(node.text)
+    
+    def float(self, node, children):
+        'float = ~"[0-9]*\.[0-9]+"'
+        return float(node.text)
 
     def _(self, node, children):
         '_ = ~"[\\n\s]*"m'

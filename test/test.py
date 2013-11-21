@@ -29,34 +29,64 @@ class SATDataTests(unittest.TestCase):
     def test_no_filters(self):
         self.assertEqual(len(self.d), 421)
         
-    def test_eq(self):
+    def test_int_eq(self):
         self.assert_filter_has_n_results(4, """
             num_of_sat_test_takers = 50
         """)
     
-    def test_ne(self):
+    def test_int_ne(self):
         self.assert_filter_has_n_results(417, """
             num_of_sat_test_takers != 50
         """)
         
-    def test_gt(self):
+    def test_int_gt(self):
         self.assert_filter_has_n_results(273, """
             num_of_sat_test_takers > 50
         """)
     
-    def test_gte(self):
+    def test_int_gte(self):
         self.assert_filter_has_n_results(277, """
             num_of_sat_test_takers >= 50
         """)
     
-    def test_lt(self):
+    def test_int_lt(self):
         self.assert_filter_has_n_results(144, """
             num_of_sat_test_takers < 50
         """)
         
-    def test_lte(self):
+    def test_int_lte(self):
         self.assert_filter_has_n_results(148, """
             num_of_sat_test_takers <= 50
+        """)
+    
+    def test_float_eq(self):
+        self.assert_filter_has_n_results(0, """
+            num_of_sat_test_takers = 50.5
+        """)
+    
+    def test_float_ne(self):
+        self.assert_filter_has_n_results(421, """
+            num_of_sat_test_takers != 50.5
+        """)
+        
+    def test_float_gt(self):
+        self.assert_filter_has_n_results(273, """
+            num_of_sat_test_takers > 50.5
+        """)
+    
+    def test_float_gte(self):
+        self.assert_filter_has_n_results(277, """
+            num_of_sat_test_takers >= 50.0
+        """)
+    
+    def test_float_lt(self):
+        self.assert_filter_has_n_results(144, """
+            num_of_sat_test_takers < 49.5
+        """)
+        
+    def test_float_lte(self):
+        self.assert_filter_has_n_results(148, """
+            num_of_sat_test_takers <= 50.0
         """)
     
     def test_multiple(self):
@@ -147,6 +177,8 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(420, """
             school_name != 'EAST SIDE COMMUNITY SCHOOL'
         """)
+        
+    
 
 if __name__ == "__main__":
     unittest.main()
