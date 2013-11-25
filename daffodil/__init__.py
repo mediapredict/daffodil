@@ -140,13 +140,13 @@ class Daffodil(object):
         
     def doubleString(self, node, children):
         '''
-        doubleString = ~'"([^"]|(\"))*"'
+        doubleString = ~'"([^"]|(\"))*?"'
         '''
         return node.text
     
     def singleString(self, node, children):
         '''
-        singleString = ~"'([^']|(\'))*'"
+        singleString = ~"'([^']|(\'))*?'"
         '''
         return node.text    
 
