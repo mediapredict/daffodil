@@ -223,7 +223,80 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(273, u"""
             num_of_sat_test_takers > 50
         """)
+        
+
+class PredicateTests(unittest.TestCase):
+    def setUp(self):
+        self.data = {
+          "MHQ9ProgsWatched - GoldRush": "no", 
+          "MHQ9ProgsWatched - PawnStars": "yes", 
+          "MHQ9ProgsWatched - BornSurvivor": "no", 
+          "MHQ9ProgsWatched - AirCrashInvestigation": "no", 
+          "MHQ9ProgsWatched - AmericanPickers": "no", 
+          "MHQ9ProgsWatched - StorageWars": "yes", 
+          "MHQ9ProgsWatched - TopGear": "no", 
+          "MHQ9ProgsWatched - FifthGear": "no", 
+          "MHQ9ProgsWatched - WheelerDealers": "no", 
+          "MHQ9ProgsWatched - FastNLoud": "no", 
+          "MHQ9ProgsWatched - MythBusters": "no", 
+          "MHQ9ProgsWatched - DeadliestCatch": "no", 
+          "MHQ9ProgsWatched - WickedTuna": "no", 
+          "MHQ9ProgsWatched - AuctionHunters": "no", 
+          "MHQ9ProgsWatched - AmericanChopper": "no", 
+          "MHQ9ProgsWatched - SonsOfGuns": "no"
+        }
     
+    def test_matching(self):
+        daff = Daffodil("""
+        {
+           "MHQ9ProgsWatched - BornSurvivor" = "no"
+           "MHQ9ProgsWatched - WheelerDealers" = "no"
+           "MHQ9ProgsWatched - FifthGear" = "no"
+           "MHQ9ProgsWatched - AuctionHunters" = "no"
+           "MHQ9ProgsWatched - MythBusters" = "no"
+           "MHQ9ProgsWatched - GoldRush" = "no"
+           "MHQ9ProgsWatched - DeadliestCatch" = "no"
+           "MHQ9ProgsWatched - FastNLoud" = "no"
+           "MHQ9ProgsWatched - SonsOfGuns" = "no"
+           "MHQ9ProgsWatched - AmericanChopper" = "no"
+        }
+        """)
+        self.assertTrue(daff.predicate(self.data))
+        
+        daff = Daffodil(u"""{
+           "MHQ9ProgsWatched - BornSurvivor" = 'no'
+           "MHQ9ProgsWatched - WheelerDealers" = 'no'
+           "MHQ9ProgsWatched - FifthGear" = 'no'
+           "MHQ9ProgsWatched - AuctionHunters" = 'no'
+           "MHQ9ProgsWatched - MythBusters" = 'no'
+           "MHQ9ProgsWatched - GoldRush" = 'no'
+           "MHQ9ProgsWatched - DeadliestCatch" = 'no'
+           "MHQ9ProgsWatched - FastNLoud" = 'no'
+           "MHQ9ProgsWatched - SonsOfGuns" = 'no'
+           "MHQ9ProgsWatched - AmericanChopper" = 'no'
+        }""")
+        self.assertTrue(daff.predicate({
+           u'MHQ9ProgsWatched - PawnStars': u'yes', u'MHQ3Gender': u'Female', u'MHQ9ProgsWatched - FastNLoud': u'no', u'MHQ8ChannelViewing - Discovery Channel': u'OncePerWeek', u'MHQ8ChannelViewing - National Geographic': u'OncePerWeek', '_sample_id': u'frutest3', u'MHQ4TVProvider - YouView': u'no', u'MHQ6Industry - MarketResearch': u'no', u'MHQ6Industry - Entertainment': u'no', u'MHQ5TVViewing': u'1-3nights', u'MHQ8ChannelViewing - ITV1': u'OncePerWeek', u'MHQ7PastParticipant': u'No', u'MHQ9ProgsWatched - StorageWars': u'yes', u'MHQ8ChannelViewing - History Channel': u'OncePerWeek', u'MHQ8ChannelViewing - BBC2': u'OncePerWeek', u'MHQ1Confidential': u'Yes', u'MHQ4TVProvider - Freeview': u'no', u'MHQ9ProgsWatched - BornSurvivor': u'no', u'MHQ9ProgsWatched - WheelerDealers': u'no', u'MHQ8ChannelViewing - Channel4': u'OncePerWeek', u'MHQ4TVProvider - IPTV': u'no', u'MHQ9ProgsWatched - AuctionHunters': u'no', u'MHQ9ProgsWatched - AirCrashInvestigation': u'no', u'MHQ8ChannelViewing - Sky Arts': u'OncePerWeek', u'MHQ2Age': u'18-34', u'MHQ8ChannelViewing - BBC1': u'OncePerWeek', u'MHQ6Industry - None': u'yes', u'MHQ4TVProvider - None': u'no', u'MHQ6Industry - RadioTV': u'no', u'MHQ6Industry - Advertising': u'no', u'MHQ9ProgsWatched - DeadliestCatch': u'no', u'MHQ9ProgsWatched - FifthGear': u'no', u'MHQ9ProgsWatched - TopGear': u'no', u'MHQ9ProgsWatched - SonsOfGuns': u'no', u'MHQ9ProgsWatched - WickedTuna': u'no', u'MHQ9ProgsWatched - GoldRush': u'no', u'MHQ9ProgsWatched - MythBusters': u'no', u'MHQ6Industry - Press': u'no', u'MHQ4TVProvider - Virgin': u'yes', '_id': '41298', u'MHQ9ProgsWatched - AmericanPickers': u'no', u'MHQ9ProgsWatched - AmericanChopper': u'no', u'MHQ4TVProvider - Sky': u'no'                             
+        }))
+    
+    def test_not_matching(self):
+        daff = Daffodil("""
+        {
+           "MHQ9ProgsWatched - MythBusters" = "yes"
+           "MHQ9ProgsWatched - BornSurvivor" = "no"
+           "MHQ9ProgsWatched - WheelerDealers" = "no"
+           "MHQ9ProgsWatched - FifthGear" = "no"
+           "MHQ9ProgsWatched - AuctionHunters" = "no"
+           "MHQ9ProgsWatched - GoldRush" = "no"
+           "MHQ9ProgsWatched - DeadliestCatch" = "no"
+           "MHQ9ProgsWatched - FastNLoud" = "no"
+           "MHQ9ProgsWatched - SonsOfGuns" = "no"
+           "MHQ9ProgsWatched - AmericanChopper" = "no"
+        }
+        """)
+        
+        self.assertFalse(daff.predicate(self.data))
+        
 
 if __name__ == "__main__":
     unittest.main()
