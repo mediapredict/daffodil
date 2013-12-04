@@ -75,6 +75,9 @@ class Daffodil(object):
         'condition = _ key _ test _ value _'
         _, key, _, test, _, val, _ = children
         
+        if getattr(test, "is_datapoint_test", False):
+            return lambda dp: test(dp, key, val)
+        
         def test_data_point(data_point):
             cmp_val = val
             err_ret_val = getattr(test, "onerror", False)
@@ -115,10 +118,13 @@ class Daffodil(object):
         return node.text
         
     def test(self, node, children):
-        'test = "!=" / "<=" / ">=" / "=" / "<" / ">"'
+        'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">"'
         
         ne = lambda *a: op.ne(*a)
         ne.onerror = True
+        
+        existance = lambda dp, k, v: (k in dp) == v
+        existance.is_datapoint_test = True
             
         ops = {
           '=':  op.eq,
@@ -127,11 +133,12 @@ class Daffodil(object):
           '<=': op.le,
           '>':  op.gt,
           '>=': op.ge,
+          "?=": existance,
         }
         return ops[node.text]
     
     def value(self, node, children):
-        'value = number / string'
+        'value = number / string / boolean'
         return children[0]
         
     def string(self, node, children):
@@ -157,6 +164,12 @@ class Daffodil(object):
     def integer(self, node, children):
         'integer = ~"[0-9]+"'
         return int(node.text)
+    
+    def boolean(self, node, children):
+        ''''
+        boolean = ~"true|false"i
+        '''
+        return node.text.lower() == "true"
     
     def float(self, node, children):
         'float = ~"[0-9]*\.[0-9]+"'
