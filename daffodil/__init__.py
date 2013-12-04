@@ -166,7 +166,7 @@ class Daffodil(object):
         return int(node.text)
     
     def boolean(self, node, children):
-        ''''
+        '''
         boolean = ~"true|false"i
         '''
         return node.text.lower() == "true"
