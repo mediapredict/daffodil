@@ -223,6 +223,46 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(273, u"""
             num_of_sat_test_takers > 50
         """)
+    
+    def test_existance_has_value(self):
+        self.assert_filter_has_n_results(421, u"""
+            num_of_sat_test_takers ?= true
+        """)
+        self.assert_filter_has_n_results(0, u"""
+            num_of_sat_test_takers ?= false
+        """)
+        self.assert_filter_has_n_results(421, u"""
+            "num_of_sat_test_takers" ?= true
+        """)
+        self.assert_filter_has_n_results(0, u"""
+            "num_of_sat_test_takers" ?= false
+        """)
+        self.assert_filter_has_n_results(421, u"""
+            'num_of_sat_test_takers' ?= true
+        """)
+        self.assert_filter_has_n_results(0, u"""
+            'num_of_sat_test_takers' ?= false
+        """)
+    
+    def test_existance_does_not_have_value(self):
+        self.assert_filter_has_n_results(0, u"""
+            asdf ?= true
+        """)
+        self.assert_filter_has_n_results(421, u"""
+            asdf ?= false
+        """)
+        self.assert_filter_has_n_results(0, u"""
+            "asdf" ?= true
+        """)
+        self.assert_filter_has_n_results(421, u"""
+            "asdf" ?= false
+        """)
+        self.assert_filter_has_n_results(0, u"""
+            'asdf' ?= true
+        """)
+        self.assert_filter_has_n_results(421, u"""
+            'asdf' ?= false
+        """)
         
 
 class PredicateTests(unittest.TestCase):
