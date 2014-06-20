@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import unittest
@@ -336,7 +337,82 @@ class PredicateTests(unittest.TestCase):
         """)
         
         self.assertFalse(daff.predicate(self.data))
+
+
+
+# Borrowed gratuitously from https://gist.github.com/k4ml/2219751
+from os import path as osp
+ 
+def rel_path(*p):
+    return osp.normpath(osp.join(rel_path.path, *p))
+
+rel_path.path = osp.abspath(osp.dirname(__file__))
+this = osp.splitext(osp.basename(__file__))[0]
+ 
+from django.conf import settings
+SETTINGS = dict(
+    SITE_ID=1,
+    DATABASES = {
+        'default':{
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'daffodil_hstore_test',
+        }
+    },
+    DEBUG=True,
+    TEMPLATE_DEBUG=True,
+    INSTALLED_APPS=[
+        "django_hstore",
+    ],
+    ROOT_URLCONF=this,
+)
+ 
+if not settings.configured:
+    settings.configure(**SETTINGS)
+
+from django.db import models
+from django_hstore import hstore
+from daffodil.django_hstore import HStoreQueryDelegate
+
+
+class BasicHStoreData(models.Model):
+    hsdata = hstore.DictionaryField()
+    objects = hstore.HStoreManager()
+
+    class Meta:
+        app_label = this
+    __module__ = this
+
+
+
+class SATDataTestsWithHStore(SATDataTests):
+
+    def setUp(self):
+        self.d = BasicHStoreData.objects.all()
+
+    def filter(self, daff_src):
+        delegate = HStoreQueryDelegate(hstore_field_name="hsdata")
+        daff = Daffodil(daff_src, delegate=delegate)
+        return daff(self.d)
+
         
 
+get_app_orig = models.get_app
+def get_app(app_label,*a, **kw):
+    if app_label==this:
+        return sys.modules[__name__]
+    return get_app_orig(app_label, *a, **kw)
+models.get_app = get_app
+
+models.loading.cache.app_store[type(this+'.models',(),{'__file__':__file__})] = this
+
+from django.core import management
+
 if __name__ == "__main__":
+    management.call_command("syncdb")
+    
+    BasicHStoreData.objects.all().delete()
+    for record in load_test_data('nyc_sat_scores'):
+        BasicHStoreData.objects.create(hsdata=record)
+
     unittest.main()
+    
