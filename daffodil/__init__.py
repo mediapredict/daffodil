@@ -1,5 +1,7 @@
-import operator as op
 from parsimonious.grammar import Grammar
+from .predicate import DictionaryPredicateDelegate
+from .django_hstore import HStoreQueryDelegate
+
 
 
 # loosely based on https://github.com/halst/mini/blob/master/mini.py
@@ -46,8 +48,18 @@ class Daffodil(object):
     @property
     def predicate(self):
         if not hasattr(self, "_predicate"):
+            self.delegate = DictionaryPredicateDelegate()
             self._predicate = self.eval(self.ast)
+            self.delegate = None
         return self._predicate
+
+    @property
+    def hstore_query(self):
+        if not hasattr(self, "_hstore_q"):
+            self.delegate = HStoreQueryDelegate()
+            self._hstore_q = self.eval(self.ast)
+            self.delegate = None
+        return self._hstore_q
 
     def parse(self, source):
         grammar_def = '\n'.join(v.__doc__ for k, v in vars(self.__class__).items()
@@ -66,13 +78,13 @@ class Daffodil(object):
     
     def all(self, node, children):
         'all = "{" expr* "}"'
-        predicates = children[1]
-        return lambda data_point: all( p(data_point) for p in predicates)
+        child_expressions = children[1]
+        return self.delegate.mk_all(child_expressions)
         
     def any(self, node, children):
         'any = "[" expr* "]"'
-        predicates = children[1]
-        return lambda data_point: any( p(data_point) for p in predicates)
+        child_expressions = children[1]
+        return self.delegate.mk_any(child_expressions)
         
     def expr(self, node, children):
         '''expr = _ (all / any / condition) _ ~"[\\n\,]?" _'''
@@ -81,40 +93,7 @@ class Daffodil(object):
     def condition(self, node, children):
         'condition = _ key _ test _ value _'
         _, key, _, test, _, val, _ = children
-        
-        if getattr(test, "is_datapoint_test", False):
-            return lambda dp: test(dp, key, val)
-        
-        def test_data_point(data_point):
-            cmp_val = val
-            err_ret_val = getattr(test, "onerror", False)
-            
-            try: dp_val = data_point[key]
-            except KeyError: return err_ret_val 
-            
-            # if only one value is a string try to coerce the string
-            #   to the other value's type
-            def coerce(val, fallback_type):
-                try: return float(val)
-                except: pass
-                return fallback_type(val)
-            
-            if isinstance(cmp_val, basestring) != isinstance(dp_val, basestring):
-                try:
-                    if isinstance(cmp_val, basestring):
-                        cmp_val = coerce(cmp_val, type(dp_val))
-                    else:
-                        dp_val = coerce(dp_val, type(cmp_val))
-                except: return err_ret_val
-                    
-                
-            try: return test(dp_val, cmp_val)
-            except: pass
-            
-            try: return test(type(cmp_val)(data_point[key]), cmp_val)
-            except: return err_ret_val
-            
-        return test_data_point
+        return self.delegate.mk_cmp(key, val, test)
 
     def key(self, node, children):
         'key = string / bare_key'
@@ -126,23 +105,7 @@ class Daffodil(object):
         
     def test(self, node, children):
         'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">"'
-        
-        ne = lambda *a: op.ne(*a)
-        ne.onerror = True
-        
-        existance = lambda dp, k, v: (k in dp) == v
-        existance.is_datapoint_test = True
-            
-        ops = {
-          '=':  op.eq,
-          '!=': ne,
-          '<':  op.lt,
-          '<=': op.le,
-          '>':  op.gt,
-          '>=': op.ge,
-          "?=": existance,
-        }
-        return ops[node.text]
+        return self.delegate.mk_test(node.text)
     
     def value(self, node, children):
         'value = number / string / boolean'
