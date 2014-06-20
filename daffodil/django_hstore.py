@@ -22,7 +22,7 @@ class HStoreQueryDelegate(object):
 
     def mk_test(self, test_str):
         from django.db import Q
-        
+
         def mk_Q(cmp, hstore_val, negate=False):
             k = "{0}__{1}".format(self.field, cmp)
             q = Q(**{k: hstore_val})
@@ -48,3 +48,6 @@ class HStoreQueryDelegate(object):
 
     def mk_cmp(self, key, val, test):
         return test(key, val)
+
+    def call(self, predicate, queryset):
+        return queryset.filter(predicate)

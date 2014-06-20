@@ -61,3 +61,7 @@ class DictionaryPredicateDelegate(object):
             except: return err_ret_val
             
         return test_data_point
+
+    def call(self, predicate, iterable):
+        return filter(predicate, iterable)
+

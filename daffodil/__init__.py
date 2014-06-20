@@ -42,24 +42,10 @@ class Daffodil(object):
         }
       ]
     """
-    def __init__(self, source):
+    def __init__(self, source, delegate=DictionaryPredicateDelegate()):
+        self.delegate = delegate
         self.ast = self.parse("{" + source + "}")
-
-    @property
-    def predicate(self):
-        if not hasattr(self, "_predicate"):
-            self.delegate = DictionaryPredicateDelegate()
-            self._predicate = self.eval(self.ast)
-            self.delegate = None
-        return self._predicate
-
-    @property
-    def hstore_query(self):
-        if not hasattr(self, "_hstore_q"):
-            self.delegate = HStoreQueryDelegate()
-            self._hstore_q = self.eval(self.ast)
-            self.delegate = None
-        return self._hstore_q
+        self.predicate = self.eval(self.ast)
 
     def parse(self, source):
         grammar_def = '\n'.join(v.__doc__ for k, v in vars(self.__class__).items()
@@ -148,5 +134,5 @@ class Daffodil(object):
     def _(self, node, children):
         '_ = ~"[\\n\s]*"m'
         
-    def __call__(self, iterable):
-        return filter(self.predicate, iterable)
+    def __call__(self, *args):
+        return self.delegate.call(self.predicate, *args)
