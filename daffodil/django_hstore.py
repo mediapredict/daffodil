@@ -32,14 +32,17 @@ class HStoreQueryDelegate(object):
                 q = ~q
             return q
 
+        def strval(v):
+            return unicode(v)
+
         ops = {
-          '=':  lambda k, v: mk_Q("contains", {k: v}),
-          '!=': lambda k, v: ~mk_Q("contains", {k: v}),
-          '<':  lambda k, v: mk_Q("lt", {k: v}),
-          '<=': lambda k, v: mk_Q("lte", {k: v}),
-          '>':  lambda k, v: mk_Q("gt", {k: v}),
-          '>=': lambda k, v: mk_Q("gte", {k: v}),
-          "?=": lambda k, v: existance,
+          '=':  lambda k, v: mk_Q("contains", {k: strval(v)}),
+          '!=': lambda k, v: ~mk_Q("contains", {k: strval(v)}),
+          '<':  lambda k, v: mk_Q("lt", {k: strval(v)}),
+          '<=': lambda k, v: mk_Q("lte", {k: strval(v)}),
+          '>':  lambda k, v: mk_Q("gt", {k: strval(v)}),
+          '>=': lambda k, v: mk_Q("gte", {k: strval(v)}),
+          "?=": existance,
         }
 
         return ops[test_str]
