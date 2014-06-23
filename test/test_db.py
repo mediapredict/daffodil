@@ -3,9 +3,12 @@ from django.conf import settings
 settings.configure(DEBUG = True,
                DATABASES = {'default' :
                                 {
-                                    'ENGINE': 'django.db.backends.sqlite3',
-                                    'NAME': 'memory',
-                                    # 'TEST_NAME': 'memory',
+                                    'ENGINE':   'django.db.backends.postgresql_psycopg2',
+                                    'NAME':     "df",
+                                    'USER':     "postgres",
+                                    'PASSWORD': "postgres",
+                                    'HOST':     "localhost",
+                                    'TEST_NAME': 'df',
                                     },
                             },
                INSTALLED_APPS = (
@@ -34,11 +37,11 @@ class SomeModelCase(TestCase):
 
 if __name__ == "__main__":
 
-    # from django.core.management import call_command
-    # call_command('syncdb', interactive=False)
+    from django.core.management import call_command
+    call_command('syncdb', interactive=False)
 
-    from django.test.simple import DjangoTestSuiteRunner
-    DjangoTestSuiteRunner().setup_databases()
+    # from django.test.simple import DjangoTestSuiteRunner
+    # DjangoTestSuiteRunner().setup_databases()
 
     from django.test.utils import setup_test_environment
     setup_test_environment()
