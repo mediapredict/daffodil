@@ -22,18 +22,46 @@ settings.configure(DEBUG = True,
 from django.test import TestCase
 from django.db import models
 from django_hstore import hstore
-from dbmodel import models
+from dbmodel.models import SomeModel
+
 
 class SomeModelCase(TestCase):
-    def setUp(self):
-        td = "a"
-        models.SomeModel.objects.create(cname="1", hstore_col =td )
-        models.SomeModel.objects.create(cname="2", hstore_col =td)
 
-    def test_animals_can_speak(self):
-        """Some record is stored"""
-        self.assertEqual( len(models.SomeModel.objects.filter( cname="1" )), 1)
-        pass
+
+    def test_basic_hstore(self):
+        instance = SomeModel.objects.create(cname='something', hstore_col={'a': '1', 'b': '2'})
+        assert instance.hstore_col['a'] == '1'
+
+    def test_basic_hstore_with_filter_1(self):
+        instance = SomeModel.objects.create(cname='something_else', hstore_col={'first': '5', 'second': '2'})
+        instance.save()
+
+        assert SomeModel.objects.filter( hstore_col__contains={'first': '5', 'second': '2'} )
+
+    def test_basic_hstore_with_contains_key(self):
+        instance = SomeModel.objects.create(cname='something_else', hstore_col={'first': '10', 'second': '20'})
+        instance.save()
+        assert len( SomeModel.objects.filter( hstore_col__contains='first' ))>0
+
+    def test_basic_hstore_with_contains_value(self):
+        instance = SomeModel.objects.create(cname='something_else', hstore_col={'first': '55', 'second': '77'})
+        instance.save()
+        assert len( SomeModel.objects.filter( hstore_col__contains='55' ))>0
+
+    def test_basic_hstore_with_gt_value(self):
+        instance = SomeModel.objects.create(cname='something_else', hstore_col={'first': '55', 'second': '77'})
+        instance.save()
+        assert len( SomeModel.objects.filter( hstore_col__gt={'first': '5'} ))>0
+
+    def test_basic_hstore_with_get(self):
+        instance = SomeModel.objects.create(cname='something_else245', hstore_col={'first': '100', 'second': '200'})
+        assert SomeModel.objects.get( cname="something_else245").hstore_col['first'] == '100'
+
+    def test_basic_hstore_with_q(self):
+        from django.db.models import Q
+        instance = SomeModel.objects.create(cname='something_else245', hstore_col={'first': '100', 'second': '200'})
+        instance.save()
+        assert SomeModel.objects.filter( Q(hstore_col__gte= {'first':'100'}) | Q(hstore_col__lt= {'second':'100'}) )
 
 if __name__ == "__main__":
 
