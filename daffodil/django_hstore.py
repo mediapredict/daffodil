@@ -45,7 +45,11 @@ class HStoreQueryDelegate(object):
         return ops[test_str]
 
     def mk_cmp(self, key, val, test):
-        return test(key, val)
+        return test(key, self.to_n_dig_int(val) )
+
+    def to_n_dig_int(self, num, digits=6):
+        num_str = "%0" + str(digits) + "d"
+        return num_str % int(num) if str(num).isdigit() else num
 
     def call(self, predicate, queryset):
         return queryset.filter(predicate)
