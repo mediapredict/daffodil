@@ -16,13 +16,7 @@ def load_nyc_opendata(dataset):
     d = [dict(zip(columns, row_values)) for row_values in dataset['data']]
 
 
-class SATDataTests(unittest.TestCase):
-
-    def setUp(self):
-        self.d = load_test_data('nyc_sat_scores')
-
-    def filter(self, daff_src):
-        return Daffodil(daff_src)(self.d)
+class SATDataTests(object):
 
     def assert_filter_has_n_results(self, n, daff_src):
         self.assertEqual(len(self.filter(daff_src)), n)
@@ -263,6 +257,12 @@ class SATDataTests(unittest.TestCase):
             'asdf' ?= false
         """)
 
+class DictionaryPredicateTests(unittest.TestCase, SATDataTests):
+    def setUp(self):
+        self.d = load_test_data('nyc_sat_scores')
+
+    def filter(self, daff_src):
+        return Daffodil(daff_src)(self.d)
 
 class PredicateTests(unittest.TestCase):
     def setUp(self):
