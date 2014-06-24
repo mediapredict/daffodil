@@ -34,7 +34,7 @@ class HStoreQueryDelegate(object):
         return test( key, val )
 
     def cond_cast(self, v):
-        # should be strings but...
+        # should be string but...
         v = str(v) if not isinstance(v, str) else v
         if v.isdigit():
             return "::integer", v
