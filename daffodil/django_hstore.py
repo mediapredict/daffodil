@@ -5,17 +5,16 @@ class HStoreQueryDelegate(object):
 
     def mk_any(self, children):
         if children == []:
-            r = "0=1"
+            return "false"
         else:
-            r = " OR ".join( "(" + child_exp + ")" for child_exp in children)
-        return r
+            return " OR ".join( "(" + child_exp + ")" for child_exp in children)
 
     def mk_all(self, children):
         if children == ['']:
-            r = "1=1"
+            return "true"
         else:
-            r = " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
-        return r
+            return " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
+
 
     def mk_test(self, test_str):
         if test_str == "?=":
@@ -48,19 +47,19 @@ class HStoreQueryDelegate(object):
         return test( key, val )
 
     def cond_cast(self, v):
-        # should be string but...
-        v = str(v) if not isinstance(v, str) else v
+        if not isinstance(v, basestring):
+            v = unicode(v)
+
         if v.isdigit():
             return "::integer", v
-        else:
-            if '.' in v:
-                # could be float
-                try:
-                    f = float(v)
-                    return "::real", v
-                except ValueError:
-                    pass
-        return "", "'{0}'".format(v)
+        elif '.' in v:
+            # could be float
+            try:
+                f = float(v)
+                return "::real", v
+            except ValueError:
+                pass
+        return "", u"'{0}'".format(v)
 
     def call(self, predicate, queryset):
         return queryset.extra(where=[predicate]) if predicate else queryset

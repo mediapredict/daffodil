@@ -5,7 +5,7 @@ data filtering lib
 
 [![build status](https://travis-ci.org/mediapredict/daffodil.png)](https://travis-ci.org/mediapredict/daffodil)
 
-[8/9/13, 12:45:04 PM] James Robert: for 18 year old women:
+For 18 year old women:
 
 ```
 {
@@ -14,7 +14,7 @@ data filtering lib
 }
 ```
 
-[8/9/13, 12:45:41 PM] James Robert: for men, 18 - 35:
+For men, 18 - 35:
 
 ```
 {
@@ -24,9 +24,11 @@ data filtering lib
 }
 ```
 
-[8/9/13, 12:45:54 PM] James Robert: (this is what we'll use for MP)  
-[8/9/13, 12:46:25 PM] James Robert: you can do OR rules instead of AND rules using "[]"  
-[8/9/13, 12:47:02 PM] James Robert: people who are 18 years old or 21 years old:
+(this is what we'll use for MP)
+
+You can do OR rules instead of AND rules using "[]"  
+
+People who are 18 years old or 21 years old:
 
 ```
 [
@@ -35,7 +37,7 @@ data filtering lib
 ]
 ```
 
-[8/9/13, 12:47:36 PM] James Robert: women who are 18 or 21:
+Women who are 18 or 21:
 
 ```
 {
@@ -47,7 +49,7 @@ data filtering lib
 }
 ```
 
-[8/9/13, 12:48:11 PM] James Robert: this also works:
+This also works:
 
 ```
 {
@@ -56,8 +58,9 @@ data filtering lib
 }
 ```
 
-[8/9/13, 12:49:00 PM] James Robert: "{}" for AND  
-[8/9/13, 12:50:14 PM] James Robert: women who are 18 or 21, or between 35 and 55:
+"{}" means "AND"
+
+Women who are 18 or 21, or between 35 and 55:
 
 ```
 {

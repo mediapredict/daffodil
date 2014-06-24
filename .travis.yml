@@ -4,4 +4,10 @@ python:
   - "2.7"
 install:
   - "pip install ."
+  - "pip install django==1.6 psycopg2 django_hstore"
+addons:
+  postgresql: "9.3"
+before_script:
+  - psql -c 'create database daffodil_hstore_test;' -U postgres
+  - psql -c 'create extension hstore;' -U postgres
 script: python test/test.py
