@@ -46,6 +46,7 @@ class HStoreModelCase(SATDataTests, TestCase):
     def filter(self, daff_src):
         return Daffodil(daff_src, delegate=HStoreQueryDelegate("hstore_col") )(self.d)
 
+
 if __name__ == "__main__":
 
     from django.core.management import call_command
