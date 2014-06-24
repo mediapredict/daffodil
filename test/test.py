@@ -356,6 +356,7 @@ SETTINGS = dict(
         'default':{
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'daffodil_hstore_test',
+            'USER': "postgres",
         }
     },
     DEBUG=True,
