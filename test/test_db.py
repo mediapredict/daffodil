@@ -25,7 +25,6 @@ settings.configure(DEBUG = True,
 from django.test import TestCase
 from django.db import models
 from django_hstore import hstore
-from dbmodel.models import SomeModel
 from dbmodel.models import NYCSatScores
 
 from daffodil import Daffodil
@@ -35,7 +34,7 @@ from daffodil.django_hstore import HStoreQueryDelegate
 from test import load_test_data#, SATDataTests
 from django.db.models import Q
 
-class SomeModelCase(TestCase):
+class HStoreModelCase(TestCase):
 #class SomeModelCase(SATDataTests):
 
     def setUp(self):
@@ -51,13 +50,12 @@ class SomeModelCase(TestCase):
     def assert_filter_has_n_results(self, n, daff_src):
         self.assertEqual(len(self.filter(daff_src)), n)
 
-
     def test_no_filters(self):
         self.assertEqual(len(self.d), 421)
 
     def test_empty(self):
-        # self.assert_filter_has_n_results(421, "")
-        # self.assert_filter_has_n_results(421, "{}")
+        self.assert_filter_has_n_results(421, "")
+        self.assert_filter_has_n_results(421, "{}")
         self.assert_filter_has_n_results(0, "[]")
 
     def test_int_eq(self):
@@ -93,7 +91,6 @@ class SomeModelCase(TestCase):
         self.assert_filter_has_n_results(0, """
             num_of_sat_test_takers = 50.5
         """)
-
 
     def test_float_ne(self):
         self.assert_filter_has_n_results(421, """
@@ -142,6 +139,7 @@ class SomeModelCase(TestCase):
                 num_of_sat_test_takers = 12
             ]
         """)
+
     def test_and_nested_within_or(self):
         self.assert_filter_has_n_results(134, """
             [
@@ -168,6 +166,7 @@ class SomeModelCase(TestCase):
                 num_of_sat_test_takers = 15
             ]
         """)
+
     def test_and_mixed_with_or(self):
         self.assert_filter_has_n_results(6, """
             {
@@ -212,6 +211,7 @@ class SomeModelCase(TestCase):
         self.assert_filter_has_n_results(420, """
             school_name != 'EAST SIDE COMMUNITY SCHOOL'
         """)
+
     def test_comparing_a_string_containing_int(self):
         self.assert_filter_has_n_results(417, """
             num_of_sat_test_takers != "50"
@@ -232,10 +232,10 @@ class SomeModelCase(TestCase):
         self.assert_filter_has_n_results(0, """
             "number of SAT Test Takers 9-17-2013" = 99
         """)
-        # FAILS this is feature of postgres, soon as it notices unknown field there are zero results
         self.assert_filter_has_n_results(421, """
             "number of SAT Test Takers 9-17-2013" != 99
         """)
+
     def test_invalid_filter(self):
         self.assertRaises(ParseError, Daffodil, """
             [
@@ -265,6 +265,7 @@ class SomeModelCase(TestCase):
         self.assert_filter_has_n_results(0, u"""
             'num_of_sat_test_takers' ?= false
         """)
+
     def test_existance_does_not_have_value(self):
         self.assert_filter_has_n_results(0, u"""
             asdf ?= true
@@ -284,14 +285,8 @@ class SomeModelCase(TestCase):
         self.assert_filter_has_n_results(421, u"""
             'asdf' ?= false
         """)
-if __name__ == "__main__":
-    #
-    # ids = (n.id for n in NYCSatScores.objects.all())
-    # for id in ids:
-    #     n = NYCSatScores.objects.get( pk= id)
-    #     n.delete()
-    #     n.save()
 
+if __name__ == "__main__":
 
     from django.core.management import call_command
     call_command('syncdb', interactive=False)
