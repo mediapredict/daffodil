@@ -20,27 +20,22 @@ settings.configure(DEBUG = True,
                )
 )
 
-
-
 from django.test import TestCase
 from django.db import models
-from django_hstore import hstore
-from dbmodel.models import NYCSatScores
+from test import load_test_data, SATDataTests
 
 from daffodil import Daffodil
 from daffodil.exceptions import ParseError
 from daffodil.django_hstore import HStoreQueryDelegate
 
-from test import load_test_data, SATDataTests
-from django.db.models import Q
 
+from dbmodel.models import NYCSatScores
 class HStoreModelCase(SATDataTests, TestCase):
 
     def setUp(self):
         data_dicts = load_test_data('nyc_sat_scores')
         for d in data_dicts:
             NYCSatScores(cname="testing hstore", hstore_col=d).save()
-
         self.d = NYCSatScores.objects.all()
 
     def filter(self, daff_src):
@@ -56,5 +51,3 @@ if __name__ == "__main__":
     setup_test_environment()
 
     unittest.main()
-
-

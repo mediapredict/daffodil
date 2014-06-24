@@ -1,21 +1,19 @@
 class HStoreQueryDelegate(object):
-    
+
     def __init__(self, hstore_field_name):
         self.field = hstore_field_name
 
     def mk_any(self, children):
-        r = " OR ".join( "(" + child_exp + ")" for child_exp in children)
-        return r
+        return " OR ".join( "(" + child_exp + ")" for child_exp in children)
 
     def mk_all(self, children):
         if children == ['']:
             r = "0=1"
         else:
-            r = " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp )
+            r = " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
         return r
 
     def mk_test(self, test_str):
-
         if test_str == "?=":
             existance = lambda k, v: "{0}?{1}".format(k, v)
             existance.is_datapoint_test = True
@@ -24,9 +22,8 @@ class HStoreQueryDelegate(object):
             return lambda k, v: "{0}{1}{2}".format(k, test_str, v)
 
     def mk_cmp(self, key, val, test):
-
         if getattr(test, "is_datapoint_test", False):
-            # here we want:
+            # here we cover:
             # [NOT] hstore_col ? '1ukmoviestudios - Disney'
             negate = "NOT " if val == False else ""
             val = "'{0}'".format(key)
