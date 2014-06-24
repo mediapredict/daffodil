@@ -4,11 +4,15 @@ class HStoreQueryDelegate(object):
         self.field = hstore_field_name
 
     def mk_any(self, children):
-        return " OR ".join( "(" + child_exp + ")" for child_exp in children)
+        if children == []:
+            r = "0=1"
+        else:
+            r = " OR ".join( "(" + child_exp + ")" for child_exp in children)
+        return r
 
     def mk_all(self, children):
         if children == ['']:
-            r = "0=1"
+            r = "1=1"
         else:
             r = " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
         return r
