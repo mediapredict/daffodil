@@ -57,12 +57,12 @@ class SATDataTests(object):
         """)
 
     def test_int_lt(self):
-        self.assert_filter_has_n_results(144, """
+        self.assert_filter_has_n_results(143, """
             num_of_sat_test_takers < 50
         """)
 
     def test_int_lte(self):
-        self.assert_filter_has_n_results(148, """
+        self.assert_filter_has_n_results(147, """
             num_of_sat_test_takers <= 50
         """)
 
@@ -87,12 +87,12 @@ class SATDataTests(object):
         """)
 
     def test_float_lt(self):
-        self.assert_filter_has_n_results(144, """
+        self.assert_filter_has_n_results(143, """
             num_of_sat_test_takers < 49.5
         """)
 
     def test_float_lte(self):
-        self.assert_filter_has_n_results(148, """
+        self.assert_filter_has_n_results(147, """
             num_of_sat_test_takers <= 50.0
         """)
 
@@ -226,22 +226,22 @@ class SATDataTests(object):
         """)
 
     def test_existance_has_value(self):
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(420, u"""
             num_of_sat_test_takers ?= true
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(1, u"""
             num_of_sat_test_takers ?= false
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(420, u"""
             "num_of_sat_test_takers" ?= true
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(1, u"""
             "num_of_sat_test_takers" ?= false
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(420, u"""
             'num_of_sat_test_takers' ?= true
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(1, u"""
             'num_of_sat_test_takers' ?= false
         """)
 
