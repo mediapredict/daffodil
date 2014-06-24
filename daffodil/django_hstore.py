@@ -19,7 +19,10 @@ class HStoreQueryDelegate(object):
             existance.is_datapoint_test = True
             return existance
         else:
-            return lambda k, v: "{0}{1}{2}".format(k, test_str, v)
+            func = lambda k, v: "{0}{1}{2}".format(k, test_str, v)
+            if test_str == "!=":
+                func.is_NE_test = True
+            return func
 
     def mk_cmp(self, key, val, test):
         if getattr(test, "is_datapoint_test", False):
@@ -30,7 +33,14 @@ class HStoreQueryDelegate(object):
             key = "{0}{1}".format(negate, self.field)
         else:
             cast, val = self.cond_cast(val)
-            key = "({0}->'{1}'){2}".format(self.field, key, cast)
+            if getattr(test, "is_NE_test", False):
+                # here we cover:
+                # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
+                key_format = "NOT ({0}?'{1}') OR ({0}->'{1}'){2}"
+            else:
+                key_format = "({0}->'{1}'){2}"
+
+            key = key_format.format(self.field, key, cast)
         return test( key, val )
 
     def cond_cast(self, v):

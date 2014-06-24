@@ -43,6 +43,10 @@ class HStoreModelCase(SATDataTests, TestCase):
 
 
 if __name__ == "__main__":
+    # data_dicts = load_test_data('nyc_sat_scores')
+    # testd = {}
+    # for d in data_dicts:
+    #     testd[ str(d.keys()) ] ="dummy"
 
     from django.core.management import call_command
     call_command('syncdb', interactive=False)
