@@ -390,7 +390,7 @@ class BasicHStoreData(models.Model):
 
 
 
-class SATDataTestsWithHStore(SATDataTests):
+class SATDataTestsWithHStore(unittest.TestCase, SATDataTests):
 
     def setUp(self):
         self.d = BasicHStoreData.objects.all()
