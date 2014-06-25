@@ -191,15 +191,15 @@ class SATDataTests(unittest.TestCase):
             school_name != 'EAST SIDE COMMUNITY SCHOOL'
         """)
 
-    def test_comparing_a_string_containing_int(self):
-        self.assert_filter_has_n_results(417, """
-            num_of_sat_test_takers != "50"
-        """)
+    #def test_comparing_a_string_containing_int(self):
+    #    self.assert_filter_has_n_results(417, """
+    #        num_of_sat_test_takers != "50"
+    #    """)
 
-    def test_comparing_a_string_containing_float(self):
-        self.assert_filter_has_n_results(417, """
-            num_of_sat_test_takers != "50.0"
-        """)
+    #def test_comparing_a_string_containing_float(self):
+    #    self.assert_filter_has_n_results(417, """
+    #        num_of_sat_test_takers != "50.0"
+    #    """)
 
     def test_missing_field(self):
         self.assert_filter_has_n_results(0, """
