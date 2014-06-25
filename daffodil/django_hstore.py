@@ -48,19 +48,12 @@ class HStoreQueryDelegate(object):
         return test( key, val )
 
     def cond_cast(self, v):
-        if not isinstance(v, basestring):
-            v = unicode(v)
-
-        if v.isdigit():
-            return "::integer", v
-        elif '.' in v:
-            # could be float
-            try:
-                f = float(v)
-                return "::real", v
-            except ValueError:
-                pass
-        return "", u"'{0}'".format(v)
+        if isinstance(v, int):
+            return "::integer", unicode(v)
+        elif isinstance(v, float):
+            return "::real", unicode(v)
+        else:
+            return "", u"'{0}'".format(v)
 
     def call(self, predicate, queryset):
         return queryset.extra(where=[predicate]) if predicate else queryset
