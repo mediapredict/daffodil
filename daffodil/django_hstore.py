@@ -26,6 +26,8 @@ class HStoreQueryDelegate(object):
             func = lambda k, v: "{0}{1}{2}".format(k, test_str, v)
             if test_str == "!=":
                 func.is_NE_test = True
+            elif test_str == "=":
+                func.is_EQ_test = True
             return func
 
     def mk_cmp(self, key, val, test):
@@ -41,6 +43,10 @@ class HStoreQueryDelegate(object):
                 # here we cover:
                 # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
                 key_format = "NOT ({0}?'{1}') OR ({0}->'{1}'){2}"
+            elif getattr(test, "is_EQ_test", False):
+                # here we convert '=' to '? AND =':
+                # hs_answers?'industries - luxury' AND hs_answers->'industries - luxury' = 'yes'
+                key_format = "({0}?'{1}') AND ({0}->'{1}'){2}"
             else:
                 key_format = "({0}->'{1}'){2}"
 
