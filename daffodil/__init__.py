@@ -1,6 +1,6 @@
 from parsimonious.grammar import Grammar
 from .predicate import DictionaryPredicateDelegate
-from .django_hstore import HStoreQueryDelegate
+from .hstore_predicate import HStoreQueryDelegate
 
 
 

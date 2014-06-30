@@ -372,7 +372,7 @@ if not settings.configured:
 
 from django.db import models
 from django_hstore import hstore
-from daffodil.django_hstore import HStoreQueryDelegate
+from daffodil.hstore_predicate import HStoreQueryDelegate
 
 
 class BasicHStoreData(models.Model):
