@@ -6,5 +6,5 @@
 .DS_Store
 env
 *.swp
-
 /*.egg-info/
+/.idea
