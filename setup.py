@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='daffodil',
-    version='0.1.1',
+    version='0.1.3',
     author='James Robert',
     description='A Super-simple DSL for filtering datasets',
     license='MIT',
