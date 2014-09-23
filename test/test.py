@@ -370,6 +370,9 @@ SETTINGS = dict(
 if not settings.configured:
     settings.configure(**SETTINGS)
 
+import django
+django.setup()
+
 from django.db import models
 from django_hstore import hstore
 from daffodil.hstore_predicate import HStoreQueryDelegate
@@ -396,24 +399,34 @@ class SATDataTestsWithHStore(SATDataTests):
         return daff(self.d)
 
 
+try:
+    # Django <= 1.6
+    get_app_orig = models.get_app
+    def get_app(app_label,*a, **kw):
+        if app_label==this:
+            return sys.modules[__name__]
+        return get_app_orig(app_label, *a, **kw)
 
-get_app_orig = models.get_app
-def get_app(app_label,*a, **kw):
-    if app_label==this:
-        return sys.modules[__name__]
-    return get_app_orig(app_label, *a, **kw)
-models.get_app = get_app
+    models.get_app = get_app
+    models.loading.cache.app_store[type(this+'.models',(),{'__file__':__file__})] = this
+except:
+    # Django >= 1.7
+    from django.apps import apps
+    from django.db.models import loading
+    from django.apps.config import AppConfig
 
-models.loading.cache.app_store[type(this+'.models',(),{'__file__':__file__})] = this
+    app_config = AppConfig(this, sys.modules[__name__])
+    app_config.import_models({"basichstore": BasicHStoreData})
+    apps.clear_cache()
+
 
 from django.core import management
 
 if __name__ == "__main__":
-    from django.db import connection
-    cursor = connection.cursor()
-    cursor.execute("create extension if not exists hstore")
-
-    management.call_command("syncdb")
+    try:
+        management.call_command("syncdb")
+    except AttributeError:
+        management.call_command("migrate")
 
     BasicHStoreData.objects.all().delete()
     for record in load_test_data('nyc_sat_scores'):
