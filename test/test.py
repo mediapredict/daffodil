@@ -371,7 +371,10 @@ if not settings.configured:
     settings.configure(**SETTINGS)
 
 import django
-django.setup()
+try:
+    django.setup()
+except AttributeError:
+    pass
 
 from django.db import models
 from django_hstore import hstore
