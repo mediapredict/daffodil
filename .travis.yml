@@ -19,4 +19,4 @@ addons:
 before_script:
   - psql -c 'create database daffodil_hstore_test;' -U postgres
   - psql daffodil_hstore_test -c 'CREATE EXTENSION IF NOT EXISTS hstore;' -U postgres
-script: python test/test.py
+script: python test/tests.py
