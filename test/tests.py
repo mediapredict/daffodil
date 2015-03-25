@@ -3,7 +3,7 @@ import os
 import json
 import unittest
 
-from daffodil import Daffodil
+from daffodil import Daffodil, PrettyPrintDelegate
 from daffodil.exceptions import ParseError
 
 
@@ -338,6 +338,184 @@ class PredicateTests(unittest.TestCase):
 
         self.assertFalse(daff.predicate(self.data))
 
+
+
+# input, expected_dense, expected_pretty
+PRETTY_PRINT_EXPECTATIONS = (
+
+# Simple
+[
+'''
+    val1 = 10
+    val2 = 20
+''',
+'{"val1"=10,"val2"=20}',
+'''
+{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
+# Simple - out of order
+[
+'''
+    val2 = 20
+    val1 = 10
+''',
+'{"val1"=10,"val2"=20}',
+'''
+{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
+# Explicit All
+[
+'''
+{
+    val1 = 10
+    val2 = 20
+}
+''',
+'{"val1"=10,"val2"=20}',
+'''
+{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
+# Unnecessary nested All
+[
+'''
+{
+  {
+    val1 = 10
+    val2 = 20
+  }
+} 
+''',
+'{"val1"=10,"val2"=20}',
+'''
+{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
+# Unnecessary nested All (inside an any)
+[
+'''
+[
+  {
+    val1 = 10
+    val2 = 20
+  }
+] 
+''',
+'{"val1"=10,"val2"=20}',
+'''
+{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
+# Simple Any
+[
+'''
+[
+    val1 = 10
+    val2 = 20
+]
+''',
+'["val1"=10,"val2"=20]',
+'''
+[
+  "val1" = 10
+  "val2" = 20
+]
+'''.strip()
+],
+
+
+
+# Unnecessary nested Any
+[
+'''
+[
+  [
+    val1 = 10
+    val2 = 20
+  ]
+]
+''',
+'["val1"=10,"val2"=20]',
+'''
+[
+  "val1" = 10
+  "val2" = 20
+]
+'''.strip()
+],
+
+# Unnecessary nested Any (inside an all)
+[
+'''
+{
+  [
+    val1 = 10
+    val2 = 20
+  ]
+}
+''',
+'["val1"=10,"val2"=20]',
+'''
+[
+  "val1" = 10
+  "val2" = 20
+]
+'''.strip()
+],
+
+)
+
+class PrettyPrintingTests(unittest.TestCase):
+    delegate_dense = PrettyPrintDelegate(dense=True)
+    delegate_pretty = PrettyPrintDelegate(dense=False)
+    
+    def pp(self, fltr):
+        dense = Daffodil(fltr, delegate=self.delegate_dense)()
+        pretty = Daffodil(fltr, delegate=self.delegate_pretty)()
+        return dense, pretty
+        
+    def assertFilterIsCorrect(self, fltr, expected_dense, expected_pretty):
+        dense, pretty = self.pp(fltr)
+        self.assertEqual(dense, expected_dense)
+        self.assertEqual(pretty, expected_pretty)
+    
+    def test_simple(self):
+        for fltr, dense, pretty in PRETTY_PRINT_EXPECTATIONS:
+            self.assertFilterIsCorrect(fltr, dense, pretty)
+            
+    def test_multiple_passthroughs(self):
+        for fltr, dense_expected, pretty_expected in PRETTY_PRINT_EXPECTATIONS:
+            d1, p1 = self.pp(fltr)
+            d1_dense, d1_pretty = self.pp(d1)
+            p1_dense, p1_pretty = self.pp(p1)
+            
+            self.assertEqual(d1_pretty, pretty_expected)
+            self.assertEqual(p1_pretty, pretty_expected)
+            self.assertEqual(d1_dense, dense_expected)
+            self.assertEqual(p1_dense, dense_expected)
+            
 
 
 # Borrowed gratuitously from https://gist.github.com/k4ml/2219751
