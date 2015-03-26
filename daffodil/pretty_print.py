@@ -1,6 +1,5 @@
 import operator as op
 from UserList import UserList
-import traceback
 
 
 def to_daffodil_str(s):
