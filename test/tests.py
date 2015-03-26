@@ -287,6 +287,22 @@ class PredicateTests(unittest.TestCase):
           "MHQ9ProgsWatched - SonsOfGuns": "no"
         }
 
+    def test_keys(self):
+        daff = Daffodil("""
+        {
+          "k1" = "no"
+          [
+            k2 = 1.7
+            k3 > 5
+          ]
+          [
+            "k4" ?= true
+            "k5" = "words"
+          ]
+        }
+        """)
+        self.assertEqual(daff.keys, set(["k1", "k2", "k3", "k4", "k5"]))
+    
     def test_matching(self):
         daff = Daffodil("""
         {
@@ -530,6 +546,17 @@ PRETTY_PRINT_EXPECTATIONS = (
 ]
 '''.strip()
 ],
+
+# Escaped String
+# [
+# r'v="\"a"',
+# r'{"v"="\"a"}',
+# '''
+# {
+#   "v" = "\\"a"
+# }
+# '''.strip(),
+# ],
 
 # Complex, unordered, badly indented and nested
 [

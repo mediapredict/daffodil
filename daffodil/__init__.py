@@ -45,6 +45,7 @@ class Daffodil(object):
       ]
     """
     def __init__(self, source, delegate=DictionaryPredicateDelegate()):
+        self.keys = set()
         self.delegate = delegate
         self.ast = self.parse("{" + source + "}")
         self.predicate = self.eval(self.ast)
@@ -85,7 +86,9 @@ class Daffodil(object):
 
     def key(self, node, children):
         'key = string / bare_key'
-        return children[0]
+        val = children[0]
+        self.keys.add(val)
+        return val
         
     def bare_key(self, node, children):
         'bare_key = ~"[a-zA-Z0-9_-]+"'
