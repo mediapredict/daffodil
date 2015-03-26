@@ -85,7 +85,7 @@ class Daffodil(object):
         return self.delegate.mk_cmp(key, val, test)
 
     def key(self, node, children):
-        'key = string / bare_key'
+        'key = bare_key / string'
         val = children[0]
         self.keys.add(val)
         return val
@@ -99,22 +99,22 @@ class Daffodil(object):
         return self.delegate.mk_test(node.text)
     
     def value(self, node, children):
-        'value = number / string / boolean'
+        'value = number / boolean / string'
         return children[0]
         
     def string(self, node, children):
         'string = doubleString / singleString'
-        return unicode(node.text[1:-1])
+        return unicode(node.text[1:-1]).replace(u'\\"', u'"').replace(u"\\'", u"'")
         
     def doubleString(self, node, children):
-        '''
-        doubleString = ~'"([^"]|(\"))*?"'
+        r'''
+        doubleString = '"' ( '\\"' / ~'[^"]' )* '"'
         '''
         return node.text
     
     def singleString(self, node, children):
-        '''
-        singleString = ~"'([^']|(\'))*?'"
+        r'''
+        singleString = "'" ( "\\'" / ~"[^']" )* "'"
         '''
         return node.text    
 

@@ -547,16 +547,39 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
-# Escaped String
-# [
-# r'v="\"a"',
-# r'{"v"="\"a"}',
-# '''
-# {
-#   "v" = "\\"a"
-# }
-# '''.strip(),
-# ],
+[
+r'v="a"',
+r'{"v"="a"}',
+'''
+{
+  "v" = "a"
+}
+'''.strip(),
+],
+
+# Escaped double quote
+[
+r'v="\"a"',
+r'{"v"="\"a"}',
+'''
+{
+  "v" = "\\"a"
+}
+'''.strip(),
+],
+
+# Escaped single quote
+[
+r"v='\'a'",
+'{"v"="\'a"}',
+'''
+{
+  "v" = "'a"
+}
+'''.strip(),
+],
+
+
 
 # Complex, unordered, badly indented and nested
 [
@@ -564,7 +587,7 @@ PRETTY_PRINT_EXPECTATIONS = (
 val2 = 3  
 val2 ?= true
     val1 < 10
-  val9 = "what?"
+  val9 = "what's \\"up\\"?"
 [
   {
 val6 ?= true
@@ -576,13 +599,13 @@ val6 ?= true
   }, val99 < 5.525 ]
 
 ''',
-'{"val1"<10,"val2"=3,"val2"?=true,"val9"="what?",["val99"<5.525,{"val5"!=30,"val5"?=true},{"val5"=30,"val6"?=true}]}',
+'{"val1"<10,"val2"=3,"val2"?=true,"val9"="what\'s \\"up\\"?",["val99"<5.525,{"val5"!=30,"val5"?=true},{"val5"=30,"val6"?=true}]}',
 '''
 {
   "val1" < 10
   "val2" = 3
   "val2" ?= true
-  "val9" = "what?"
+  "val9" = "what's \\"up\\"?"
   [
     "val99" < 5.525
     {

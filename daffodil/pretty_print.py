@@ -1,7 +1,6 @@
 import operator as op
-import re
 from UserList import UserList
-
+import traceback
 
 
 def to_daffodil_str(s):
@@ -12,12 +11,16 @@ def to_daffodil_str(s):
     return u'"{0}"'.format(s)
     
 def indent(s, amount=u" "):
-    s = unicode(s)
-    return u"\n".join(u"{0}{1}".format(amount, line) for line in s.split(u"\n"))
+    if isinstance(s, DaffodilWrapper):
+        return unicode(s)
+    else:
+        return u"{0}{1}".format(amount, s)
 
 class DaffodilWrapper(UserList):
     grouping = "all"
     dense = True
+    indent_level = 1
+    indent = u"  "
     
     @property
     def opener(self):
@@ -32,10 +35,23 @@ class DaffodilWrapper(UserList):
         return u"," if self.dense else u"\n"
     
     @property
-    def indent(self):
-        return u"" if self.dense else u"  "
+    def child_indent(self):
+        return u"" if self.dense else (self.indent * self.indent_level)
+    
+    @property
+    def wrapper_indent(self):
+        return u"" if self.dense else (self.indent * (self.indent_level - 1))
+        
     
     def __unicode__(self):
+        # Wrapper containing 1 wrapper has no effect
+        if len(self) == 1 and isinstance(self[0], DaffodilWrapper):
+            return unicode(self[0])
+            
+        for child in self:
+            if isinstance(child, DaffodilWrapper):
+                child.indent_level = self.indent_level + 1
+                
         def sort_key(obj):
             if not isinstance(obj, DaffodilWrapper):
                 return (0, obj)
@@ -45,24 +61,18 @@ class DaffodilWrapper(UserList):
             
             elif obj.grouping == 'all':
                 return (2, unicode(obj))
-        
-        # Fix unnecessarily nested wrappers...
-        
-        # Wrapper containing 1 wrapper has no effect
-        if len(self) == 1 and isinstance(self[0], DaffodilWrapper):
-            return unicode(self[0])
            
         # Sort so that different filters with the same expressions will
         # print the same way
         children = sorted(self, key=sort_key)
         
         # apply indent and join children
-        children = self.sep.join(indent(c, self.indent) for c in children)
+        children = self.sep.join(indent(c, self.child_indent) for c in children)
         
         if self.dense:
             result = u"{1}{0}{2}".format(children, self.opener, self.closer)
         else:
-            result = u"{1}\n{0}\n{2}".format(children, self.opener, self.closer)
+            result = u"{3}{1}\n{0}\n{3}{2}".format(children, self.opener, self.closer, self.wrapper_indent)
 
         return result
     
