@@ -31,6 +31,10 @@ class DaffodilWrapper(UserList):
     def sep(self):
         return u"," if self.dense else u"\n"
     
+    @property
+    def indent(self):
+        return u"" if self.dense else u"  "
+    
     def __unicode__(self):
         def sort_key(obj):
             if not isinstance(obj, DaffodilWrapper):
@@ -52,11 +56,12 @@ class DaffodilWrapper(UserList):
         # print the same way
         children = sorted(self, key=sort_key)
         
+        # apply indent and join children
+        children = self.sep.join(indent(c, self.indent) for c in children)
+        
         if self.dense:
-            children = self.sep.join(unicode(c) for c in children)
             result = u"{1}{0}{2}".format(children, self.opener, self.closer)
         else:
-            children = self.sep.join(indent(c, u"  ") for c in children)
             result = u"{1}\n{0}\n{2}".format(children, self.opener, self.closer)
 
         return result
