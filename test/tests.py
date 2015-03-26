@@ -398,7 +398,7 @@ PRETTY_PRINT_EXPECTATIONS = (
     val1 = 10
     val2 = 20
   }
-} 
+}
 ''',
 '{"val1"=10,"val2"=20}',
 '''
@@ -499,11 +499,11 @@ PRETTY_PRINT_EXPECTATIONS = (
 '{"val1"=10,["val2"=20,"val3"=30]}',
 '''
 {
-    "val1"=10
-    [
-      "val2"=20
-      "val3"=30
-    ]
+  "val1" = 10
+  [
+    "val2" = 20
+    "val3" = 30
+  ]
 }
 '''.strip()
 ],
