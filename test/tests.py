@@ -485,6 +485,29 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# simple + nested Any inside an all
+[
+'''
+{
+  val1 = 10
+  [
+    val2 = 20
+    val3 = 30
+  ]
+}
+''',
+'{"val1"=10,["val2"=20,"val3"=30]}',
+'''
+{
+    "val1"=10
+    [
+      "val2"=20
+      "val3"=30
+    ]
+}
+'''.strip()
+],
+
 )
 
 class PrettyPrintingTests(unittest.TestCase):
