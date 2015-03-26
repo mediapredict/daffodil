@@ -51,10 +51,16 @@ class Daffodil(object):
         self.predicate = self.eval(self.ast)
 
     def parse(self, source):
-        grammar_def = '\n'.join(v.__doc__ for k, v in vars(self.__class__).items()
-                      if '__' not in k and hasattr(v, '__doc__') and v.__doc__)
-        self.grammar = Grammar(grammar_def)
         return self.grammar['program'].parse(source)
+        
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'grammar'):
+            grammar_def = '\n'.join(v.__doc__ for k, v in vars(cls).items()
+                                    if '__' not in k 
+                                      and hasattr(v, '__doc__') 
+                                      and v.__doc__)
+            cls.grammar = Grammar(grammar_def)
+        return object.__new__(cls, *args, **kwargs)
 
     def eval(self, source):
         node = self.parse(source) if isinstance(source, basestring) else source
