@@ -508,6 +508,69 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# simple + nested All inside an Any
+[
+'''
+[
+  val1 = 10
+  {
+    val2 = 20
+    val3 = 30
+  }
+]
+''',
+'["val1"=10,{"val2"=20,"val3"=30}]',
+'''
+[
+  "val1" = 10
+  {
+    "val2" = 20
+    "val3" = 30
+  }
+]
+'''.strip()
+],
+
+# Complex, unordered, badly indented and nested
+[
+'''
+val2 = 3  
+val2 ?= true
+    val1 < 10
+  val9 = "what?"
+[
+  {
+val6 ?= true
+      val5 = 30
+    }  
+  {
+    val5 ?= true
+    val5 != 30
+  }, val99 < 5.525 ]
+
+''',
+'{"val1"<10,"val2"=3,"val2"?=true,"val9"="what?",["val99"<5.525,{"val5"!=30,"val5"?=true},{"val5"=30,"val6"?=true}]}',
+'''
+{
+  "val1" < 10
+  "val2" = 3
+  "val2" ?= true
+  "val9" = "what?"
+  [
+    "val99" < 5.525
+    {
+      "val5" != 30
+      "val5" ?= true
+    }
+    {
+      "val5" = 30
+      "val6" ?= true
+    }
+  ]
+}
+'''.strip()
+],
+
 )
 
 class PrettyPrintingTests(unittest.TestCase):
