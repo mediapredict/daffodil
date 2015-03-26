@@ -10,6 +10,10 @@ def to_daffodil_str(s):
     
     # wrap string in quotes
     return u'"{0}"'.format(s)
+    
+def indent(s, amount=u" "):
+    s = unicode(s)
+    return u"\n".join(u"{0}{1}".format(amount, line) for line in s.split(u"\n"))
 
 class DaffodilWrapper(UserList):
     grouping = "all"
@@ -29,7 +33,14 @@ class DaffodilWrapper(UserList):
     
     def __unicode__(self):
         def sort_key(obj):
-            return obj
+            if not isinstance(obj, DaffodilWrapper):
+                return (0, obj)
+            
+            if obj.grouping == 'any':
+                return (1, unicode(obj))
+            
+            elif obj.grouping == 'all':
+                return (2, unicode(obj))
         
         # Fix unnecessarily nested wrappers...
         
@@ -42,10 +53,10 @@ class DaffodilWrapper(UserList):
         children = sorted(self, key=sort_key)
         
         if self.dense:
-            children = self.sep.join(children)
+            children = self.sep.join(unicode(c) for c in children)
             result = u"{1}{0}{2}".format(children, self.opener, self.closer)
         else:
-            children = self.sep.join(u"  {0}".format(c) for c in children)
+            children = self.sep.join(indent(c, u"  ") for c in children)
             result = u"{1}\n{0}\n{2}".format(children, self.opener, self.closer)
 
         return result
