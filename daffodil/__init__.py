@@ -129,7 +129,7 @@ class Daffodil(object):
         return children[0]
     
     def integer(self, node, children):
-        'integer = ~"[0-9]+"'
+        'integer = ~"-?[0-9]+"'
         return int(node.text)
     
     def boolean(self, node, children):
@@ -139,7 +139,7 @@ class Daffodil(object):
         return node.text.lower() == "true"
     
     def float(self, node, children):
-        'float = ~"[0-9]*\.[0-9]+"'
+        'float = ~"-?[0-9]*\.[0-9]+"'
         return float(node.text)
 
     def _(self, node, children):
