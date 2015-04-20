@@ -26,7 +26,7 @@ class HStoreQueryDelegate(object):
             existance.is_datapoint_test = True
             return existance
         else:
-            func = lambda k, v: "{0}{1}{2}".format(k, test_str, v)
+            func = lambda k, v: "{0} {1} {2}".format(k, test_str, v)
             if test_str == "!=":
                 func.is_NE_test = True
             elif test_str == "=":
