@@ -1,4 +1,7 @@
 
+RE_CASE = "CASE WHEN ({0}->'{1}' ~ E'"
+RE_THEN = "') THEN "
+RE_ELSE = "ELSE -2147483648 END"
 
 class HStoreQueryDelegate(object):
 
@@ -56,9 +59,10 @@ class HStoreQueryDelegate(object):
     def cond_cast(self, v):
         if isinstance(v, int):
             # making sure attribute really holds an integer value
-            return "::integer", unicode(v), ["CASE WHEN ({0}->'{1}' ~ E'^\\\d+$') THEN ", "ELSE -2147483648 END"]
+            # return "::integer", unicode(v), ["CASE WHEN ({0}->'{1}' ~ E'^\\\d+$') THEN ", "ELSE -2147483648 END"]
+            return "::integer", unicode(v), ["{0}^[-]?\\\d+${1} ".format(RE_CASE, RE_THEN), RE_ELSE]
         elif isinstance(v, float):
-            return "::real", unicode(v), ["", ""]
+            return "::real", unicode(v), ["", ""] #["{0}^[-]?(?=.+)(?:[1-9]\d*|0)?(?:\.\d+)?{1} ".format(RE_CASE, RE_THEN), RE_ELSE]
         else:
             return "", u"'{0}'".format(v), ["", ""]
 
