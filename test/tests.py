@@ -264,6 +264,46 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(421, u"""
             'asdf' ?= false
         """)
+    
+    def test_comparing_string_data_to_an_int_filter(self):
+        self.assert_filter_has_n_results(0, """
+            dbn = 7
+        """)
+        self.assert_filter_has_n_results(0, """
+            dbn > 7
+        """)
+        self.assert_filter_has_n_results(421, """
+            dbn != 7
+        """)
+        self.assert_filter_has_n_results(0, """
+            dbn = -7
+        """)
+        self.assert_filter_has_n_results(0, """
+            dbn > -7
+        """)
+        self.assert_filter_has_n_results(421, """
+            dbn != -7
+        """)
+    
+    def test_comparing_string_data_to_a_float_filter(self):
+        self.assert_filter_has_n_results(0, """
+            dbn = 7.5
+        """)
+        self.assert_filter_has_n_results(0, """
+            dbn > 7.5
+        """)
+        self.assert_filter_has_n_results(421, """
+            dbn != 7.5
+        """)
+        self.assert_filter_has_n_results(0, """
+            dbn = -7.5
+        """)
+        self.assert_filter_has_n_results(0, """
+            dbn > -7.5
+        """)
+        self.assert_filter_has_n_results(421, """
+            dbn != -7.5
+        """)
 
 
 class PredicateTests(unittest.TestCase):
