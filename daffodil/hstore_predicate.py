@@ -45,14 +45,15 @@ class HStoreQueryDelegate(object):
             if getattr(test, "is_NE_test", False):
                 # here we cover:
                 # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
-                # key_format = "NOT ({0}?'{1}') OR NOT ({0}->'{1}') ~ E'^[-]?\\d+$' OR {3} ({0}->'{1}'){2} {4}"
                 key_format = "NOT ({0}?'{1}') OR %s {3} ({0}->'{1}'){2}"
+                # if its cast - exclude those not matching type
                 key_format = key_format % (" NOT " + type_check[0] + " OR " if cast else "")
 
             elif getattr(test, "is_EQ_test", False):
                 # here we convert '=' to '? AND =':
                 # hs_answers?'industries - luxury' AND hs_answers->'industries - luxury' = 'yes'
                 key_format = "({0}?'{1}') AND {3} ({0}->'{1}'){2}"
+
             else:
                 key_format = "{3} ({0}->'{1}'){2} "
 
