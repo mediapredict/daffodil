@@ -45,24 +45,27 @@ class HStoreQueryDelegate(object):
             if getattr(test, "is_NE_test", False):
                 # here we cover:
                 # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
-                key_format = "NOT ({0}?'{1}') OR {3} ({0}->'{1}'){2} {4}"
+                # key_format = "NOT ({0}?'{1}') OR NOT ({0}->'{1}') ~ E'^[-]?\\d+$' OR {3} ({0}->'{1}'){2} {4}"
+                key_format = "NOT ({0}?'{1}') OR %s {3} ({0}->'{1}'){2}"
+                key_format = key_format % (" NOT " + type_check[0] + " OR " if cast else "")
+
             elif getattr(test, "is_EQ_test", False):
                 # here we convert '=' to '? AND =':
                 # hs_answers?'industries - luxury' AND hs_answers->'industries - luxury' = 'yes'
-                key_format = "({0}?'{1}') AND {3} ({0}->'{1}'){2} {4}"
+                key_format = "({0}?'{1}') AND {3} ({0}->'{1}'){2}"
             else:
-                key_format = "{3} ({0}->'{1}'){2} {4}"
+                key_format = "{3} ({0}->'{1}'){2} "
 
-            key = key_format.format(self.field, key, cast, type_check[0], type_check[1]).format(self.field, key, cast)
+            key = key_format.format(self.field, key, cast, type_check[0] + type_check[1]).format(self.field, key)
         return test( key, val )
 
     def cond_cast(self, v):
         if isinstance(v, int):
             # making sure attribute really holds an integer value
-            # return "::integer", unicode(v), ["CASE WHEN ({0}->'{1}' ~ E'^\\\d+$') THEN ", "ELSE -2147483648 END"]
-            return "::integer", unicode(v), ["{0}^[-]?\\\d+${1} ".format(RE_CASE, RE_THEN), RE_ELSE]
+            # return "::integer", unicode(v), ["CASE WHEN ({0}->'{1' ~ E'^\\\d+$') THEN ", "ELSE -2147483648 END"]
+            return "::integer", unicode(v), ["({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND "]
         elif isinstance(v, float):
-            return "::numeric", unicode(v), ["{0}^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?${1} ".format(RE_CASE, RE_THEN), RE_ELSE]
+            return "::numeric", unicode(v), ["({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'", " AND "]
         else:
             return "", u"'{0}'".format(v), ["", ""]
 
