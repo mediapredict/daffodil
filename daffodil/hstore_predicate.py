@@ -22,9 +22,9 @@ class HStoreQueryDelegate(object):
 
     def mk_test(self, test_str):
         if test_str == "?=":
-            existance = lambda k, v: "{0}?{1}".format(k, v)
-            existance.is_datapoint_test = True
-            return existance
+            existence = lambda k, v: "{0}?{1}".format(k, v)
+            existence.is_datapoint_test = True
+            return existence
         else:
             func = lambda k, v: "{0} {1} {2}".format(k, test_str, v)
             if test_str == "!=":
