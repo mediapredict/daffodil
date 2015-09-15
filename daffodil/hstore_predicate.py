@@ -22,9 +22,9 @@ class HStoreQueryDelegate(object):
 
     def mk_test(self, test_str):
         if test_str == "?=":
-            existance = lambda k, v: "{0}?{1}".format(k, v)
-            existance.is_datapoint_test = True
-            return existance
+            existence = lambda k, v: "{0}?{1}".format(k, v)
+            existence.is_datapoint_test = True
+            return existence
         else:
             func = lambda k, v: "{0} {1} {2}".format(k, test_str, v)
             if test_str == "!=":
@@ -57,14 +57,16 @@ class HStoreQueryDelegate(object):
             else:
                 key_format = "{3} ({0}->'{1}'){2} "
 
-            key = key_format.format(self.field, key, cast, type_check[0] + type_check[1]).format(self.field, key)
+            key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
         return test( key, val )
 
     def cond_cast(self, v):
         if isinstance(v, int):
-            # making sure attribute really holds an integer value
-            # return "::integer", unicode(v), ["CASE WHEN ({0}->'{1' ~ E'^\\\d+$') THEN ", "ELSE -2147483648 END"]
-            return "::integer", unicode(v), ["({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND "]
+            attr_check = [
+                "({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",   # type
+                "({0} ? '{1}')", " AND "                    # existence
+            ]
+            return "::integer", unicode(v), attr_check
         elif isinstance(v, float):
             return "::numeric", unicode(v), ["({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'", " AND "]
         else:
