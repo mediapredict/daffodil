@@ -119,6 +119,31 @@ class SATDataTests(unittest.TestCase):
             ]
         """)
 
+    def test_not_or(self):
+        self.assert_filter_has_n_results(413, """
+            !   [
+                    num_of_sat_test_takers = 10
+                    num_of_sat_test_takers = 11
+                    num_of_sat_test_takers = 12
+                ]
+        """)
+
+    def test_and(self):
+        self.assert_filter_has_n_results(51, """
+            {
+                sat_writing_avg_score >= 300
+                sat_writing_avg_score < 350
+            }
+        """)
+
+    def test_not_and(self):
+        self.assert_filter_has_n_results(370, """
+            !   {
+                    sat_writing_avg_score >= 300
+                    sat_writing_avg_score < 350
+                }
+        """)
+
     def test_and_nested_within_or(self):
         self.assert_filter_has_n_results(134, """
             [

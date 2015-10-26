@@ -27,6 +27,15 @@ class DictionaryPredicateDelegate(object):
         }
         return ops[test_str]
 
+    def mk_utest(self, test_str):
+        not_ = lambda *a: op.not_(*a)
+        not_.onerror = True
+
+        ops = {
+          '!': not_,
+        }
+        return ops[test_str]
+
     def mk_cmp(self, key, val, test):
         if getattr(test, "is_datapoint_test", False):
             return lambda dp: test(dp, key, val)
@@ -61,6 +70,13 @@ class DictionaryPredicateDelegate(object):
             except: return err_ret_val
             
         return test_data_point
+
+    def mk_ucmp(self, utest, predicate):
+        def test_exp(data_point):
+            try: return utest(predicate(data_point))
+            except: pass
+
+        return test_exp
 
     def call(self, predicate, iterable):
         return filter(predicate, iterable)
