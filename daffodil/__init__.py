@@ -114,10 +114,6 @@ class Daffodil(object):
         'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">"'
         return self.delegate.mk_test(node.text)
 
-    def log_not(self, node, children):
-        'log_not = "!"'
-        return self.delegate.mk_unary_operator(node.text)
-    
     def value(self, node, children):
         'value = number / boolean / string'
         return children[0]
