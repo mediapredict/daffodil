@@ -33,6 +33,12 @@ class HStoreQueryDelegate(object):
                 func.is_EQ_test = True
             return func
 
+    def mk_unary_operator(self, unary_operator):
+        ops = {
+          '!': lambda exp: "NOT ({0})".format(exp)
+        }
+        return ops[unary_operator]
+
     def mk_cmp(self, key, val, test):
         if getattr(test, "is_datapoint_test", False):
             # here we cover:
@@ -59,6 +65,9 @@ class HStoreQueryDelegate(object):
 
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
         return test( key, val )
+
+    def mk_unary_operation(self, unary_oper, predicate):
+        return unary_oper(predicate)
 
     def cond_cast(self, v):
         if isinstance(v, int):
