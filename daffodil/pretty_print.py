@@ -20,15 +20,30 @@ class DaffodilWrapper(UserList):
     dense = True
     indent_level = 1
     indent = u"  "
-    
+
+    WRAP_SYMBOLS = {
+        "OPEN": {
+            "all": u"{",
+            "any": u"[",
+            "not_all": u"!{",
+            "not_any": u"![",
+        },
+        "CLOSE": {
+            "all": u"}",
+            "any": u"]",
+            "not_all": u"}",
+            "not_any": u"]",
+        },
+    }
+
     @property
     def opener(self):
-        return u"{" if self.grouping == "all" else u"["
-    
+        return self.WRAP_SYMBOLS["OPEN"][self.grouping]
+
     @property
     def closer(self):
-        return u"}" if self.grouping == "all" else u"]"
-        
+        return self.WRAP_SYMBOLS["CLOSE"][self.grouping]
+
     @property
     def sep(self):
         return u"," if self.dense else u"\n"
@@ -93,6 +108,12 @@ class PrettyPrintDelegate(object):
 
     def mk_all(self, children):
         return self._any_all(children, "all")
+
+    def mk_not_any(self, children):
+        return self._any_all(children, "not_any")
+
+    def mk_not_all(self, children):
+        return self._any_all(children, "not_all")
 
     def mk_test(self, test_str):
         return test_str

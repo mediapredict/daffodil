@@ -123,11 +123,11 @@ class SATDataTests(unittest.TestCase):
 
     def test_not_or(self):
         self.assert_filter_has_n_results(413, """
-            !   [
-                    num_of_sat_test_takers = 10
-                    num_of_sat_test_takers = 11
-                    num_of_sat_test_takers = 12
-                ]
+            ![
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+            ]
         """)
 
     def test_and(self):
@@ -140,10 +140,10 @@ class SATDataTests(unittest.TestCase):
 
     def test_not_and(self):
         self.assert_filter_has_n_results(370, """
-            !   {
-                    sat_writing_avg_score >= 300
-                    sat_writing_avg_score < 350
-                }
+            !{
+                sat_writing_avg_score >= 300
+                sat_writing_avg_score < 350
+            }
         """)
 
     def test_and_nested_within_or(self):
@@ -163,7 +163,7 @@ class SATDataTests(unittest.TestCase):
     def test_not_and_nested_within_or(self):
         self.assert_filter_has_n_results(370, """
             [
-                ! {
+                !{
                     sat_writing_avg_score >= 300
                     sat_writing_avg_score < 350
                 }
@@ -190,7 +190,7 @@ class SATDataTests(unittest.TestCase):
     def test_not_or_mixed_with_literal(self):
         self.assert_filter_has_n_results(4, """
             sat_writing_avg_score < 300
-            ! [
+            ![
                 num_of_sat_test_takers = 10
                 num_of_sat_test_takers = 11
                 num_of_sat_test_takers = 12
@@ -215,11 +215,11 @@ class SATDataTests(unittest.TestCase):
 
     def test_not_and_mixed_with_not_or(self):
         self.assert_filter_has_n_results(81, """
-            ! {
+            !{
                 sat_writing_avg_score > 350
                 sat_writing_avg_score < 500
             }
-            ! [
+            ![
                 num_of_sat_test_takers = 10
                 num_of_sat_test_takers = 11
                 num_of_sat_test_takers = 12
@@ -513,6 +513,23 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Not All
+[
+'''
+!{
+    val1 = 10
+    val2 = 20
+}
+''',
+'!{"val1"=10,"val2"=20}',
+'''
+!{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
 # Unnecessary nested All
 [
 '''
@@ -526,6 +543,25 @@ PRETTY_PRINT_EXPECTATIONS = (
 '{"val1"=10,"val2"=20}',
 '''
 {
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
+# Unnecessary nested Not All
+[
+'''
+{
+  !{
+    val1 = 10
+    val2 = 20
+  }
+}
+''',
+'!{"val1"=10,"val2"=20}',
+'''
+!{
   "val1" = 10
   "val2" = 20
 }
@@ -562,6 +598,23 @@ PRETTY_PRINT_EXPECTATIONS = (
 '["val1"=10,"val2"=20]',
 '''
 [
+  "val1" = 10
+  "val2" = 20
+]
+'''.strip()
+],
+
+# Not Any
+[
+'''
+![
+    val1 = 10
+    val2 = 20
+]
+''',
+'!["val1"=10,"val2"=20]',
+'''
+![
   "val1" = 10
   "val2" = 20
 ]

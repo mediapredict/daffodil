@@ -9,6 +9,12 @@ class DictionaryPredicateDelegate(object):
     def mk_all(self, children):
         return lambda data_point: all( predicate(data_point) for predicate in children)
 
+    def mk_not_any(self, children):
+        return lambda data_point: not self.mk_any(children)(data_point)
+
+    def mk_not_all(self, children):
+        return lambda data_point: not self.mk_all(children)(data_point)
+
     def mk_test(self, test_str):
         ne = lambda *a: op.ne(*a)
         ne.onerror = True
@@ -26,15 +32,6 @@ class DictionaryPredicateDelegate(object):
           "?=": existance,
         }
         return ops[test_str]
-
-    def mk_unary_operator(self, unary_operator):
-        not_ = lambda *a: op.not_(*a)
-        not_.onerror = True
-
-        ops = {
-          '!': not_,
-        }
-        return ops[unary_operator]
 
     def mk_cmp(self, key, val, test):
         if getattr(test, "is_datapoint_test", False):
@@ -70,13 +67,6 @@ class DictionaryPredicateDelegate(object):
             except: return err_ret_val
             
         return test_data_point
-
-    def mk_unary_operation(self, unary_oper, predicate):
-        def test_exp(data_point):
-            try: return unary_oper(predicate(data_point))
-            except: pass
-
-        return test_exp
 
     def call(self, predicate, iterable):
         return filter(predicate, iterable)

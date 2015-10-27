@@ -20,6 +20,12 @@ class HStoreQueryDelegate(object):
         else:
             return " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
 
+    def mk_not_any(self, children):
+        return " NOT ({})".format(self.mk_any(children))
+
+    def mk_not_all(self, children):
+        return " NOT ({})".format(self.mk_all(children))
+
     def mk_test(self, test_str):
         if test_str == "?=":
             existence = lambda k, v: "{0}?{1}".format(k, v)
@@ -32,12 +38,6 @@ class HStoreQueryDelegate(object):
             elif test_str == "=":
                 func.is_EQ_test = True
             return func
-
-    def mk_unary_operator(self, unary_operator):
-        ops = {
-          '!': lambda exp: "NOT ({0})".format(exp)
-        }
-        return ops[unary_operator]
 
     def mk_cmp(self, key, val, test):
         if getattr(test, "is_datapoint_test", False):
@@ -65,9 +65,6 @@ class HStoreQueryDelegate(object):
 
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
         return test( key, val )
-
-    def mk_unary_operation(self, unary_oper, predicate):
-        return unary_oper(predicate)
 
     def cond_cast(self, v):
         if isinstance(v, int):
