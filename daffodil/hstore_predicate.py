@@ -21,10 +21,10 @@ class HStoreQueryDelegate(object):
             return " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
 
     def mk_not_any(self, children):
-        return " NOT ({})".format(self.mk_any(children))
+        return " NOT ({0})".format(self.mk_any(children))
 
     def mk_not_all(self, children):
-        return " NOT ({})".format(self.mk_all(children))
+        return " NOT ({0})".format(self.mk_all(children))
 
     def mk_test(self, test_str):
         if test_str == "?=":
