@@ -82,7 +82,7 @@ class Daffodil(object):
         return self.delegate.mk_any(child_expressions)
         
     def expr(self, node, children):
-        '''expr = _ (all / any / condition / ucondition) _ ~"[\\n\,]?" _'''
+        '''expr = _ (all / any / condition / not_condition) _ ~"[\\n\,]?" _'''
         return children[1][0]
     
     def condition(self, node, children):
@@ -90,10 +90,10 @@ class Daffodil(object):
         _, key, _, test, _, val, _ = children
         return self.delegate.mk_cmp(key, val, test)
 
-    def ucondition(self, node, children):
-        'ucondition = _ utest _ (all / any) _'
-        _, utest, _, expr, _ = children
-        return self.delegate.mk_ucmp(utest, expr[0])
+    def not_condition(self, node, children):
+        'not_condition = _ log_not _ (all / any) _'
+        _, log_not, _, expr, _ = children
+        return self.delegate.mk_unary_operation(log_not, expr[0])
 
     def key(self, node, children):
         'key = bare_key / string'
@@ -109,9 +109,9 @@ class Daffodil(object):
         'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">"'
         return self.delegate.mk_test(node.text)
 
-    def utest(self, node, children):
-        'utest = "!"'
-        return self.delegate.mk_utest(node.text)
+    def log_not(self, node, children):
+        'log_not = "!"'
+        return self.delegate.mk_unary_operator(node.text)
     
     def value(self, node, children):
         'value = number / boolean / string'
