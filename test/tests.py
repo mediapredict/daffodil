@@ -3,6 +3,8 @@ import os
 import json
 import unittest
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from daffodil import Daffodil, PrettyPrintDelegate
 from daffodil.exceptions import ParseError
 
@@ -158,10 +160,37 @@ class SATDataTests(unittest.TestCase):
             ]
         """)
 
+    def test_not_and_nested_within_or(self):
+        self.assert_filter_has_n_results(370, """
+            [
+                ! {
+                    sat_writing_avg_score >= 300
+                    sat_writing_avg_score < 350
+                }
+                {
+                    sat_writing_avg_score >= 400
+                    sat_writing_avg_score < 450
+                }
+            ]
+        """)
+
     def test_or_mixed_with_literal(self):
         self.assert_filter_has_n_results(11, """
             sat_writing_avg_score < 450
             [
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+                num_of_sat_test_takers = 13
+                num_of_sat_test_takers = 14
+                num_of_sat_test_takers = 15
+            ]
+        """)
+
+    def test_not_or_mixed_with_literal(self):
+        self.assert_filter_has_n_results(4, """
+            sat_writing_avg_score < 300
+            ! [
                 num_of_sat_test_takers = 10
                 num_of_sat_test_takers = 11
                 num_of_sat_test_takers = 12
@@ -178,6 +207,19 @@ class SATDataTests(unittest.TestCase):
                 sat_writing_avg_score < 500
             }
             [
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+            ]
+        """)
+
+    def test_not_and_mixed_with_not_or(self):
+        self.assert_filter_has_n_results(81, """
+            ! {
+                sat_writing_avg_score > 350
+                sat_writing_avg_score < 500
+            }
+            ! [
                 num_of_sat_test_takers = 10
                 num_of_sat_test_takers = 11
                 num_of_sat_test_takers = 12
