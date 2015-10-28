@@ -133,26 +133,13 @@ Booleans:
 
 ### Comparison operators
 
-Select where `x` is `100`  
-`"x" = 100`
-
-Select where `x` is not `100`  
-`"x" != 100`
-
-Select where `x` is less than `100`  
-`"x" < 100`
-
-Select where `x` is more than `100`  
-`"x" > 100`
-
-Select where `x` is less than or equal to `100`  
-`"x" <= 100`
-
-Select where `x` is greater than or equal to `100`  
-`"x" >= 100`
-
-Select where `x` has any value (where it exists)  
-`"x" ?= true`
-
-Select where `x` has no value (where it does not exist)  
-`"x" ?= false`
+Operator | Example | Meaning
+---|---|---
+Equal | `"x" = 100` | `x` is `100`  
+Not Equal | `"x" != 100` | `x` is not `100`  
+Less Than | `"x" < 100` | `x` is less than `100`  
+Greater Than | `"x" > 100` | `x` is more than `100`  
+Less than or Equal | `"x" <= 100` | `x` is less than or equal to `100`  
+Greater than or Equal | `"x" >= 100` | `x` is greater than or equal to `100`  
+Exists | `"x" ?= true` | `x` has any value (where it exists)
+Exists | `"x" ?= false` | `x` has no value (where it does not exist)  
