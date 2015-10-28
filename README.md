@@ -105,3 +105,54 @@ An empty "OR" block will match **no** users
 ```
 
 This means you can set `{}` as your last filter in cases where you want to match various groups and then have an "everybody else" group.
+
+
+REFERENCE
+=========
+
+### Value types
+
+Numbers: 
+- `"x" = 1`
+- `"x" = 500000`
+- `"x" = 7.5`
+- `"x" = -1642`
+- `"x" = -0.9141`
+ 
+Strings:
+- `"x" = "hello"`
+- `"x" = "a complete sentence"`
+- `"x" = 'this time with single quotes'`
+- `"x" = 'double quotes "inside" single quotes'`
+- `"x" = 'single quotes 'inside' double quotes"`
+- `"x" = 'uniçode ís tøtålly fiñe'`
+
+Booleans:
+- `"x" = true`
+- `"x" = false`
+
+### Comparison operators
+
+Select where `x` is `100`  
+`"x" = 100`
+
+Select where `x` is not `100`  
+`"x" != 100`
+
+Select where `x` is less than `100`  
+`"x" < 100`
+
+Select where `x` is more than `100`  
+`"x" > 100`
+
+Select where `x` is less than or equal to `100`  
+`"x" <= 100`
+
+Select where `x` is greater than or equal to `100`  
+`"x" >= 100`
+
+Select where `x` has any value (where it exists)  
+`"x" ?= true`
+
+Select where `x` has no value (where it does not exist)  
+`"x" ?= false`
