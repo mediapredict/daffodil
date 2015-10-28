@@ -21,7 +21,10 @@ class DictionaryPredicateDelegate(object):
         
         existance = lambda dp, k, v: (k in dp) == v
         existance.is_datapoint_test = True
-            
+
+        in_ = lambda a, b: a in b
+        not_in_ = lambda a, b: not in_(a, b)
+
         ops = {
           '=':  op.eq,
           '!=': ne,
@@ -30,6 +33,8 @@ class DictionaryPredicateDelegate(object):
           '>':  op.gt,
           '>=': op.ge,
           "?=": existance,
+          "in": in_,
+          "!in": not_in_,
         }
         return ops[test_str]
 
@@ -50,8 +55,15 @@ class DictionaryPredicateDelegate(object):
                 try: return float(val)
                 except: pass
                 return fallback_type(val)
+
+            def coerce_list(val, fallback_type):
+                return [coerce(v, fallback_type) for v in val]
             
-            if isinstance(cmp_val, basestring) != isinstance(dp_val, basestring):
+
+            if isinstance(cmp_val, list):
+                cmp_val = coerce_list(cmp_val, type(dp_val))
+
+            elif isinstance(cmp_val, basestring) != isinstance(dp_val, basestring):
                 try:
                     if isinstance(cmp_val, basestring):
                         cmp_val = coerce(cmp_val, type(dp_val))

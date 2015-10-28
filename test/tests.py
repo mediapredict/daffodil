@@ -43,9 +43,35 @@ class SATDataTests(unittest.TestCase):
             num_of_sat_test_takers = 50
         """)
 
+    def test_int_in_list(self):
+        self.assert_filter_has_n_results(8, """
+            num_of_sat_test_takers in (10, 11, 12)
+        """)
+
+    def test_int_in_list_multiline(self):
+        self.assert_filter_has_n_results(4, """
+            num_of_sat_test_takers in
+            (
+            50
+            )
+        """)
+
     def test_int_ne(self):
         self.assert_filter_has_n_results(417, """
             num_of_sat_test_takers != 50
+        """)
+
+    def test_int_not_in_list(self):
+        self.assert_filter_has_n_results(417, """
+            num_of_sat_test_takers !in (50)
+        """)
+
+    def test_int_not_in_list_multiline(self):
+        self.assert_filter_has_n_results(417, """
+            num_of_sat_test_takers !in
+            (
+            50
+            )
         """)
 
     def test_int_gt(self):
@@ -200,6 +226,26 @@ class SATDataTests(unittest.TestCase):
             ]
         """)
 
+    def test_in_mixed_with_literal(self):
+        self.assert_filter_has_n_results(11, """
+            sat_writing_avg_score < 450
+            num_of_sat_test_takers in (
+                10, 11
+                12, 13, 14,
+                15
+            )
+        """)
+
+    def test_not_in_mixed_with_literal(self):
+        self.assert_filter_has_n_results(4, """
+            sat_writing_avg_score < 300
+            num_of_sat_test_takers !in (
+                10, 11
+                12, 13, 14,
+                15
+            )
+        """)
+
     def test_and_mixed_with_or(self):
         self.assert_filter_has_n_results(6, """
             {
@@ -232,6 +278,9 @@ class SATDataTests(unittest.TestCase):
         """)
         self.assert_filter_has_n_results(417, """
             'num_of_sat_test_takers' != '50'
+        """)
+        self.assert_filter_has_n_results(417, """
+            'num_of_sat_test_takers' !in ('50')
         """)
 
     def test_double_quoted_fields(self):

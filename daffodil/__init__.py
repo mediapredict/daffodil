@@ -111,11 +111,11 @@ class Daffodil(object):
         return node.text
         
     def test(self, node, children):
-        'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">"'
+        'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">" / "in" / "!in"'
         return self.delegate.mk_test(node.text)
 
     def value(self, node, children):
-        'value = number / boolean / string'
+        'value = number / boolean / string / array'
         return children[0]
         
     def string(self, node, children):
@@ -151,6 +151,24 @@ class Daffodil(object):
     def float(self, node, children):
         'float = ~"-?[0-9]*\.[0-9]+"'
         return float(node.text)
+
+    def array(self, node, children):
+        'array = "(" (  _ (number / boolean / string) _ ~"[\\n\,]?" _ )+ ")"'
+        vals = [
+            val[0]
+            for (_, val, _, whitespace, _)
+            in children[1]
+        ]
+
+        arr_type = type(vals[0])
+        if arr_type == list:
+            raise ValueError("nested arrays are not supported")
+
+        for val in vals:
+            if type(val) != arr_type:
+                raise ValueError("arrays must be all the same type")
+
+        return vals
 
     def _(self, node, children):
         '_ = ~"[\\n\s]*"m'
