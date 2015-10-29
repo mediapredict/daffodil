@@ -63,6 +63,17 @@ class SATDataTests(unittest.TestCase):
             num_of_sat_test_takers < 50
         """)
 
+    def test_float_str_eq(self):
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120.0
+        """)
+        self.assert_filter_has_n_results(0, """
+            total_score = "1120"
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120
+        """)
+
     def test_int_lte(self):
         self.assert_filter_has_n_results(148, """
             num_of_sat_test_takers <= 50
