@@ -62,11 +62,7 @@ class HStoreQueryDelegate(object):
 
     def cond_cast(self, v):
         if isinstance(v, int):
-            attr_check = [
-                "({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",   # type
-                "({0} ? '{1}')", " AND "                    # existence
-            ]
-            return "::integer", unicode(v), attr_check
+            return "::integer", unicode(v), ["({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",]
         elif isinstance(v, float):
             return "::numeric", unicode(v), ["({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'", " AND "]
         else:

@@ -3,6 +3,8 @@ import os
 import json
 import unittest
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from daffodil import Daffodil, PrettyPrintDelegate
 from daffodil.exceptions import ParseError
 
@@ -59,6 +61,17 @@ class SATDataTests(unittest.TestCase):
     def test_int_lt(self):
         self.assert_filter_has_n_results(144, """
             num_of_sat_test_takers < 50
+        """)
+
+    def test_float_str_eq(self):
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120.0
+        """)
+        self.assert_filter_has_n_results(0, """
+            total_score = "1120"
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120
         """)
 
     def test_int_lte(self):
