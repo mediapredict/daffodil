@@ -99,6 +99,34 @@ class SATDataTests(unittest.TestCase):
             num_of_sat_test_takers = 50.5
         """)
 
+    def test_float_str_eq(self):
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120.0
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score = "1120.0"
+        """)
+        self.assert_filter_has_n_results(0, """
+            total_score = "1120"
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120
+        """)
+
+        # now inside an array
+        self.assert_filter_has_n_results(2, """
+            total_score in (1120.0)
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score in ("1120.0")
+        """)
+        self.assert_filter_has_n_results(0, """
+            total_score in ("1120")
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score in (1120)
+        """)
+
     def test_float_ne(self):
         self.assert_filter_has_n_results(421, """
             num_of_sat_test_takers != 50.5

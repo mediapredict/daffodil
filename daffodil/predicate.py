@@ -59,9 +59,15 @@ class DictionaryPredicateDelegate(object):
             def coerce_list(val, fallback_type):
                 return [coerce(v, fallback_type) for v in val]
             
-
             if isinstance(cmp_val, list):
-                cmp_val = coerce_list(cmp_val, type(dp_val))
+
+                if isinstance(cmp_val[0], basestring) != isinstance(dp_val, basestring):
+                    try:
+                        if isinstance(cmp_val[0], basestring):
+                            cmp_val = coerce_list(cmp_val, type(dp_val))
+                        else:
+                            dp_val = coerce(dp_val, type(cmp_val))
+                    except: return err_ret_val
 
             elif isinstance(cmp_val, basestring) != isinstance(dp_val, basestring):
                 try:

@@ -89,24 +89,22 @@ class HStoreQueryDelegate(object):
 
                     return tuple([m[a](val) for a in ["cast", "value", "type_check"]])
 
+        NUMERIC_TYPE_CHECK = [
+                "({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
+                " AND "
+        ]
         CAST_AND_TYPE_MAP = [
             {
                 "type": int,
-                "cast": lambda v: "::integer",
+                "cast": lambda v: "::numeric",
                 "value": lambda v: unicode(v),
-                "type_check" : lambda v: [
-                    "({0}->'{1}') ~ E'^[-]?\\\d+$'",
-                    " AND ",
-                ],
+                "type_check" : lambda v: NUMERIC_TYPE_CHECK,
             },
             {
                 "type": float,
                 "cast": lambda v: "::numeric",
                 "value": lambda v: unicode(v),
-                "type_check": lambda v: [
-                        "({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
-                        " AND "
-                ],
+                "type_check": lambda v: NUMERIC_TYPE_CHECK,
             },
             {
                 "type": basestring,
