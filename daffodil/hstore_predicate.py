@@ -53,7 +53,7 @@ class HStoreQueryDelegate(object):
             key = "{0}{1}".format(negate, self.field)
         else:
             cast, val, type_check = self.cond_cast(val)
-            if getattr(test, "is_NE_test", False):# or getattr(test, "is_NOT_IN_test", False):
+            if getattr(test, "is_NE_test", False) or getattr(test, "is_NOT_IN_test", False):
                 # here we cover:
                 # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
                 key_format = "NOT ({0}?'{1}') OR %s {3} ({0}->'{1}'){2}"
@@ -71,39 +71,58 @@ class HStoreQueryDelegate(object):
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
         return test( key, val )
 
-    def cond_cast(self, v):
-        is_int = lambda n: isinstance(n, int)
-        is_float = lambda n: isinstance(n, float)
-        is_str = lambda n: isinstance(n, basestring)
+    def cond_cast(self, val):
 
-        def list_cast():
-            # first element type is common for the whole list
-            if is_str(v[0]): cast = ""
-            elif is_int(v[0]): cast = "::integer"
-            elif is_float(v[0]): cast = "::numeric"
-
-            delimiter = "'" if is_str(v[0]) else ""
+        def format_list(lst):
+            delimiter = "'" if isinstance(lst[0], basestring) else ""
             formatted_list = ",".join(
-                [u"{1}{0}{1}".format(elem, delimiter) for elem in v]
+                [u"{1}{0}{1}".format(elem, delimiter) for elem in lst]
             )
+            return u"({0})".format(formatted_list)
 
-            return cast, u"({0})".format(formatted_list), ["", ""]
+        def get_cast_attr(val, attr=None):
+            for m in CAST_AND_TYPE_MAP:
+                if isinstance(val, m["type"]):
 
-        if is_int(v):
-            attr_check = [
-                "({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",   # type
-                "({0} ? '{1}')", " AND "                    # existence
-            ]
-            return "::integer", unicode(v), attr_check
+                    if attr:
+                        return m[attr](val)
 
-        elif is_float(v):
-            return "::numeric", unicode(v), ["({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'", " AND "]
+                    return tuple([m[a](val) for a in ["cast", "value", "type_check"]])
 
-        elif isinstance(v, list):
-            return list_cast()
+        CAST_AND_TYPE_MAP = [
+            {
+                "type": int,
+                "cast": lambda v: "::integer",
+                "value": lambda v: unicode(v),
+                "type_check" : lambda v: [
+                    "({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",   # type
+                    "({0} ? '{1}')", " AND "                    # existence
+                ],
+            },
+            {
+                "type": float,
+                "cast": lambda v: "::numeric",
+                "value": lambda v: unicode(v),
+                "type_check": lambda v: [
+                        "({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
+                        " AND "
+                ],
+            },
+            {
+                "type": basestring,
+                "cast": lambda v: "",
+                "value": lambda v: u"'{0}'".format(v),
+                "type_check": lambda v: ["", ""],
+            },
+            {
+                "type": list,
+                "cast": lambda v: get_cast_attr(v[0], "cast"),
+                "value": lambda v: format_list(v),
+                "type_check": lambda v: get_cast_attr(v[0], "type_check"),
+            },
+        ]
 
-        else:
-            return "", u"'{0}'".format(v), ["", ""]
+        return get_cast_attr(val)
 
     def call(self, predicate, queryset):
         return queryset.extra(where=[predicate]) if predicate else queryset
