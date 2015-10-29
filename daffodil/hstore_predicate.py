@@ -71,8 +71,8 @@ class HStoreQueryDelegate(object):
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
         return test( key, val )
 
-    def cond_cast(self, val):
 
+    def cond_cast(self, val):
         def format_list(lst):
             delimiter = "'" if isinstance(lst[0], basestring) else ""
             formatted_list = ",".join(
@@ -95,8 +95,8 @@ class HStoreQueryDelegate(object):
                 "cast": lambda v: "::integer",
                 "value": lambda v: unicode(v),
                 "type_check" : lambda v: [
-                    "({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",   # type
-                    "({0} ? '{1}')", " AND "                    # existence
+                    "({0}->'{1}') ~ E'^[-]?\\\d+$'",
+                    " AND ",
                 ],
             },
             {
@@ -123,6 +123,7 @@ class HStoreQueryDelegate(object):
         ]
 
         return get_cast_attr(val)
+
 
     def call(self, predicate, queryset):
         return queryset.extra(where=[predicate]) if predicate else queryset
