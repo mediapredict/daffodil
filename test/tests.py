@@ -3,6 +3,8 @@ import os
 import json
 import unittest
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from daffodil import Daffodil, PrettyPrintDelegate
 from daffodil.exceptions import ParseError
 
