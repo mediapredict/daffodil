@@ -530,6 +530,22 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Simple array lookup
+[
+'''
+    val in (10, 20)
+''',
+'{"val"in(10,20)}',
+'''
+{
+  "val" in (
+    10
+    20
+  )
+}
+'''.strip()
+],
+
 # Simple - out of order
 [
 '''
@@ -625,7 +641,7 @@ PRETTY_PRINT_EXPECTATIONS = (
     val1 = 10
     val2 = 20
   }
-] 
+]
 ''',
 '{"val1"=10,"val2"=20}',
 '''
@@ -733,6 +749,26 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# simple + nested (negative) array lookup inside an all
+[
+'''
+{
+  val1 = 10
+  val2 !in (20, 30)
+}
+''',
+'{"val1"=10,"val2"!in(20,30)}',
+'''
+{
+  "val1" = 10
+  "val2" !in (
+    20
+    30
+  )
+}
+'''.strip()
+],
+
 # simple + nested All inside an Any
 [
 '''
@@ -793,7 +829,7 @@ r"v='\'a'",
 # Complex, unordered, badly indented and nested
 [
 '''
-val2 = 3  
+val2 = 3
 val2 ?= true
     val1 < 10
   val9 = "what's \\"up\\"?"
@@ -801,7 +837,7 @@ val2 ?= true
   {
 val6 ?= true
       val5 = 30
-    }  
+    }
   {
     val5 ?= true
     val5 != 30
@@ -855,7 +891,7 @@ class PrettyPrintingTests(unittest.TestCase):
             d1, p1 = self.pp(fltr)
             d1_dense, d1_pretty = self.pp(d1)
             p1_dense, p1_pretty = self.pp(p1)
-            
+
             self.assertEqual(d1_pretty, pretty_expected)
             self.assertEqual(p1_pretty, pretty_expected)
             self.assertEqual(d1_dense, dense_expected)

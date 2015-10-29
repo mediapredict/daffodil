@@ -25,14 +25,18 @@ class DaffodilWrapper(UserList):
         "OPEN": {
             "all": u"{",
             "any": u"[",
+            "in": u"(",
             "not_all": u"!{",
             "not_any": u"![",
+            "!in": u"(",
         },
         "CLOSE": {
             "all": u"}",
             "any": u"]",
+            "in": u")",
             "not_all": u"}",
             "not_any": u"]",
+            "!in": u")",
         },
     }
 
@@ -55,8 +59,23 @@ class DaffodilWrapper(UserList):
     @property
     def wrapper_indent(self):
         return u"" if self.dense else (self.indent * (self.indent_level - 1))
-        
-    
+
+
+    def format_dense(self, children):
+        return u"{1}{0}{2}".format(children, self.opener, self.closer)
+
+    def format_std(self, children):
+        return u"{3}{1}\n{0}\n{3}{2}".format(children, self.opener, self.closer, self.wrapper_indent)
+
+    def format_children(self, children):
+        # apply indent and join children
+        children = self.sep.join(indent(c, self.child_indent) for c in children)
+
+        if self.dense:
+            return self.format_dense(children)
+
+        return self.format_std(children)
+
     def __unicode__(self):
         # Wrapper containing 1 wrapper has no effect
         if len(self) == 1 and isinstance(self[0], DaffodilWrapper):
@@ -65,7 +84,7 @@ class DaffodilWrapper(UserList):
         for child in self:
             if isinstance(child, DaffodilWrapper):
                 child.indent_level = self.indent_level + 1
-                
+
         def sort_key(obj):
             if not isinstance(obj, DaffodilWrapper):
                 return (0, obj)
@@ -79,24 +98,25 @@ class DaffodilWrapper(UserList):
         # Sort so that different filters with the same expressions will
         # print the same way
         children = sorted(self, key=sort_key)
-        
-        # apply indent and join children
-        children = self.sep.join(indent(c, self.child_indent) for c in children)
-        
-        if self.dense:
-            result = u"{1}{0}{2}".format(children, self.opener, self.closer)
-        else:
-            result = u"{3}{1}\n{0}\n{3}{2}".format(children, self.opener, self.closer, self.wrapper_indent)
 
-        return result
-    
-    
+        return self.format_children(children)
+
+class DaffodilArrayWrapper(DaffodilWrapper):
+    @property
+    def child_indent(self):
+        return u"" if self.dense else (self.indent * (self.indent_level + 1))
+
+    def format_std(self, children):
+        return u"{3}{1}\n{0}\n{4}{2}".format(
+            children, self.opener, self.closer, self.wrapper_indent, self.indent * self.indent_level
+        )
+
 class PrettyPrintDelegate(object):
     def __init__(self, dense=True):
         self.dense = dense
     
-    def _any_all(self, children, grouping):
-        result = DaffodilWrapper(children)
+    def _mk_wrapped(self, children, grouping, wrapper=DaffodilWrapper):
+        result = wrapper(children)
 
         result.grouping = grouping
         result.dense = self.dense
@@ -104,16 +124,16 @@ class PrettyPrintDelegate(object):
         return result
         
     def mk_any(self, children):
-        return self._any_all(children, "any")
+        return self._mk_wrapped(children, "any")
 
     def mk_all(self, children):
-        return self._any_all(children, "all")
+        return self._mk_wrapped(children, "all")
 
     def mk_not_any(self, children):
-        return self._any_all(children, "not_any")
+        return self._mk_wrapped(children, "not_any")
 
     def mk_not_all(self, children):
-        return self._any_all(children, "not_all")
+        return self._mk_wrapped(children, "not_all")
 
     def mk_test(self, test_str):
         return test_str
@@ -126,6 +146,8 @@ class PrettyPrintDelegate(object):
             val = u"true" if val else u"false"
         elif isinstance(val, basestring):
             val = to_daffodil_str(val)
+        elif isinstance(val, list):
+            val = self._mk_wrapped(val, test, DaffodilArrayWrapper)
         else:
             val = unicode(val)
         
