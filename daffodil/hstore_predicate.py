@@ -37,6 +37,11 @@ class HStoreQueryDelegate(object):
                 func.is_NE_test = True
             elif test_str == "=":
                 func.is_EQ_test = True
+            elif test_str == "!in":
+                func.is_NOT_IN_test = True
+                test_str = "NOT IN"
+            elif test_str == "in":
+                func.is_IN_test = True
             return func
 
     def mk_cmp(self, key, val, test):
@@ -48,14 +53,14 @@ class HStoreQueryDelegate(object):
             key = "{0}{1}".format(negate, self.field)
         else:
             cast, val, type_check = self.cond_cast(val)
-            if getattr(test, "is_NE_test", False):
+            if getattr(test, "is_NE_test", False):# or getattr(test, "is_NOT_IN_test", False):
                 # here we cover:
                 # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
                 key_format = "NOT ({0}?'{1}') OR %s {3} ({0}->'{1}'){2}"
                 # if its cast - exclude those not matching type
                 key_format = key_format % (" NOT " + type_check[0] + " OR " if cast else "")
 
-            elif getattr(test, "is_EQ_test", False):
+            elif getattr(test, "is_EQ_test", False) or getattr(test, "is_IN_test", False):
                 # here we convert '=' to '? AND =':
                 # hs_answers?'industries - luxury' AND hs_answers->'industries - luxury' = 'yes'
                 key_format = "({0}?'{1}') AND {3} ({0}->'{1}'){2}"
@@ -67,14 +72,36 @@ class HStoreQueryDelegate(object):
         return test( key, val )
 
     def cond_cast(self, v):
-        if isinstance(v, int):
+        is_int = lambda n: isinstance(n, int)
+        is_float = lambda n: isinstance(n, float)
+        is_str = lambda n: isinstance(n, basestring)
+
+        def list_cast():
+            # first element type is common for the whole list
+            if is_str(v[0]): cast = ""
+            elif is_int(v[0]): cast = "::integer"
+            elif is_float(v[0]): cast = "::numeric"
+
+            delimiter = "'" if is_str(v[0]) else ""
+            formatted_list = ",".join(
+                [u"{1}{0}{1}".format(elem, delimiter) for elem in v]
+            )
+
+            return cast, u"({0})".format(formatted_list), ["", ""]
+
+        if is_int(v):
             attr_check = [
                 "({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",   # type
                 "({0} ? '{1}')", " AND "                    # existence
             ]
             return "::integer", unicode(v), attr_check
-        elif isinstance(v, float):
+
+        elif is_float(v):
             return "::numeric", unicode(v), ["({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'", " AND "]
+
+        elif isinstance(v, list):
+            return list_cast()
+
         else:
             return "", u"'{0}'".format(v), ["", ""]
 
