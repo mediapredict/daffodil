@@ -205,6 +205,10 @@ Booleans:
 - `"x" = true`
 - `"x" = false`
 
+Arrays:
+- `"x" in (12, 13, 14)`
+- `"x" in ("red", "green", "blue")`
+
 ### Comparison operators
 
 Operator | Example | Meaning
@@ -216,4 +220,7 @@ Greater Than | `"x" > 100` | `x` is more than `100`
 Less than or Equal | `"x" <= 100` | `x` is less than or equal to `100`  
 Greater than or Equal | `"x" >= 100` | `x` is greater than or equal to `100`  
 Exists | `"x" ?= true` | `x` has any value (where it exists)
-Exists | `"x" ?= false` | `x` has no value (where it does not exist)  
+Exists | `"x" ?= false` | `x` has no value (where it does not exist)
+Not | `!["x"=5, "x"=6]` | `x` has any value except 5 or 6 (or it does not exist)
+In | `x in (5, 6)` | `x` is either 5 or 6
+Not In | `x !in (5, 6)` | `x` has any value except 5 or 6 (or it does not exist)
