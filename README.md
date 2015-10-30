@@ -90,6 +90,80 @@ gender = "female"
 'gender' = "female"
 ```
 
+## "NOT" operator
+
+Maybe applied to either "AND" or "OR".
+Used with "OR" will match "all those not being 18 or 21"
+
+```
+![
+  age = 18
+  age = 21
+]
+```
+
+When used with "AND" it will match all except women being 18
+
+```
+!{
+  age = 18
+  gender = "female"
+}
+```
+
+## Arrays
+
+Allows "IN" lookup. So:
+
+```
+age in (20, 30, 40)
+
+```
+... is the same as:
+```
+[
+  age = 20
+  age = 30
+  age = 40
+]
+```
+
+"NOT IN" may be applied in the following way:
+```
+age !in (20, 21, 22)
+```
+and it will match all the people except those being 20, 21 or 22 years.
+
+Different formats are allowed, so the following 2 examples are equivalent as the above, either separated with a newline:
+```
+age !in (
+  20
+  21
+  22
+)
+```
+or mixed:
+```
+age !in (
+  20, 21
+  22
+)
+```
+
+Apart from `integers`, array may contain `decimals` or `string` as long as all its elements are of the same type:
+```
+"price" in (9.95, 10.95, 11.95)
+```
+or
+```
+"color" in ("blue, "red", "green)
+```
+This wouldn't work:
+```
+age in (20, "21", 22, 23)
+```
+
+
 ## Empty "AND" Blocks and "OR" blocks
 
 An empty "AND" block will match **all** users
@@ -131,6 +205,10 @@ Booleans:
 - `"x" = true`
 - `"x" = false`
 
+Arrays:
+- `"x" in (12, 13, 14)`
+- `"x" in ("red", "green", "blue")`
+
 ### Comparison operators
 
 Operator | Example | Meaning
@@ -142,4 +220,7 @@ Greater Than | `"x" > 100` | `x` is more than `100`
 Less than or Equal | `"x" <= 100` | `x` is less than or equal to `100`  
 Greater than or Equal | `"x" >= 100` | `x` is greater than or equal to `100`  
 Exists | `"x" ?= true` | `x` has any value (where it exists)
-Exists | `"x" ?= false` | `x` has no value (where it does not exist)  
+Exists | `"x" ?= false` | `x` has no value (where it does not exist)
+Not | `!["x"=5, "x"=6]` | `x` has any value except 5 or 6 (or it does not exist)
+In | `x in (5, 6)` | `x` is either 5 or 6
+Not In | `x !in (5, 6)` | `x` has any value except 5 or 6 (or it does not exist)

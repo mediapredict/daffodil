@@ -3,6 +3,8 @@ import os
 import json
 import unittest
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from daffodil import Daffodil, PrettyPrintDelegate
 from daffodil.exceptions import ParseError
 
@@ -41,9 +43,35 @@ class SATDataTests(unittest.TestCase):
             num_of_sat_test_takers = 50
         """)
 
+    def test_int_in_list(self):
+        self.assert_filter_has_n_results(8, """
+            num_of_sat_test_takers in (10, 11, 12)
+        """)
+
+    def test_int_in_list_multiline(self):
+        self.assert_filter_has_n_results(4, """
+            num_of_sat_test_takers in
+            (
+            50
+            )
+        """)
+
     def test_int_ne(self):
         self.assert_filter_has_n_results(417, """
             num_of_sat_test_takers != 50
+        """)
+
+    def test_int_not_in_list(self):
+        self.assert_filter_has_n_results(417, """
+            num_of_sat_test_takers !in (50)
+        """)
+
+    def test_int_not_in_list_multiline(self):
+        self.assert_filter_has_n_results(417, """
+            num_of_sat_test_takers !in
+            (
+            50
+            )
         """)
 
     def test_int_gt(self):
@@ -69,6 +97,34 @@ class SATDataTests(unittest.TestCase):
     def test_float_eq(self):
         self.assert_filter_has_n_results(0, """
             num_of_sat_test_takers = 50.5
+        """)
+
+    def test_float_str_eq(self):
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120.0
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score = "1120.0"
+        """)
+        self.assert_filter_has_n_results(0, """
+            total_score = "1120"
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120
+        """)
+
+        # now inside an array
+        self.assert_filter_has_n_results(2, """
+            total_score in (1120.0)
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score in ("1120.0")
+        """)
+        self.assert_filter_has_n_results(0, """
+            total_score in ("1120")
+        """)
+        self.assert_filter_has_n_results(2, """
+            total_score in (1120)
         """)
 
     def test_float_ne(self):
@@ -119,6 +175,31 @@ class SATDataTests(unittest.TestCase):
             ]
         """)
 
+    def test_not_or(self):
+        self.assert_filter_has_n_results(413, """
+            ![
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+            ]
+        """)
+
+    def test_and(self):
+        self.assert_filter_has_n_results(51, """
+            {
+                sat_writing_avg_score >= 300
+                sat_writing_avg_score < 350
+            }
+        """)
+
+    def test_not_and(self):
+        self.assert_filter_has_n_results(370, """
+            !{
+                sat_writing_avg_score >= 300
+                sat_writing_avg_score < 350
+            }
+        """)
+
     def test_and_nested_within_or(self):
         self.assert_filter_has_n_results(134, """
             [
@@ -129,6 +210,20 @@ class SATDataTests(unittest.TestCase):
                 {
                 sat_writing_avg_score >= 400
                 sat_writing_avg_score < 450
+                }
+            ]
+        """)
+
+    def test_not_and_nested_within_or(self):
+        self.assert_filter_has_n_results(370, """
+            [
+                !{
+                    sat_writing_avg_score >= 300
+                    sat_writing_avg_score < 350
+                }
+                {
+                    sat_writing_avg_score >= 400
+                    sat_writing_avg_score < 450
                 }
             ]
         """)
@@ -146,6 +241,39 @@ class SATDataTests(unittest.TestCase):
             ]
         """)
 
+    def test_not_or_mixed_with_literal(self):
+        self.assert_filter_has_n_results(4, """
+            sat_writing_avg_score < 300
+            ![
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+                num_of_sat_test_takers = 13
+                num_of_sat_test_takers = 14
+                num_of_sat_test_takers = 15
+            ]
+        """)
+
+    def test_in_mixed_with_literal(self):
+        self.assert_filter_has_n_results(11, """
+            sat_writing_avg_score < 450
+            num_of_sat_test_takers in (
+                10, 11
+                12, 13, 14,
+                15
+            )
+        """)
+
+    def test_not_in_mixed_with_literal(self):
+        self.assert_filter_has_n_results(4, """
+            sat_writing_avg_score < 300
+            num_of_sat_test_takers !in (
+                10, 11
+                12, 13, 14,
+                15
+            )
+        """)
+
     def test_and_mixed_with_or(self):
         self.assert_filter_has_n_results(6, """
             {
@@ -159,12 +287,28 @@ class SATDataTests(unittest.TestCase):
             ]
         """)
 
+    def test_not_and_mixed_with_not_or(self):
+        self.assert_filter_has_n_results(81, """
+            !{
+                sat_writing_avg_score > 350
+                sat_writing_avg_score < 500
+            }
+            ![
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+            ]
+        """)
+
     def test_single_quoted_fields(self):
         self.assert_filter_has_n_results(417, """
             'num_of_sat_test_takers' != 50
         """)
         self.assert_filter_has_n_results(417, """
             'num_of_sat_test_takers' != '50'
+        """)
+        self.assert_filter_has_n_results(417, """
+            'num_of_sat_test_takers' !in ('50')
         """)
 
     def test_double_quoted_fields(self):
@@ -414,6 +558,22 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Simple array lookup
+[
+'''
+    val in (10, 20)
+''',
+'{"val"in(10,20)}',
+'''
+{
+  "val" in (
+    10
+    20
+  )
+}
+'''.strip()
+],
+
 # Simple - out of order
 [
 '''
@@ -446,6 +606,23 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Not All
+[
+'''
+!{
+    val1 = 10
+    val2 = 20
+}
+''',
+'!{"val1"=10,"val2"=20}',
+'''
+!{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
 # Unnecessary nested All
 [
 '''
@@ -465,6 +642,25 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Unnecessary nested Not All
+[
+'''
+{
+  !{
+    val1 = 10
+    val2 = 20
+  }
+}
+''',
+'!{"val1"=10,"val2"=20}',
+'''
+!{
+  "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
 # Unnecessary nested All (inside an any)
 [
 '''
@@ -473,7 +669,7 @@ PRETTY_PRINT_EXPECTATIONS = (
     val1 = 10
     val2 = 20
   }
-] 
+]
 ''',
 '{"val1"=10,"val2"=20}',
 '''
@@ -495,6 +691,23 @@ PRETTY_PRINT_EXPECTATIONS = (
 '["val1"=10,"val2"=20]',
 '''
 [
+  "val1" = 10
+  "val2" = 20
+]
+'''.strip()
+],
+
+# Not Any
+[
+'''
+![
+    val1 = 10
+    val2 = 20
+]
+''',
+'!["val1"=10,"val2"=20]',
+'''
+![
   "val1" = 10
   "val2" = 20
 ]
@@ -564,6 +777,26 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# simple + nested (negative) array lookup inside an all
+[
+'''
+{
+  val1 = 10
+  val2 !in (20, 30)
+}
+''',
+'{"val1"=10,"val2"!in(20,30)}',
+'''
+{
+  "val1" = 10
+  "val2" !in (
+    20
+    30
+  )
+}
+'''.strip()
+],
+
 # simple + nested All inside an Any
 [
 '''
@@ -624,7 +857,7 @@ r"v='\'a'",
 # Complex, unordered, badly indented and nested
 [
 '''
-val2 = 3  
+val2 = 3
 val2 ?= true
     val1 < 10
   val9 = "what's \\"up\\"?"
@@ -632,7 +865,7 @@ val2 ?= true
   {
 val6 ?= true
       val5 = 30
-    }  
+    }
   {
     val5 ?= true
     val5 != 30
@@ -686,7 +919,7 @@ class PrettyPrintingTests(unittest.TestCase):
             d1, p1 = self.pp(fltr)
             d1_dense, d1_pretty = self.pp(d1)
             p1_dense, p1_pretty = self.pp(p1)
-            
+
             self.assertEqual(d1_pretty, pretty_expected)
             self.assertEqual(p1_pretty, pretty_expected)
             self.assertEqual(d1_dense, dense_expected)

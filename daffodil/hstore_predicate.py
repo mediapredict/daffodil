@@ -20,6 +20,12 @@ class HStoreQueryDelegate(object):
         else:
             return " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
 
+    def mk_not_any(self, children):
+        return " NOT ({0})".format(self.mk_any(children))
+
+    def mk_not_all(self, children):
+        return " NOT ({0})".format(self.mk_all(children))
+
     def mk_test(self, test_str):
         if test_str == "?=":
             existence = lambda k, v: "{0}?{1}".format(k, v)
@@ -31,6 +37,11 @@ class HStoreQueryDelegate(object):
                 func.is_NE_test = True
             elif test_str == "=":
                 func.is_EQ_test = True
+            elif test_str == "!in":
+                func.is_NOT_IN_test = True
+                test_str = "NOT IN"
+            elif test_str == "in":
+                func.is_IN_test = True
             return func
 
     def mk_cmp(self, key, val, test):
@@ -42,14 +53,14 @@ class HStoreQueryDelegate(object):
             key = "{0}{1}".format(negate, self.field)
         else:
             cast, val, type_check = self.cond_cast(val)
-            if getattr(test, "is_NE_test", False):
+            if getattr(test, "is_NE_test", False) or getattr(test, "is_NOT_IN_test", False):
                 # here we cover:
                 # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
                 key_format = "NOT ({0}?'{1}') OR %s {3} ({0}->'{1}'){2}"
                 # if its cast - exclude those not matching type
                 key_format = key_format % (" NOT " + type_check[0] + " OR " if cast else "")
 
-            elif getattr(test, "is_EQ_test", False):
+            elif getattr(test, "is_EQ_test", False) or getattr(test, "is_IN_test", False):
                 # here we convert '=' to '? AND =':
                 # hs_answers?'industries - luxury' AND hs_answers->'industries - luxury' = 'yes'
                 key_format = "({0}?'{1}') AND {3} ({0}->'{1}'){2}"
@@ -60,17 +71,57 @@ class HStoreQueryDelegate(object):
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
         return test( key, val )
 
-    def cond_cast(self, v):
-        if isinstance(v, int):
-            attr_check = [
-                "({0}->'{1}') ~ E'^[-]?\\\d+$'", " AND ",   # type
-                "({0} ? '{1}')", " AND "                    # existence
-            ]
-            return "::integer", unicode(v), attr_check
-        elif isinstance(v, float):
-            return "::numeric", unicode(v), ["({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'", " AND "]
-        else:
-            return "", u"'{0}'".format(v), ["", ""]
+
+    def cond_cast(self, val):
+        def format_list(lst):
+            delimiter = "'" if isinstance(lst[0], basestring) else ""
+            formatted_list = ",".join(
+                [u"{1}{0}{1}".format(elem, delimiter) for elem in lst]
+            )
+            return u"({0})".format(formatted_list)
+
+        def get_cast_attr(val, attr=None):
+            for m in CAST_AND_TYPE_MAP:
+                if isinstance(val, m["type"]):
+
+                    if attr:
+                        return m[attr](val)
+
+                    return tuple([m[a](val) for a in ["cast", "value", "type_check"]])
+
+        NUMERIC_TYPE_CHECK = [
+                "({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
+                " AND "
+        ]
+        CAST_AND_TYPE_MAP = [
+            {
+                "type": int,
+                "cast": lambda v: "::numeric",
+                "value": lambda v: unicode(v),
+                "type_check" : lambda v: NUMERIC_TYPE_CHECK,
+            },
+            {
+                "type": float,
+                "cast": lambda v: "::numeric",
+                "value": lambda v: unicode(v),
+                "type_check": lambda v: NUMERIC_TYPE_CHECK,
+            },
+            {
+                "type": basestring,
+                "cast": lambda v: "",
+                "value": lambda v: u"'{0}'".format(v),
+                "type_check": lambda v: ["", ""],
+            },
+            {
+                "type": list,
+                "cast": lambda v: get_cast_attr(v[0], "cast"),
+                "value": lambda v: format_list(v),
+                "type_check": lambda v: get_cast_attr(v[0], "type_check"),
+            },
+        ]
+
+        return get_cast_attr(val)
+
 
     def call(self, predicate, queryset):
         return queryset.extra(where=[predicate]) if predicate else queryset
