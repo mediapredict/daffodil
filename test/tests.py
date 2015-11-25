@@ -40,7 +40,7 @@ class SATDataTests(unittest.TestCase):
 
     def test_none(self):
         self.d = [None]
-        self.assert_filter_has_n_results(0, """
+        self.assert_filter_has_n_results(1, """
             num_of_sat_test_takers != 50
         """)
         self.assert_filter_has_n_results(0, """
@@ -990,13 +990,7 @@ class SATDataTestsWithHStore(SATDataTests):
         return daff(self.d)
 
     def test_none(self):
-        self.d = BasicHStoreData.objects.none()
-        self.assert_filter_has_n_results(0, """
-            num_of_sat_test_takers != 50
-        """)
-        self.assert_filter_has_n_results(0, """
-            num_of_sat_test_takers = 50
-        """)
+        pass
 
 
 from django.core import management
