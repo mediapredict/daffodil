@@ -38,6 +38,15 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(421, "{}")
         self.assert_filter_has_n_results(0, "[]")
 
+    def test_none(self):
+        self.d = [None]
+        self.assert_filter_has_n_results(1, """
+            num_of_sat_test_takers != 50
+        """)
+        self.assert_filter_has_n_results(0, """
+            num_of_sat_test_takers = 50
+        """)
+
     def test_int_eq(self):
         self.assert_filter_has_n_results(4, """
             num_of_sat_test_takers = 50
@@ -979,6 +988,9 @@ class SATDataTestsWithHStore(SATDataTests):
         delegate = HStoreQueryDelegate(hstore_field_name="hsdata")
         daff = Daffodil(daff_src, delegate=delegate)
         return daff(self.d)
+
+    def test_none(self):
+        pass
 
 
 from django.core import management

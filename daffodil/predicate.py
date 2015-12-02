@@ -45,10 +45,14 @@ class DictionaryPredicateDelegate(object):
         def test_data_point(data_point):
             cmp_val = val
             err_ret_val = getattr(test, "onerror", False)
-            
+
+            if data_point is None:
+                data_point = {}
+
             try: dp_val = data_point[key]
-            except KeyError: return err_ret_val 
-            
+            except KeyError: return err_ret_val
+
+
             # if only one value is a string try to coerce the string
             #   to the other value's type
             def coerce(val, fallback_type):
