@@ -996,7 +996,7 @@ class SATDataTestsWithHStore(SATDataTests):
 from django.core import management
 
 if __name__ == "__main__":
-    management.call_command("syncdb")
+    management.call_command("migrate")
 
     BasicHStoreData.objects.all().delete()
     for record in load_test_data('nyc_sat_scores'):
