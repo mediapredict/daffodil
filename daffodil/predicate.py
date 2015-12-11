@@ -19,7 +19,10 @@ class DictionaryPredicateDelegate(object):
         ne = lambda *a: op.ne(*a)
         ne.onerror = True
         
-        existance = lambda dp, k, v: (k in dp) == v
+        def existance(dp, k, v):
+            if dp is None:
+               dp = {}
+            return (k in dp) == v
         existance.is_datapoint_test = True
 
         in_ = lambda a, b: a in b
