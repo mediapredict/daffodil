@@ -46,6 +46,12 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(0, """
             num_of_sat_test_takers = 50
         """)
+        self.assert_filter_has_n_results(0, """
+            num_of_sat_test_takers ?= True
+        """)
+        self.assert_filter_has_n_results(1, """
+            num_of_sat_test_takers ?= False
+        """)
 
     def test_int_eq(self):
         self.assert_filter_has_n_results(4, """
