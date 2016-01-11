@@ -1,19 +1,28 @@
-import operator as op
 from UserList import UserList
 
 
-def to_daffodil_str(s):
-    # escape quotes
-    s = s.replace(u'"', u'\\"')
-    
-    # wrap string in quotes
-    return u'"{0}"'.format(s)
-    
+def to_daffodil_primitive(val):
+    if isinstance(val, list):
+        raise ValueError("lists cannot be converted to a primitive daffodil type - use a DaffodilArrayWrapper")
+
+    if isinstance(val, bool):
+        return u"true" if val else u"false"
+    elif isinstance(val, basestring):
+        # escape quotes
+        val = val.replace(u'"', u'\\"')
+
+        # wrap string in quotes
+        return u'"{0}"'.format(val)
+    else:
+        return unicode(val)
+
+
 def indent(s, amount=u" "):
     if isinstance(s, DaffodilWrapper):
         return unicode(s)
     else:
         return u"{0}{1}".format(amount, s)
+
 
 class DaffodilWrapper(UserList):
     grouping = "all"
@@ -60,7 +69,6 @@ class DaffodilWrapper(UserList):
     def wrapper_indent(self):
         return u"" if self.dense else (self.indent * (self.indent_level - 1))
 
-
     def format_dense(self, children):
         return u"{1}{0}{2}".format(children, self.opener, self.closer)
 
@@ -87,13 +95,18 @@ class DaffodilWrapper(UserList):
 
         def sort_key(obj):
             if not isinstance(obj, DaffodilWrapper):
-                return (0, obj)
+                if obj is True:
+                    return -2, obj
+                elif obj is False:
+                    return -1, obj
+                else:
+                    return 0, obj
             
             if obj.grouping == 'any':
-                return (1, unicode(obj))
+                return 1, unicode(obj)
             
             elif obj.grouping == 'all':
-                return (2, unicode(obj))
+                return 2, unicode(obj)
            
         # Sort so that different filters with the same expressions will
         # print the same way
@@ -101,15 +114,21 @@ class DaffodilWrapper(UserList):
 
         return self.format_children(children)
 
+
 class DaffodilArrayWrapper(DaffodilWrapper):
     @property
     def child_indent(self):
         return u"" if self.dense else (self.indent * (self.indent_level + 1))
 
+    def format_children(self, children):
+        children = [to_daffodil_primitive(c) for c in children]
+        return super(DaffodilArrayWrapper, self).format_children(children)
+
     def format_std(self, children):
         return u"{3}{1}\n{0}\n{4}{2}".format(
             children, self.opener, self.closer, self.wrapper_indent, self.indent * self.indent_level
         )
+
 
 class PrettyPrintDelegate(object):
     def __init__(self, dense=True):
@@ -139,18 +158,14 @@ class PrettyPrintDelegate(object):
         return test_str
 
     def mk_cmp(self, key, val, test):
-        key = to_daffodil_str(key)
+        key = to_daffodil_primitive(key)
         
         # values can be boolean, string, or number
-        if val in (True, False):
-            val = u"true" if val else u"false"
-        elif isinstance(val, basestring):
-            val = to_daffodil_str(val)
-        elif isinstance(val, list):
+        if isinstance(val, list):
             val = self._mk_wrapped(val, test, DaffodilArrayWrapper)
         else:
-            val = unicode(val)
-        
+            val = to_daffodil_primitive(val)
+
         if self.dense:
             return u"{0}{1}{2}".format(key, test, val)
         else:

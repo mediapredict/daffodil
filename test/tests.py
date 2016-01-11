@@ -590,20 +590,20 @@ PRETTY_PRINT_EXPECTATIONS = (
 ],
 
 # Simple string array lookup
-# [
-# '''
-#     val in ("abc", "xyz")
-# ''',
-# '{"val"in("abc","xyz")}',
-# '''
-# {
-#   "val" in (
-#     "abc"
-#     "xyz"
-#   )
-# }
-# '''.strip()
-# ],
+[
+'''
+    val in ("abc", "xyz")
+''',
+'{"val"in("abc","xyz")}',
+'''
+{
+  "val" in (
+    "abc"
+    "xyz"
+  )
+}
+'''.strip()
+],
 
 # Simple boolean array lookup
 [
