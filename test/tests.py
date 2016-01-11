@@ -589,6 +589,73 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Simple string array lookup
+# [
+# '''
+#     val in ("abc", "xyz")
+# ''',
+# '{"val"in("abc","xyz")}',
+# '''
+# {
+#   "val" in (
+#     "abc"
+#     "xyz"
+#   )
+# }
+# '''.strip()
+# ],
+
+# Simple boolean array lookup
+[
+'''
+    val in (true, false)
+''',
+'{"val"in(true,false)}',
+'''
+{
+  "val" in (
+    true
+    false
+  )
+}
+'''.strip()
+],
+
+# Simple single-item array lookup
+[
+'''
+    val1 in ("abc")
+    val2 !in ("xyz")
+    val3 in (1)
+    val4 !in (2)
+    val5 in (true)
+    val6 !in (false)
+''',
+'{"val1"in("abc"),"val2"!in("xyz"),"val3"in(1),"val4"!in(2),"val5"in(true),"val6"!in(false)}',
+'''
+{
+  "val1" in (
+    "abc"
+  )
+  "val2" !in (
+    "xyz"
+  )
+  "val3" in (
+    1
+  )
+  "val4" !in (
+    2
+  )
+  "val5" in (
+    true
+  )
+  "val6" !in (
+    false
+  )
+}
+'''.strip()
+],
+
 # Simple - out of order
 [
 '''
