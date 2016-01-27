@@ -174,6 +174,13 @@ class SATDataTests(unittest.TestCase):
             sat_math_avg_score > 200
             sat_critical_reading_avg_score <= 500
         """)
+        self.assert_filter_has_n_results(3, """
+            num_of_sat_test_takers ?= true
+            num_of_sat_test_takers = 10
+            sat_writing_avg_score < 400
+            sat_math_avg_score > 200
+            sat_critical_reading_avg_score <= 500
+        """)
 
     def test_multiple_for_same_value(self):
         self.assert_filter_has_n_results(51, """
@@ -296,6 +303,17 @@ class SATDataTests(unittest.TestCase):
                 sat_writing_avg_score < 500
             }
             [
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+            ]
+        """)
+        self.assert_filter_has_n_results(6, """
+            sat_writing_avg_score ?= true
+            sat_writing_avg_score > 350
+            sat_writing_avg_score < 500
+            [
+                asdf ?= true
                 num_of_sat_test_takers = 10
                 num_of_sat_test_takers = 11
                 num_of_sat_test_takers = 12

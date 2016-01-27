@@ -1,7 +1,36 @@
+from UserString import UserString
 
 RE_CASE = "CASE WHEN ({0}->'{1}' ~ E'"
 RE_THEN = "') THEN "
 RE_ELSE = "ELSE -2147483648 END"
+
+
+class ExpressionStr(UserString):
+    """
+    Subclass of str() that allows annotations based on which key and
+    test are being used.
+    """
+    daff_key = ''
+    daff_test = ''
+    daff_val = ''
+
+
+def breaks_optimizer(expr):
+    if not isinstance(expr, ExpressionStr):
+        return True
+
+    return (
+        expr.daff_test in {"!=", "!in"} or
+        (expr.daff_test == "?=" and expr.daff_val == "false")
+    )
+
+def escape_string_sql(s):
+    return "'{}'".format(s)
+
+def make_sql_array(*strings):
+    return "ARRAY[{}]".format(
+        ",".join(escape_string_sql(s) for s in strings)
+    )
 
 class HStoreQueryDelegate(object):
 
@@ -11,14 +40,56 @@ class HStoreQueryDelegate(object):
     def mk_any(self, children):
         if children == []:
             return "false"
+
+        sql_expr = " OR ".join("({})".format(child_exp) for child_exp in children)
+
+        if any(breaks_optimizer(child_exp) for child_exp in children):
+            return sql_expr
+
+        keys = {child_exp.daff_key for child_exp in children}
+        if len(keys) <= 1:
+            return sql_expr
+
+        optimization_expr = "{field} ?| {keys}".format(
+            field=self.field,
+            keys=make_sql_array(*keys)
+        )
+
+        sql_expr = " OR ".join("({})".format(child_exp)
+                               for child_exp in children
+                               if child_exp.daff_test != "?="
+                               )
+        if sql_expr:
+            return "{0} AND ({1})".format(optimization_expr, sql_expr)
         else:
-            return " OR ".join( "(" + child_exp + ")" for child_exp in children)
+            return optimization_expr
 
     def mk_all(self, children):
         if children == ['']:
             return "true"
+
+        sql_expr = " AND ".join("({})".format(child_exp) for child_exp in children if child_exp)
+
+        if any(breaks_optimizer(child_exp) for child_exp in children):
+            return sql_expr
+
+        keys = {child_exp.daff_key for child_exp in children}
+        if len(keys) <= 1:
+            return sql_expr
+
+        optimization_expr = "{field} ?& {keys}".format(
+            field=self.field,
+            keys=make_sql_array(*keys)
+        )
+
+        sql_expr = " AND ".join("({})".format(child_exp)
+                               for child_exp in children
+                               if child_exp.daff_test != "?="
+                               )
+        if sql_expr:
+            return "{0} AND {1}".format(optimization_expr, sql_expr)
         else:
-            return " AND ".join( "(" + child_exp + ")" for child_exp in children if child_exp)
+            return optimization_expr
 
     def mk_not_any(self, children):
         return " NOT ({0})".format(self.mk_any(children))
@@ -26,25 +97,32 @@ class HStoreQueryDelegate(object):
     def mk_not_all(self, children):
         return " NOT ({0})".format(self.mk_all(children))
 
-    def mk_test(self, test_str):
+    def mk_test(self, daff_test_str):
+        test_str = daff_test_str
+
         if test_str == "?=":
-            existence = lambda k, v: "{0}?{1}".format(k, v)
-            existence.is_datapoint_test = True
-            return existence
+            test_fn = lambda k, v: "{0}?{1}".format(k, v)
+            test_fn.is_datapoint_test = True
         else:
-            func = lambda k, v: "{0} {1} {2}".format(k, test_str, v)
+            test_fn = lambda k, v: "{0} {1} {2}".format(k, test_str, v)
             if test_str == "!=":
-                func.is_NE_test = True
+                test_fn.is_NE_test = True
             elif test_str == "=":
-                func.is_EQ_test = True
+                test_fn.is_EQ_test = True
             elif test_str == "!in":
-                func.is_NOT_IN_test = True
+                test_fn.is_NOT_IN_test = True
                 test_str = "NOT IN"
             elif test_str == "in":
-                func.is_IN_test = True
-            return func
+                test_fn.is_IN_test = True
+
+        test_fn.test_str = daff_test_str
+        return test_fn
 
     def mk_cmp(self, key, val, test):
+        daff_key = key
+        daff_test = test.test_str
+        daff_val = val
+
         if getattr(test, "is_datapoint_test", False):
             # here we cover:
             # [NOT] hstore_col ? '1ukmoviestudios - Disney'
@@ -69,8 +147,13 @@ class HStoreQueryDelegate(object):
                 key_format = "{3} ({0}->'{1}'){2} "
 
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
-        return test( key, val )
 
+        expr = ExpressionStr(test(key, val))
+        expr.daff_key = daff_key
+        expr.daff_test = daff_test
+        expr.daff_val = daff_val
+
+        return expr
 
     def cond_cast(self, val):
         def format_list(lst):
