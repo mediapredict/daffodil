@@ -38,6 +38,14 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(421, "{}")
         self.assert_filter_has_n_results(0, "[]")
 
+    def test_empty_dirty_string(self):
+        self.assert_filter_has_n_results(421, "{ }")
+        self.assert_filter_has_n_results(421, "{\n}")
+        self.assert_filter_has_n_results(421, "{\t}")
+        self.assert_filter_has_n_results(0, "[]")
+        self.assert_filter_has_n_results(0, "[\n]")
+        self.assert_filter_has_n_results(0, "[\t]")
+
     def test_none(self):
         self.d = [None]
         self.assert_filter_has_n_results(1, """
@@ -589,6 +597,24 @@ PRETTY_PRINT_EXPECTATIONS = (
   "val2" = 20
 }
 '''.strip()
+],
+
+# Empty
+[
+'{}',
+'{}',
+'{}'
+],
+
+# Empty with newline and spaces
+[
+'''
+    {
+
+    }
+''',
+'{}',
+'{}'
 ],
 
 # Simple array lookup
