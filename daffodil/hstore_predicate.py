@@ -68,28 +68,7 @@ class HStoreQueryDelegate(object):
         if children == ['']:
             return "true"
 
-        sql_expr = " AND ".join("({})".format(child_exp) for child_exp in children if child_exp)
-
-        if any(breaks_optimizer(child_exp) for child_exp in children):
-            return sql_expr
-
-        keys = {child_exp.daff_key for child_exp in children}
-        if len(keys) <= 1:
-            return sql_expr
-
-        optimization_expr = "{field} ?& {keys}".format(
-            field=self.field,
-            keys=make_sql_array(*keys)
-        )
-
-        sql_expr = " AND ".join("({})".format(child_exp)
-                               for child_exp in children
-                               if child_exp.daff_test != "?="
-                               )
-        if sql_expr:
-            return "{0} AND {1}".format(optimization_expr, sql_expr)
-        else:
-            return optimization_expr
+        return " AND ".join("({})".format(child_exp) for child_exp in children if child_exp)
 
     def mk_not_any(self, children):
         return " NOT ({0})".format(self.mk_any(children))
