@@ -124,14 +124,9 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(0, """
             total_score = "1120"
         """)
-
-        #
-        # DECIDE WHAT TO DO:
-        # HSTORE predicate bases its search on strings, so this wont't match "1120.0"
-        #
-        # self.assert_filter_has_n_results(0, """
-        #     total_score = 1120
-        # """)
+        self.assert_filter_has_n_results(2, """
+            total_score = 1120
+        """)
 
         # now inside an array
         self.assert_filter_has_n_results(2, """
