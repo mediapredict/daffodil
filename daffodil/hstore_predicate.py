@@ -101,14 +101,14 @@ class HStoreQueryDelegate(object):
         test_str = daff_test_str
 
         if test_str == "?=":
-            test_fn = lambda k, v: "{0}?{1}".format(k, v)
+            test_fn = lambda k, v, t: "{0}?{1}".format(k, v)
             test_fn.is_datapoint_test = True
         else:
-            test_fn = lambda k, v: "{0} {1} {2}".format(k, test_str, v)
+            test_fn = lambda k, v, t: "{0} {1} {2}".format(k, test_str, v)
             if test_str == "!=":
                 test_fn.is_NE_test = True
             elif test_str == "=":
-                test_fn = lambda k, v: "({0} {1}))".format(k, "'{}'".format(v) if isinstance(v, (int, float) ) else v)
+                test_fn = lambda k, v, t: "({0} {1}))".format(k, v) if t == basestring else "{0} {1} {2}".format(k, test_str, v)
                 test_fn.is_EQ_test = True
             elif test_str == "!in":
                 test_fn.is_NOT_IN_test = True
@@ -130,9 +130,10 @@ class HStoreQueryDelegate(object):
             negate = "NOT " if val == False else ""
             val = "'{0}'".format(key)
             key = "{0}{1}".format(negate, self.field)
+            _type = None
         else:
             is_eq_test = getattr(test, "is_EQ_test", False)
-            cast, val, type_check = self.cond_cast(val, is_eq_test)
+            _type, cast, val, type_check = self.cond_cast(val)
 
             if getattr(test, "is_NE_test", False) or getattr(test, "is_NOT_IN_test", False):
                 # here we cover:
@@ -141,7 +142,7 @@ class HStoreQueryDelegate(object):
                 # if its cast - exclude those not matching type
                 key_format = key_format % (" NOT " + type_check[0] + " OR " if cast else "")
 
-            elif is_eq_test:
+            elif is_eq_test and _type == basestring:
                 # here we convert '=' to '@>'
                 # instead of:
                 #   (hs_data->'univisionlanguage1') = 'both'
@@ -159,14 +160,14 @@ class HStoreQueryDelegate(object):
 
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
 
-        expr = ExpressionStr(test(key, val))
+        expr = ExpressionStr(test(key, val, _type))
         expr.daff_key = daff_key
         expr.daff_test = daff_test
         expr.daff_val = daff_val
 
         return expr
 
-    def cond_cast(self, val, is_eq_test):
+    def cond_cast(self, val):
         def format_list(lst):
             delimiter = "'" if isinstance(lst[0], basestring) else ""
             formatted_list = ",".join(
@@ -181,25 +182,23 @@ class HStoreQueryDelegate(object):
                     if attr:
                         return m[attr](val)
 
-                    return tuple([m[a](val) for a in ["cast", "value", "type_check"]])
+                    return [m["type"]] + [m[a](val) for a in ["cast", "value", "type_check"]]
 
         NUMERIC_TYPE_CHECK = [
                 "({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
                 " AND "
         ]
-
-        numeric_value_conv = lambda v: u"'{0}'".format(v) if is_eq_test else unicode(v)
         CAST_AND_TYPE_MAP = [
             {
                 "type": int,
                 "cast": lambda v: "::numeric",
-                "value": numeric_value_conv,
+                "value": lambda v: unicode(v),
                 "type_check" : lambda v: NUMERIC_TYPE_CHECK,
             },
             {
                 "type": float,
                 "cast": lambda v: "::numeric",
-                "value": numeric_value_conv,
+                "value": lambda v: unicode(v),
                 "type_check": lambda v: NUMERIC_TYPE_CHECK,
             },
             {
