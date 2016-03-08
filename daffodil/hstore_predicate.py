@@ -21,7 +21,8 @@ def breaks_optimizer(expr):
 
     return (
         expr.daff_test in {"!=", "!in"} or
-        (expr.daff_test == "?=" and expr.daff_val == "false")
+        (expr.daff_test == "?=" and expr.daff_val == "false") or
+        (expr.daff_test == "=" and isinstance(expr.daff_val, basestring))
     )
 
 def escape_string_sql(s):
