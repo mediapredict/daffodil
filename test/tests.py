@@ -360,6 +360,24 @@ class SATDataTests(unittest.TestCase):
             school_name = 'EAST SIDE COMMUNITY SCHOOL'
         """)
 
+    def test_string_containing_special_chars(self):
+        self.assert_filter_has_n_results(0, """
+            not_existing_param = 'this "word" is within double quotes'
+        """)
+        self.assert_filter_has_n_results(0, """
+            not_existing_param = "we have a back tick ` in this sentence"
+        """)
+        # possible single quote with > or <
+        self.assert_filter_has_n_results(0, """
+            some_non_existing_period > "60'"
+        """)
+        self.assert_filter_has_n_results(421, """
+            some_non_existing_period != "60'"
+        """)
+        self.assert_filter_has_n_results(0, """
+            not_existing_param = "goin' word contains single quote"
+        """)
+
     def test_string_ne(self):
         self.assert_filter_has_n_results(420, """
             school_name != "EAST SIDE COMMUNITY SCHOOL"
