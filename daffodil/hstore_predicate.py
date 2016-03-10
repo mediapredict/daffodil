@@ -21,7 +21,8 @@ def breaks_optimizer(expr):
 
     return (
         expr.daff_test in {"!=", "!in"} or
-        (expr.daff_test == "?=" and expr.daff_val == "false")
+        (expr.daff_test == "?=" and expr.daff_val == "false") or
+        (expr.daff_test == "=" and isinstance(expr.daff_val, basestring))
     )
 
 def escape_string_sql(s):
@@ -101,13 +102,14 @@ class HStoreQueryDelegate(object):
         test_str = daff_test_str
 
         if test_str == "?=":
-            test_fn = lambda k, v: "{0}?{1}".format(k, v)
+            test_fn = lambda k, v, t: "{0}?{1}".format(k, v)
             test_fn.is_datapoint_test = True
         else:
-            test_fn = lambda k, v: "{0} {1} {2}".format(k, test_str, v)
+            test_fn = lambda k, v, t: "{0} {1} {2}".format(k, test_str, v)
             if test_str == "!=":
                 test_fn.is_NE_test = True
             elif test_str == "=":
+                test_fn = lambda k, v, t: "({0} {1}))".format(k, v) if t == basestring else "{0} {1} {2}".format(k, test_str, v)
                 test_fn.is_EQ_test = True
             elif test_str == "!in":
                 test_fn.is_NOT_IN_test = True
@@ -129,8 +131,11 @@ class HStoreQueryDelegate(object):
             negate = "NOT " if val == False else ""
             val = "'{0}'".format(key)
             key = "{0}{1}".format(negate, self.field)
+            _type = None
         else:
-            cast, val, type_check = self.cond_cast(val)
+            is_eq_test = getattr(test, "is_EQ_test", False)
+            _type, cast, val, type_check = self.cond_cast(val)
+
             if getattr(test, "is_NE_test", False) or getattr(test, "is_NOT_IN_test", False):
                 # here we cover:
                 # NOT (hstore_col?'wrong attribute') OR (hstore_col->'wrong attribute')::integer != 2
@@ -138,7 +143,15 @@ class HStoreQueryDelegate(object):
                 # if its cast - exclude those not matching type
                 key_format = key_format % (" NOT " + type_check[0] + " OR " if cast else "")
 
-            elif getattr(test, "is_EQ_test", False) or getattr(test, "is_IN_test", False):
+            elif is_eq_test and _type == basestring:
+                # here we convert '=' to '@>'
+                # instead of:
+                #   (hs_data->'univisionlanguage1') = 'both'
+                # we do:
+                #   hs_data @> hstore('univisionlanguage1', 'both')
+                key_format = "{0} @> hstore('{1}',"
+
+            elif getattr(test, "is_IN_test", False) or is_eq_test:
                 # here we convert '=' to '? AND =':
                 # hs_answers?'industries - luxury' AND hs_answers->'industries - luxury' = 'yes'
                 key_format = "({0}?'{1}') AND {3} ({0}->'{1}'){2}"
@@ -148,7 +161,7 @@ class HStoreQueryDelegate(object):
 
             key = key_format.format(self.field, key, cast, "".join(type_check)).format(self.field, key)
 
-        expr = ExpressionStr(test(key, val))
+        expr = ExpressionStr(test(key, val, _type))
         expr.daff_key = daff_key
         expr.daff_test = daff_test
         expr.daff_val = daff_val
@@ -156,10 +169,15 @@ class HStoreQueryDelegate(object):
         return expr
 
     def cond_cast(self, val):
+        def escape_single_quote(val):
+            if isinstance(val, basestring):
+                return val.replace(u"'", u"''")
+            return val
+
         def format_list(lst):
             delimiter = "'" if isinstance(lst[0], basestring) else ""
             formatted_list = ",".join(
-                [u"{1}{0}{1}".format(elem, delimiter) for elem in lst]
+                [u"{1}{0}{1}".format(escape_single_quote(elem), delimiter) for elem in lst]
             )
             return u"({0})".format(formatted_list)
 
@@ -170,7 +188,7 @@ class HStoreQueryDelegate(object):
                     if attr:
                         return m[attr](val)
 
-                    return tuple([m[a](val) for a in ["cast", "value", "type_check"]])
+                    return [m["type"]] + [m[a](val) for a in ["cast", "value", "type_check"]]
 
         NUMERIC_TYPE_CHECK = [
                 "({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
@@ -192,7 +210,7 @@ class HStoreQueryDelegate(object):
             {
                 "type": basestring,
                 "cast": lambda v: "",
-                "value": lambda v: u"'{0}'".format(v),
+                "value": lambda v: u"'{}'".format(escape_single_quote(v)),
                 "type_check": lambda v: ["", ""],
             },
             {
