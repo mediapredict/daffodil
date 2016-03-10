@@ -367,7 +367,6 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(0, """
             not_existing_param = "we have a back tick ` in this sentence"
         """)
-        # possible single quote with > or <
         self.assert_filter_has_n_results(0, """
             some_non_existing_period > "60'"
         """)
@@ -375,15 +374,21 @@ class SATDataTests(unittest.TestCase):
             some_non_existing_period != "60'"
         """)
         self.assert_filter_has_n_results(0, """
+            some_non_existing_minutes = '60"'
+        """)
+        self.assert_filter_has_n_results(0, """
             not_existing_param = "goin' word contains single quote"
         """)
 
     def test_string_within_array_containing_special_chars(self):
         self.assert_filter_has_n_results(0, """
-            some_non_existing_period in ("50'", "60")
+            some_non_existing_period in ("50'", "60'")
         """)
         self.assert_filter_has_n_results(0, """
-            some_non_existing_period in ('50', '60')
+            some_non_existing_minutes in ('50"', '60"')
+        """)
+        self.assert_filter_has_n_results(0, """
+            some_non_existing_quoted_param in ('"x"', '"y"')
         """)
 
     def test_string_ne(self):
