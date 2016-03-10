@@ -378,6 +378,14 @@ class SATDataTests(unittest.TestCase):
             not_existing_param = "goin' word contains single quote"
         """)
 
+    def test_string_within_array_containing_special_chars(self):
+        self.assert_filter_has_n_results(0, """
+            some_non_existing_period in ("50'", "60")
+        """)
+        self.assert_filter_has_n_results(0, """
+            some_non_existing_period in ('50', '60')
+        """)
+
     def test_string_ne(self):
         self.assert_filter_has_n_results(420, """
             school_name != "EAST SIDE COMMUNITY SCHOOL"
