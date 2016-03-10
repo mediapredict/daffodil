@@ -205,7 +205,7 @@ class HStoreQueryDelegate(object):
             {
                 "type": basestring,
                 "cast": lambda v: "",
-                "value": lambda v: u"'{0}'".format(v),
+                "value": lambda v: u"'{}'".format(v.replace(u"'", u"''")),
                 "type_check": lambda v: ["", ""],
             },
             {
