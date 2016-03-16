@@ -472,7 +472,39 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(421, u"""
             'asdf' ?= false
         """)
-    
+
+    def test_existance_multiple(self):
+        self.assert_filter_has_n_results(421, u"""
+            [
+                total_score ?= true
+                num_of_sat_test_takers ?= true
+            ]
+        """)
+        self.assert_filter_has_n_results(421, u"""
+            [
+                total_score ?= false
+                num_of_sat_test_takers ?= true
+            ]
+        """)
+        self.assert_filter_has_n_results(0, u"""
+            {
+                total_score ?= false
+                num_of_sat_test_takers ?= false
+            }
+        """)
+        self.assert_filter_has_n_results(4, u"""
+            {
+                total_score ?= true
+                num_of_sat_test_takers ?= true
+            }
+        """)
+        self.assert_filter_has_n_results(417, u"""
+            {
+                total_score ?= false
+                num_of_sat_test_takers ?= true
+            }
+        """)
+
     def test_comparing_string_data_to_an_int_filter(self):
         self.assert_filter_has_n_results(0, """
             dbn = 7

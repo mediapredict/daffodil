@@ -21,7 +21,7 @@ def breaks_optimizer(expr):
 
     return (
         expr.daff_test in {"!=", "!in"} or
-        (expr.daff_test == "?=" and expr.daff_val == "false") or
+        (expr.daff_test == "?=" and expr.daff_val == False) or
         (expr.daff_test == "=" and isinstance(expr.daff_val, basestring))
     )
 
