@@ -38,7 +38,7 @@ class HStoreQueryDelegate(object):
         self.field = hstore_field_name
 
     def mk_any(self, children):
-        if children == []:
+        if not children or not any(children):
             return "false"
 
         sql_expr = " OR ".join("({})".format(child_exp) for child_exp in children)
@@ -65,7 +65,7 @@ class HStoreQueryDelegate(object):
             return optimization_expr
 
     def mk_all(self, children):
-        if children == ['']:
+        if not children or not any(children):
             return "true"
 
         sql_expr = " AND ".join("({})".format(child_exp) for child_exp in children if child_exp)

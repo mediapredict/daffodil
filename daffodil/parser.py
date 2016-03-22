@@ -68,22 +68,22 @@ class Daffodil(object):
         return children[0]
 
     def all(self, node, children):
-        'all = "{" expr* "}"'
+        'all = "{" expr* _ "}"'
         child_expressions = children[1]
         return self.delegate.mk_all(child_expressions)
 
     def any(self, node, children):
-        'any = "[" expr* "]"'
+        'any = "[" expr* _ "]"'
         child_expressions = children[1]
         return self.delegate.mk_any(child_expressions)
 
     def not_all(self, node, children):
-        'not_all = "!{" expr* "}"'
+        'not_all = "!{" expr* _ "}"'
         child_expressions = children[1]
         return self.delegate.mk_not_all(child_expressions)
 
     def not_any(self, node, children):
-        'not_any = "![" expr* "]"'
+        'not_any = "![" expr* _ "]"'
         child_expressions = children[1]
         return self.delegate.mk_not_any(child_expressions)
 

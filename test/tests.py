@@ -36,7 +36,20 @@ class SATDataTests(unittest.TestCase):
     def test_empty(self):
         self.assert_filter_has_n_results(421, "")
         self.assert_filter_has_n_results(421, "{}")
+        self.assert_filter_has_n_results(421, "{ }")
+        self.assert_filter_has_n_results(421, "{\n}")
+
         self.assert_filter_has_n_results(0, "[]")
+        self.assert_filter_has_n_results(0, "[ ]")
+        self.assert_filter_has_n_results(0, "[\n]")
+
+        self.assert_filter_has_n_results(0, "!{}")
+        self.assert_filter_has_n_results(0, "!{ }")
+        self.assert_filter_has_n_results(0, "!{\n}")
+
+        self.assert_filter_has_n_results(421, "![]")
+        self.assert_filter_has_n_results(421, "![ ]")
+        self.assert_filter_has_n_results(421, "![\n]")
 
     def test_none(self):
         self.d = [None]
