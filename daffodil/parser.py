@@ -103,7 +103,7 @@ class Daffodil(object):
         return val
 
     def bare_key(self, node, children):
-        'bare_key = ~"[a-zA-Z0-9_-]+"'
+        'bare_key = ~"[a-zA-Z0-9$_-]+"'
         return node.text
 
     def test(self, node, children):
