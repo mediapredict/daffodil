@@ -558,6 +558,58 @@ class SATDataTests(unittest.TestCase):
             dbn != -7.5
         """)
 
+    def test_comments(self):
+        #
+        # two slashes
+        #
+
+        self.assert_filter_has_n_results(4, """
+            // this is a comment
+            num_of_sat_test_takers = 50
+        """)
+        self.assert_filter_has_n_results(4, """
+            // this is 1st comment
+            {
+                // this is 2nd comment
+                num_of_sat_test_takers = 50 // this is 3nd comment
+            }
+        """)
+        # less expected places + bad formatting
+        self.assert_filter_has_n_results(4, """
+            {// this is 1st comment
+            // this is 2nd comment
+                num_of_sat_test_takers = 50// this is 3rd comment
+                //
+                //
+                //this is 4th comment
+            }
+        """)
+
+        #
+        # slash, asterisk (ansi C)
+        #
+
+        self.assert_filter_has_n_results(4, """
+            /* this is a comment */
+            num_of_sat_test_takers = 50
+        """)
+        # multiple
+        self.assert_filter_has_n_results(4, """
+            /* this is 1st comment */
+            {
+                /* this is 2nd comment */
+                num_of_sat_test_takers = 50 /* this is 3rd comment */
+            }
+        """)
+        # less expected places + bad formatting
+        self.assert_filter_has_n_results(4, """
+            {/*this is 1st comment     */
+            /* this is 2nd comment */
+                num_of_sat_test_takers /* this is 3nd comment*/ = 50
+                /* this is 4th comment */
+            }
+        """)
+
 
 class PredicateTests(unittest.TestCase):
     def setUp(self):

@@ -1,3 +1,4 @@
+import re
 from parsimonious.grammar import Grammar
 from .predicate import DictionaryPredicateDelegate
 
@@ -47,6 +48,8 @@ class Daffodil(object):
         self.predicate = self.eval(self.ast)
 
     def parse(self, source):
+        # rule out C++ style comments
+        source = re.sub('//.*?\n|/\*.*?\*/', '', source, re.S)
         return self.grammar['program'].parse(source)
 
     def __new__(cls, *args, **kwargs):
