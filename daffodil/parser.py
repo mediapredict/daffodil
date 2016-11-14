@@ -49,7 +49,7 @@ class Daffodil(object):
 
     def parse(self, source):
         # rule out C++ style comments
-        source = re.sub('//.*?\n|/\*.*?\*/', '', source, re.S)
+        source = re.sub('//.*?\n|/\*(.|\n)*?\*/', '', source, re.S)
         return self.grammar['program'].parse(source)
 
     def __new__(cls, *args, **kwargs):

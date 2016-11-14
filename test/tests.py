@@ -605,8 +605,40 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(4, """
             {/*this is 1st comment     */
             /* this is 2nd comment */
-                num_of_sat_test_takers /* this is 3nd comment*/ = 50
-                /* this is 4th comment */
+                /* this is 3nd comment*/ num_of_sat_test_takers /* this is 4th comment */ = 50
+            }
+        """)
+        # multiline
+        self.assert_filter_has_n_results(4, """
+            /*
+            **
+            ** This is a comment
+            **
+            */
+
+            /*
+             * Alternative comment block format..
+             *  ..which puts one asterisk always in column 2
+             */
+
+            {/*
+            this is strangely formatted comment*/
+
+                /****************************************
+                  * Title : Another way to comment *
+                  * Author: Author Name *
+                  ***************************************/
+
+                num_of_sat_test_takers  = 50
+                /*
+                *
+                * this is 4th comment
+                *
+                */
+
+                /************************************************************/
+                /*  OK, that's enough. This is the last style tested        */
+                /************************************************************/
             }
         """)
 
