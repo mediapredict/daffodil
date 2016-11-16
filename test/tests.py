@@ -740,9 +740,9 @@ PRETTY_PRINT_EXPECTATIONS = (
 '{"val1"=10,"val2"=20}',
 '''
 {
+  # a comment
   "val1" = 10
   "val2" = 20
-  # a comment
 }
 '''.strip()
 ],
@@ -836,11 +836,11 @@ PRETTY_PRINT_EXPECTATIONS = (
     val2 = 20
     val1 = 10
 ''',
-'{"val1"=10,"val2"=20}',
+'{"val2"=20,"val1"=10}',
 '''
 {
-  "val1" = 10
   "val2" = 20
+  "val1" = 10
 }
 '''.strip()
 ],
@@ -1128,23 +1128,23 @@ val6 ?= true
   }, val99 < 5.525 ]
 
 ''',
-'{"val1"<10,"val2"=3,"val2"?=true,"val9"="what\'s \\"up\\"?",["val99"<5.525,{"val5"!=30,"val5"?=true},{"val5"=30,"val6"?=true}]}',
+'{"val2"=3,"val2"?=true,"val1"<10,"val9"="what\'s \\"up\\"?",[{"val6"?=true,"val5"=30},{"val5"?=true,"val5"!=30},"val99"<5.525]}',
 '''
 {
-  "val1" < 10
   "val2" = 3
   "val2" ?= true
+  "val1" < 10
   "val9" = "what's \\"up\\"?"
   [
-    "val99" < 5.525
     {
-      "val5" != 30
-      "val5" ?= true
-    }
-    {
-      "val5" = 30
       "val6" ?= true
+      "val5" = 30
     }
+    {
+      "val5" ?= true
+      "val5" != 30
+    }
+    "val99" < 5.525
   ]
 }
 '''.strip()

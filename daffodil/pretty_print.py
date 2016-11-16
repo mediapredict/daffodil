@@ -100,26 +100,7 @@ class DaffodilWrapper(UserList):
             if isinstance(child, DaffodilWrapper):
                 child.indent_level = self.indent_level + 1
 
-        def sort_key(obj):
-            if not isinstance(obj, DaffodilWrapper):
-                if obj is True:
-                    return -2, obj
-                elif obj is False:
-                    return -1, obj
-                else:
-                    return 0, obj
-            
-            if obj.grouping == 'any':
-                return 1, unicode(obj)
-            
-            elif obj.grouping == 'all':
-                return 2, unicode(obj)
-           
-        # Sort so that different filters with the same expressions will
-        # print the same way
-        children = sorted(self, key=sort_key)
-
-        return self.format_children(children)
+        return self.format_children(self)
 
 
 class DaffodilArrayWrapper(DaffodilWrapper):
