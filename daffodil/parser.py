@@ -151,7 +151,7 @@ class Daffodil(object):
 
     def comment(self, node, children):
         'comment = ~"#.*?\\n"'
-        return self.delegate.mk_remove(node, children)
+        return self.delegate.mk_comment(node.text[:-1])
 
     def array(self, node, children):
         'array = "(" (  _ (number / boolean / string) _ ~"[\\n\,]?" _ )+ ")"'

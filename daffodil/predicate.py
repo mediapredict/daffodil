@@ -47,7 +47,7 @@ class DictionaryPredicateDelegate(object):
         }
         return ops[test_str]
 
-    def mk_remove(self, node, children):
+    def mk_comment(self, comment):
         do_nothing = lambda x: True
         do_nothing.ignore = True
 

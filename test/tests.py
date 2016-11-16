@@ -563,6 +563,20 @@ class SATDataTests(unittest.TestCase):
             # this is a comment
             num_of_sat_test_takers = 50
         """)
+        self.assert_filter_has_n_results(3, """
+            # this is 1st comment
+            num_of_sat_test_takers = 10
+            sat_writing_avg_score < 400
+            # this is 2nd comment
+            sat_math_avg_score > 200
+            sat_critical_reading_avg_score <= 500
+            # this is 3d comment
+        """)
+
+        #
+        # or, not or, and, not and
+        #
+
         self.assert_filter_has_n_results(4, """
             [
                 # this is a comment
@@ -577,13 +591,6 @@ class SATDataTests(unittest.TestCase):
                 num_of_sat_test_takers = 12
             ]
         """)
-        self.assert_filter_has_n_results(370, """
-            !{
-                # this is a comment
-                sat_writing_avg_score >= 300
-                sat_writing_avg_score < 350
-            }
-        """)
         self.assert_filter_has_n_results(4, """
             # this is 1st comment
             {
@@ -591,6 +598,14 @@ class SATDataTests(unittest.TestCase):
                 num_of_sat_test_takers = 50 # this is 3rd comment
             }
         """)
+        self.assert_filter_has_n_results(370, """
+            !{
+                # this is a comment
+                sat_writing_avg_score >= 300
+                sat_writing_avg_score < 350
+            }
+        """)
+
         # less expected places + bad formatting
         self.assert_filter_has_n_results(4, """
             {# this is 1st comment
@@ -711,6 +726,23 @@ PRETTY_PRINT_EXPECTATIONS = (
 {
   "val1" = 10
   "val2" = 20
+}
+'''.strip()
+],
+
+# Simple with a comment
+[
+'''
+    # a comment
+    val1 = 10
+    val2 = 20
+''',
+'{"val1"=10,"val2"=20}',
+'''
+{
+  "val1" = 10
+  "val2" = 20
+  # a comment
 }
 '''.strip()
 ],

@@ -76,8 +76,15 @@ class DaffodilWrapper(UserList):
         return u"{3}{1}\n{0}\n{3}{2}".format(children, self.opener, self.closer, self.wrapper_indent)
 
     def format_children(self, children):
+        def is_comment(child):
+            return isinstance(child, basestring) and child.startswith("#")
+
         # apply indent and join children
-        children = self.sep.join(indent(c, self.child_indent) for c in children)
+        children = self.sep.join(
+            indent(c, self.child_indent)
+            for c in children
+            if not (is_comment(c) and self.dense)
+        )
 
         if self.dense:
             return self.format_dense(children)
@@ -156,6 +163,9 @@ class PrettyPrintDelegate(object):
 
     def mk_test(self, test_str):
         return test_str
+
+    def mk_comment(self, comment):
+        return comment
 
     def mk_cmp(self, key, val, test):
         key = to_daffodil_primitive(key)

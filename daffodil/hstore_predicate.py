@@ -104,7 +104,7 @@ class HStoreQueryDelegate(object):
     def mk_not_all(self, children):
         return " NOT ({0})".format(self.mk_all(children))
 
-    def mk_remove(self, node, children):
+    def mk_comment(self, comment):
         return ""
 
     def mk_test(self, daff_test_str):
