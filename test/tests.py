@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import unittest
+import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -1171,7 +1172,14 @@ class PrettyPrintingTests(unittest.TestCase):
             self.assertFilterIsCorrect(fltr, dense, pretty)
 
     def test_multiple_passthroughs(self):
+        regexp_py_comment = re.compile('#.*?\n')
+
         for fltr, dense_expected, pretty_expected in PRETTY_PRINT_EXPECTATIONS:
+
+            # if fltr contains a comment, it'll be discard for "dense"
+            if regexp_py_comment.search(fltr):
+                continue
+
             d1, p1 = self.pp(fltr)
             d1_dense, d1_pretty = self.pp(d1)
             p1_dense, p1_pretty = self.pp(p1)

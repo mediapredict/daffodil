@@ -1,4 +1,3 @@
-import re
 from parsimonious.grammar import Grammar
 from .predicate import DictionaryPredicateDelegate
 
