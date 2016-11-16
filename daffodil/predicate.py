@@ -4,7 +4,13 @@ import operator as op
 
 class DictionaryPredicateDelegate(object):
     def mk_any(self, children):
-        return lambda data_point: any( predicate(data_point) for predicate in children)
+        def f(data_point):
+            return any(
+                predicate(data_point)
+                for predicate in children
+                if not getattr(predicate, "ignore", False)
+            )
+        return f
 
     def mk_all(self, children):
         return lambda data_point: all( predicate(data_point) for predicate in children)
@@ -40,6 +46,12 @@ class DictionaryPredicateDelegate(object):
           "!in": not_in_,
         }
         return ops[test_str]
+
+    def mk_remove(self, node, children):
+        do_nothing = lambda x: True
+        do_nothing.ignore = True
+
+        return do_nothing
 
     def mk_cmp(self, key, val, test):
         if getattr(test, "is_datapoint_test", False):

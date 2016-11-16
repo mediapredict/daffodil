@@ -48,8 +48,6 @@ class Daffodil(object):
         self.predicate = self.eval(self.ast)
 
     def parse(self, source):
-        # rule out Python style comments
-        source = re.sub('#.*?\n', '', source, re.S)
         return self.grammar['program'].parse(source)
 
     def __new__(cls, *args, **kwargs):
@@ -91,7 +89,7 @@ class Daffodil(object):
         return self.delegate.mk_not_any(child_expressions)
 
     def expr(self, node, children):
-        '''expr = _ (all / any / not_all / not_any / condition ) _ ~"[\\n\,]?" _'''
+        '''expr = _ (all / any / not_all / not_any / condition / comment) _ ~"[\\n\,]?" _'''
         return children[1][0]
 
     def condition(self, node, children):
@@ -150,6 +148,10 @@ class Daffodil(object):
     def float(self, node, children):
         'float = ~"-?[0-9]*\.[0-9]+"'
         return float(node.text)
+
+    def comment(self, node, children):
+        'comment = ~"#.*?\\n"'
+        return self.delegate.mk_remove(node, children)
 
     def array(self, node, children):
         'array = "(" (  _ (number / boolean / string) _ ~"[\\n\,]?" _ )+ ")"'
