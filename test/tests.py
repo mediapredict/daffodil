@@ -622,6 +622,20 @@ class SATDataTests(unittest.TestCase):
             #
         """)
 
+    def test_dollar_sign_in_variable_name(self):
+        # with quotes
+        self.assert_filter_has_n_results(1, """
+            "$calculated_pct" = "85"
+        """)
+        self.assert_filter_has_n_results(1, """
+            '$calculated_pct' ?= true
+        """)
+
+        # without quotes
+        self.assert_filter_has_n_results(1, """
+            $calculated_pct = "85"
+        """)
+
 
 class PredicateTests(unittest.TestCase):
     def setUp(self):
