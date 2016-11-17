@@ -3,17 +3,18 @@ import operator as op
 
 
 class DictionaryPredicateDelegate(object):
+    def _mk_any_all(self, children, any_all):
+        return lambda data_point: any_all(
+            predicate(data_point)
+            for predicate in children
+            if not getattr(predicate, "ignore", False)
+        )
+
     def mk_any(self, children):
-        def f(data_point):
-            return any(
-                predicate(data_point)
-                for predicate in children
-                if not getattr(predicate, "ignore", False)
-            )
-        return f
+        return self._mk_any_all(children, any)
 
     def mk_all(self, children):
-        return lambda data_point: all( predicate(data_point) for predicate in children)
+        return self._mk_any_all(children, all)
 
     def mk_not_any(self, children):
         return lambda data_point: not self.mk_any(children)(data_point)
@@ -48,7 +49,7 @@ class DictionaryPredicateDelegate(object):
         return ops[test_str]
 
     def mk_comment(self, comment):
-        do_nothing = lambda x: True
+        do_nothing = lambda: True
         do_nothing.ignore = True
 
         return do_nothing
