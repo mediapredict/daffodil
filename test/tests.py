@@ -31,699 +31,707 @@ class SATDataTests(unittest.TestCase):
     def assert_filter_has_n_results(self, n, daff_src):
         self.assertEqual(len(self.filter(daff_src)), n)
 
-    def test_no_filters(self):
-        self.assertEqual(len(self.d), 421)
+    # def test_no_filters(self):
+    #     self.assertEqual(len(self.d), 421)
+    #
+    # def test_empty(self):
+    #     self.assert_filter_has_n_results(421, "")
+    #     self.assert_filter_has_n_results(421, "{}")
+    #     self.assert_filter_has_n_results(421, "{ }")
+    #     self.assert_filter_has_n_results(421, "{\n}")
+    #
+    #     self.assert_filter_has_n_results(0, "[]")
+    #     self.assert_filter_has_n_results(0, "[ ]")
+    #     self.assert_filter_has_n_results(0, "[\n]")
+    #
+    #     self.assert_filter_has_n_results(0, "!{}")
+    #     self.assert_filter_has_n_results(0, "!{ }")
+    #     self.assert_filter_has_n_results(0, "!{\n}")
+    #
+    #     self.assert_filter_has_n_results(421, "![]")
+    #     self.assert_filter_has_n_results(421, "![ ]")
+    #     self.assert_filter_has_n_results(421, "![\n]")
+    #
+    # def test_none(self):
+    #     self.d = [None]
+    #     self.assert_filter_has_n_results(1, """
+    #         num_of_sat_test_takers != 50
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         num_of_sat_test_takers = 50
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         num_of_sat_test_takers ?= True
+    #     """)
+    #     self.assert_filter_has_n_results(1, """
+    #         num_of_sat_test_takers ?= False
+    #     """)
+    #
+    # def test_int_eq(self):
+    #     self.assert_filter_has_n_results(4, """
+    #         num_of_sat_test_takers = 50
+    #     """)
+    #
+    # def test_int_in_list(self):
+    #     self.assert_filter_has_n_results(8, """
+    #         num_of_sat_test_takers in (10, 11, 12)
+    #     """)
+    #
+    # def test_int_in_list_multiline(self):
+    #     self.assert_filter_has_n_results(4, """
+    #         num_of_sat_test_takers in
+    #         (
+    #         50
+    #         )
+    #     """)
+    #
+    # def test_int_ne(self):
+    #     self.assert_filter_has_n_results(417, """
+    #         num_of_sat_test_takers != 50
+    #     """)
+    #
+    # def test_int_not_in_list(self):
+    #     self.assert_filter_has_n_results(417, """
+    #         num_of_sat_test_takers !in (50)
+    #     """)
+    #
+    # def test_int_not_in_list_multiline(self):
+    #     self.assert_filter_has_n_results(417, """
+    #         num_of_sat_test_takers !in
+    #         (
+    #         50
+    #         )
+    #     """)
+    #
+    # def test_int_gt(self):
+    #     self.assert_filter_has_n_results(273, """
+    #         num_of_sat_test_takers > 50
+    #     """)
+    #
+    # def test_int_gte(self):
+    #     self.assert_filter_has_n_results(277, """
+    #         num_of_sat_test_takers >= 50
+    #     """)
+    #
+    # def test_int_lt(self):
+    #     self.assert_filter_has_n_results(144, """
+    #         num_of_sat_test_takers < 50
+    #     """)
+    #
+    # def test_int_lte(self):
+    #     self.assert_filter_has_n_results(148, """
+    #         num_of_sat_test_takers <= 50
+    #     """)
+    #
+    # def test_float_eq(self):
+    #     self.assert_filter_has_n_results(0, """
+    #         num_of_sat_test_takers = 50.5
+    #     """)
+    #
+    # def test_float_str_eq(self):
+    #     self.assert_filter_has_n_results(2, """
+    #         total_score = 1120.0
+    #     """)
+    #     self.assert_filter_has_n_results(2, """
+    #         total_score = "1120.0"
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         total_score = "1120"
+    #     """)
+    #     self.assert_filter_has_n_results(2, """
+    #         total_score = 1120
+    #     """)
+    #
+    #     # now inside an array
+    #     self.assert_filter_has_n_results(2, """
+    #         total_score in (1120.0)
+    #     """)
+    #     self.assert_filter_has_n_results(2, """
+    #         total_score in ("1120.0")
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         total_score in ("1120")
+    #     """)
+    #     self.assert_filter_has_n_results(2, """
+    #         total_score in (1120)
+    #     """)
+    #
+    # def test_float_ne(self):
+    #     self.assert_filter_has_n_results(421, """
+    #         num_of_sat_test_takers != 50.5
+    #     """)
+    #
+    # def test_float_gt(self):
+    #     self.assert_filter_has_n_results(273, """
+    #         num_of_sat_test_takers > 50.5
+    #     """)
+    #
+    # def test_float_gte(self):
+    #     self.assert_filter_has_n_results(277, """
+    #         num_of_sat_test_takers >= 50.0
+    #     """)
+    #
+    # def test_float_lt(self):
+    #     self.assert_filter_has_n_results(144, """
+    #         num_of_sat_test_takers < 49.5
+    #     """)
+    #
+    # def test_float_lte(self):
+    #     self.assert_filter_has_n_results(148, """
+    #         num_of_sat_test_takers <= 50.0
+    #     """)
+    #
+    # def test_multiple(self):
+    #     self.assert_filter_has_n_results(3, """
+    #         num_of_sat_test_takers = 10
+    #         sat_writing_avg_score < 400
+    #         sat_math_avg_score > 200
+    #         sat_critical_reading_avg_score <= 500
+    #     """)
+    #     self.assert_filter_has_n_results(3, """
+    #         num_of_sat_test_takers ?= true
+    #         num_of_sat_test_takers = 10
+    #         sat_writing_avg_score < 400
+    #         sat_math_avg_score > 200
+    #         sat_critical_reading_avg_score <= 500
+    #     """)
+    #
+    # def test_multiple_for_same_value(self):
+    #     self.assert_filter_has_n_results(51, """
+    #         sat_writing_avg_score >= 300
+    #         sat_writing_avg_score < 350
+    #     """)
+    #
+    # def test_or(self):
+    #     self.assert_filter_has_n_results(8, """
+    #         [
+    #             num_of_sat_test_takers = 10
+    #             num_of_sat_test_takers = 11
+    #             num_of_sat_test_takers = 12
+    #         ]
+    #     """)
+    #
+    # def test_not_or(self):
+    #     self.assert_filter_has_n_results(413, """
+    #         ![
+    #             num_of_sat_test_takers = 10
+    #             num_of_sat_test_takers = 11
+    #             num_of_sat_test_takers = 12
+    #         ]
+    #     """)
+    #
+    # def test_and(self):
+    #     self.assert_filter_has_n_results(51, """
+    #         {
+    #             sat_writing_avg_score >= 300
+    #             sat_writing_avg_score < 350
+    #         }
+    #     """)
+    #
+    # def test_not_and(self):
+    #     self.assert_filter_has_n_results(370, """
+    #         !{
+    #             sat_writing_avg_score >= 300
+    #             sat_writing_avg_score < 350
+    #         }
+    #     """)
+    #
+    # def test_and_nested_within_or(self):
+    #     self.assert_filter_has_n_results(134, """
+    #         [
+    #             {
+    #             sat_writing_avg_score >= 300
+    #             sat_writing_avg_score < 350
+    #             }
+    #             {
+    #             sat_writing_avg_score >= 400
+    #             sat_writing_avg_score < 450
+    #             }
+    #         ]
+    #     """)
+    #
+    # def test_not_and_nested_within_or(self):
+    #     self.assert_filter_has_n_results(370, """
+    #         [
+    #             !{
+    #                 sat_writing_avg_score >= 300
+    #                 sat_writing_avg_score < 350
+    #             }
+    #             {
+    #                 sat_writing_avg_score >= 400
+    #                 sat_writing_avg_score < 450
+    #             }
+    #         ]
+    #     """)
+    #
+    # def test_or_mixed_with_literal(self):
+    #     self.assert_filter_has_n_results(11, """
+    #         sat_writing_avg_score < 450
+    #         [
+    #             num_of_sat_test_takers = 10
+    #             num_of_sat_test_takers = 11
+    #             num_of_sat_test_takers = 12
+    #             num_of_sat_test_takers = 13
+    #             num_of_sat_test_takers = 14
+    #             num_of_sat_test_takers = 15
+    #         ]
+    #     """)
+    #
+    # def test_not_or_mixed_with_literal(self):
+    #     self.assert_filter_has_n_results(4, """
+    #         sat_writing_avg_score < 300
+    #         ![
+    #             num_of_sat_test_takers = 10
+    #             num_of_sat_test_takers = 11
+    #             num_of_sat_test_takers = 12
+    #             num_of_sat_test_takers = 13
+    #             num_of_sat_test_takers = 14
+    #             num_of_sat_test_takers = 15
+    #         ]
+    #     """)
+    #
+    # def test_in_mixed_with_literal(self):
+    #     self.assert_filter_has_n_results(11, """
+    #         sat_writing_avg_score < 450
+    #         num_of_sat_test_takers in (
+    #             10, 11
+    #             12, 13, 14,
+    #             15
+    #         )
+    #     """)
+    #
+    # def test_not_in_mixed_with_literal(self):
+    #     self.assert_filter_has_n_results(4, """
+    #         sat_writing_avg_score < 300
+    #         num_of_sat_test_takers !in (
+    #             10, 11
+    #             12, 13, 14,
+    #             15
+    #         )
+    #     """)
+    #
+    # def test_and_mixed_with_or(self):
+    #     self.assert_filter_has_n_results(6, """
+    #         {
+    #             sat_writing_avg_score > 350
+    #             sat_writing_avg_score < 500
+    #         }
+    #         [
+    #             num_of_sat_test_takers = 10
+    #             num_of_sat_test_takers = 11
+    #             num_of_sat_test_takers = 12
+    #         ]
+    #     """)
+    #     self.assert_filter_has_n_results(6, """
+    #         sat_writing_avg_score ?= true
+    #         sat_writing_avg_score > 350
+    #         sat_writing_avg_score < 500
+    #         [
+    #             asdf ?= true
+    #             num_of_sat_test_takers = 10
+    #             num_of_sat_test_takers = 11
+    #             num_of_sat_test_takers = 12
+    #         ]
+    #     """)
+    #
+    # def test_not_and_mixed_with_not_or(self):
+    #     self.assert_filter_has_n_results(81, """
+    #         !{
+    #             sat_writing_avg_score > 350
+    #             sat_writing_avg_score < 500
+    #         }
+    #         ![
+    #             num_of_sat_test_takers = 10
+    #             num_of_sat_test_takers = 11
+    #             num_of_sat_test_takers = 12
+    #         ]
+    #     """)
+    #
+    # def test_single_quoted_fields(self):
+    #     self.assert_filter_has_n_results(417, """
+    #         'num_of_sat_test_takers' != 50
+    #     """)
+    #     self.assert_filter_has_n_results(417, """
+    #         'num_of_sat_test_takers' != '50'
+    #     """)
+    #     self.assert_filter_has_n_results(417, """
+    #         'num_of_sat_test_takers' !in ('50')
+    #     """)
+    #
+    # def test_double_quoted_fields(self):
+    #     self.assert_filter_has_n_results(417, """
+    #         "num_of_sat_test_takers" != 50
+    #     """)
+    #     self.assert_filter_has_n_results(417, """
+    #         "num_of_sat_test_takers" != "50"
+    #     """)
+    #
+    # def test_string_eq(self):
+    #     self.assert_filter_has_n_results(1, """
+    #         school_name = "EAST SIDE COMMUNITY SCHOOL"
+    #     """)
+    #     self.assert_filter_has_n_results(1, """
+    #         school_name = 'EAST SIDE COMMUNITY SCHOOL'
+    #     """)
+    #
+    # def test_string_containing_special_chars(self):
+    #     self.assert_filter_has_n_results(0, """
+    #         not_existing_param = 'this "word" is within double quotes'
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         not_existing_param = "we have a back tick ` in this sentence"
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         some_non_existing_period > "60'"
+    #     """)
+    #     self.assert_filter_has_n_results(421, """
+    #         some_non_existing_period != "60'"
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         some_non_existing_minutes = '60"'
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         not_existing_param = "goin' word contains single quote"
+    #     """)
+    #
+    # def test_string_within_array_containing_special_chars(self):
+    #     self.assert_filter_has_n_results(0, """
+    #         some_non_existing_period in ("50'", "60'")
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         some_non_existing_minutes in ('50"', '60"')
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         some_non_existing_quoted_param in ('"x"', '"y"')
+    #     """)
+    #
+    # def test_string_ne(self):
+    #     self.assert_filter_has_n_results(420, """
+    #         school_name != "EAST SIDE COMMUNITY SCHOOL"
+    #     """)
+    #     self.assert_filter_has_n_results(420, """
+    #         school_name != 'EAST SIDE COMMUNITY SCHOOL'
+    #     """)
+    #
+    # #def test_comparing_a_string_containing_int(self):
+    # #    self.assert_filter_has_n_results(417, """
+    # #        num_of_sat_test_takers != "50"
+    # #    """)
+    #
+    # #def test_comparing_a_string_containing_float(self):
+    # #    self.assert_filter_has_n_results(417, """
+    # #        num_of_sat_test_takers != "50.0"
+    # #    """)
+    #
+    # def test_missing_field(self):
+    #     self.assert_filter_has_n_results(0, """
+    #         numOfSatTestTakers-9-17-2013 = 99
+    #     """)
+    #     self.assert_filter_has_n_results(421, """
+    #         numOfSatTestTakers_9-17-2013 != 99
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         "number of SAT Test Takers 9-17-2013" = 99
+    #     """)
+    #     self.assert_filter_has_n_results(421, """
+    #         "number of SAT Test Takers 9-17-2013" != 99
+    #     """)
+    #
+    # def test_invalid_filter(self):
+    #     self.assertRaises(ParseError, Daffodil, """
+    #         [
+    #     """)
+    #
+    # def test_unicode_filter(self):
+    #     self.assert_filter_has_n_results(273, u"""
+    #         num_of_sat_test_takers > 50
+    #     """)
+    #
+    # def test_existance_has_value(self):
+    #     self.assert_filter_has_n_results(421, u"""
+    #         num_of_sat_test_takers ?= true
+    #     """)
+    #     self.assert_filter_has_n_results(0, u"""
+    #         num_of_sat_test_takers ?= false
+    #     """)
+    #     self.assert_filter_has_n_results(421, u"""
+    #         "num_of_sat_test_takers" ?= true
+    #     """)
+    #     self.assert_filter_has_n_results(0, u"""
+    #         "num_of_sat_test_takers" ?= false
+    #     """)
+    #     self.assert_filter_has_n_results(421, u"""
+    #         'num_of_sat_test_takers' ?= true
+    #     """)
+    #     self.assert_filter_has_n_results(0, u"""
+    #         'num_of_sat_test_takers' ?= false
+    #     """)
+    #
+    # def test_existance_does_not_have_value(self):
+    #     self.assert_filter_has_n_results(0, u"""
+    #         asdf ?= true
+    #     """)
+    #     self.assert_filter_has_n_results(421, u"""
+    #         asdf ?= false
+    #     """)
+    #     self.assert_filter_has_n_results(0, u"""
+    #         "asdf" ?= true
+    #     """)
+    #     self.assert_filter_has_n_results(421, u"""
+    #         "asdf" ?= false
+    #     """)
+    #     self.assert_filter_has_n_results(0, u"""
+    #         'asdf' ?= true
+    #     """)
+    #     self.assert_filter_has_n_results(421, u"""
+    #         'asdf' ?= false
+    #     """)
+    #
+    # def test_existance_multiple(self):
+    #     self.assert_filter_has_n_results(421, u"""
+    #         [
+    #             total_score ?= true
+    #             num_of_sat_test_takers ?= true
+    #         ]
+    #     """)
+    #     self.assert_filter_has_n_results(421, u"""
+    #         [
+    #             total_score ?= false
+    #             num_of_sat_test_takers ?= true
+    #         ]
+    #     """)
+    #     self.assert_filter_has_n_results(0, u"""
+    #         {
+    #             total_score ?= false
+    #             num_of_sat_test_takers ?= false
+    #         }
+    #     """)
+    #     self.assert_filter_has_n_results(4, u"""
+    #         {
+    #             total_score ?= true
+    #             num_of_sat_test_takers ?= true
+    #         }
+    #     """)
+    #     self.assert_filter_has_n_results(417, u"""
+    #         {
+    #             total_score ?= false
+    #             num_of_sat_test_takers ?= true
+    #         }
+    #     """)
+    #
+    # def test_comparing_string_data_to_an_int_filter(self):
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn = 7
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn > 7
+    #     """)
+    #     self.assert_filter_has_n_results(421, """
+    #         dbn != 7
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn = -7
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn > -7
+    #     """)
+    #     self.assert_filter_has_n_results(421, """
+    #         dbn != -7
+    #     """)
 
-    def test_empty(self):
-        self.assert_filter_has_n_results(421, "")
-        self.assert_filter_has_n_results(421, "{}")
-        self.assert_filter_has_n_results(421, "{ }")
-        self.assert_filter_has_n_results(421, "{\n}")
-
-        self.assert_filter_has_n_results(0, "[]")
-        self.assert_filter_has_n_results(0, "[ ]")
-        self.assert_filter_has_n_results(0, "[\n]")
-
-        self.assert_filter_has_n_results(0, "!{}")
-        self.assert_filter_has_n_results(0, "!{ }")
-        self.assert_filter_has_n_results(0, "!{\n}")
-
-        self.assert_filter_has_n_results(421, "![]")
-        self.assert_filter_has_n_results(421, "![ ]")
-        self.assert_filter_has_n_results(421, "![\n]")
-
-    def test_none(self):
-        self.d = [None]
-        self.assert_filter_has_n_results(1, """
-            num_of_sat_test_takers != 50
-        """)
-        self.assert_filter_has_n_results(0, """
-            num_of_sat_test_takers = 50
-        """)
-        self.assert_filter_has_n_results(0, """
-            num_of_sat_test_takers ?= True
-        """)
-        self.assert_filter_has_n_results(1, """
-            num_of_sat_test_takers ?= False
-        """)
-
-    def test_int_eq(self):
-        self.assert_filter_has_n_results(4, """
-            num_of_sat_test_takers = 50
-        """)
-
-    def test_int_in_list(self):
-        self.assert_filter_has_n_results(8, """
-            num_of_sat_test_takers in (10, 11, 12)
-        """)
-
-    def test_int_in_list_multiline(self):
-        self.assert_filter_has_n_results(4, """
-            num_of_sat_test_takers in
-            (
-            50
-            )
-        """)
-
-    def test_int_ne(self):
-        self.assert_filter_has_n_results(417, """
-            num_of_sat_test_takers != 50
-        """)
-
-    def test_int_not_in_list(self):
-        self.assert_filter_has_n_results(417, """
-            num_of_sat_test_takers !in (50)
-        """)
-
-    def test_int_not_in_list_multiline(self):
-        self.assert_filter_has_n_results(417, """
-            num_of_sat_test_takers !in
-            (
-            50
-            )
-        """)
-
-    def test_int_gt(self):
-        self.assert_filter_has_n_results(273, """
-            num_of_sat_test_takers > 50
-        """)
-
-    def test_int_gte(self):
-        self.assert_filter_has_n_results(277, """
-            num_of_sat_test_takers >= 50
-        """)
-
-    def test_int_lt(self):
-        self.assert_filter_has_n_results(144, """
-            num_of_sat_test_takers < 50
-        """)
-
-    def test_int_lte(self):
-        self.assert_filter_has_n_results(148, """
-            num_of_sat_test_takers <= 50
-        """)
-
-    def test_float_eq(self):
-        self.assert_filter_has_n_results(0, """
-            num_of_sat_test_takers = 50.5
-        """)
-
-    def test_float_str_eq(self):
-        self.assert_filter_has_n_results(2, """
-            total_score = 1120.0
-        """)
-        self.assert_filter_has_n_results(2, """
-            total_score = "1120.0"
-        """)
-        self.assert_filter_has_n_results(0, """
-            total_score = "1120"
-        """)
-        self.assert_filter_has_n_results(2, """
-            total_score = 1120
-        """)
-
-        # now inside an array
-        self.assert_filter_has_n_results(2, """
-            total_score in (1120.0)
-        """)
-        self.assert_filter_has_n_results(2, """
-            total_score in ("1120.0")
-        """)
-        self.assert_filter_has_n_results(0, """
-            total_score in ("1120")
-        """)
-        self.assert_filter_has_n_results(2, """
-            total_score in (1120)
-        """)
-
-    def test_float_ne(self):
-        self.assert_filter_has_n_results(421, """
-            num_of_sat_test_takers != 50.5
-        """)
-
-    def test_float_gt(self):
-        self.assert_filter_has_n_results(273, """
-            num_of_sat_test_takers > 50.5
-        """)
-
-    def test_float_gte(self):
-        self.assert_filter_has_n_results(277, """
-            num_of_sat_test_takers >= 50.0
-        """)
-
-    def test_float_lt(self):
-        self.assert_filter_has_n_results(144, """
-            num_of_sat_test_takers < 49.5
-        """)
-
-    def test_float_lte(self):
-        self.assert_filter_has_n_results(148, """
-            num_of_sat_test_takers <= 50.0
-        """)
-
-    def test_multiple(self):
-        self.assert_filter_has_n_results(3, """
-            num_of_sat_test_takers = 10
-            sat_writing_avg_score < 400
-            sat_math_avg_score > 200
-            sat_critical_reading_avg_score <= 500
-        """)
-        self.assert_filter_has_n_results(3, """
-            num_of_sat_test_takers ?= true
-            num_of_sat_test_takers = 10
-            sat_writing_avg_score < 400
-            sat_math_avg_score > 200
-            sat_critical_reading_avg_score <= 500
-        """)
-
-    def test_multiple_for_same_value(self):
-        self.assert_filter_has_n_results(51, """
-            sat_writing_avg_score >= 300
-            sat_writing_avg_score < 350
-        """)
-
-    def test_or(self):
-        self.assert_filter_has_n_results(8, """
-            [
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-            ]
-        """)
-
-    def test_not_or(self):
-        self.assert_filter_has_n_results(413, """
-            ![
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-            ]
-        """)
-
-    def test_and(self):
-        self.assert_filter_has_n_results(51, """
-            {
-                sat_writing_avg_score >= 300
-                sat_writing_avg_score < 350
-            }
-        """)
-
-    def test_not_and(self):
-        self.assert_filter_has_n_results(370, """
-            !{
-                sat_writing_avg_score >= 300
-                sat_writing_avg_score < 350
-            }
-        """)
-
-    def test_and_nested_within_or(self):
-        self.assert_filter_has_n_results(134, """
-            [
-                {
-                sat_writing_avg_score >= 300
-                sat_writing_avg_score < 350
-                }
-                {
-                sat_writing_avg_score >= 400
-                sat_writing_avg_score < 450
-                }
-            ]
-        """)
-
-    def test_not_and_nested_within_or(self):
-        self.assert_filter_has_n_results(370, """
-            [
-                !{
-                    sat_writing_avg_score >= 300
-                    sat_writing_avg_score < 350
-                }
-                {
-                    sat_writing_avg_score >= 400
-                    sat_writing_avg_score < 450
-                }
-            ]
-        """)
-
-    def test_or_mixed_with_literal(self):
-        self.assert_filter_has_n_results(11, """
-            sat_writing_avg_score < 450
-            [
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-                num_of_sat_test_takers = 13
-                num_of_sat_test_takers = 14
-                num_of_sat_test_takers = 15
-            ]
-        """)
-
-    def test_not_or_mixed_with_literal(self):
-        self.assert_filter_has_n_results(4, """
-            sat_writing_avg_score < 300
-            ![
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-                num_of_sat_test_takers = 13
-                num_of_sat_test_takers = 14
-                num_of_sat_test_takers = 15
-            ]
-        """)
-
-    def test_in_mixed_with_literal(self):
-        self.assert_filter_has_n_results(11, """
-            sat_writing_avg_score < 450
-            num_of_sat_test_takers in (
-                10, 11
-                12, 13, 14,
-                15
-            )
-        """)
-
-    def test_not_in_mixed_with_literal(self):
-        self.assert_filter_has_n_results(4, """
-            sat_writing_avg_score < 300
-            num_of_sat_test_takers !in (
-                10, 11
-                12, 13, 14,
-                15
-            )
-        """)
-
-    def test_and_mixed_with_or(self):
-        self.assert_filter_has_n_results(6, """
-            {
-                sat_writing_avg_score > 350
-                sat_writing_avg_score < 500
-            }
-            [
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-            ]
-        """)
-        self.assert_filter_has_n_results(6, """
-            sat_writing_avg_score ?= true
-            sat_writing_avg_score > 350
-            sat_writing_avg_score < 500
-            [
-                asdf ?= true
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-            ]
-        """)
-
-    def test_not_and_mixed_with_not_or(self):
-        self.assert_filter_has_n_results(81, """
-            !{
-                sat_writing_avg_score > 350
-                sat_writing_avg_score < 500
-            }
-            ![
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-            ]
-        """)
-
-    def test_single_quoted_fields(self):
-        self.assert_filter_has_n_results(417, """
-            'num_of_sat_test_takers' != 50
-        """)
-        self.assert_filter_has_n_results(417, """
-            'num_of_sat_test_takers' != '50'
-        """)
-        self.assert_filter_has_n_results(417, """
-            'num_of_sat_test_takers' !in ('50')
-        """)
-
-    def test_double_quoted_fields(self):
-        self.assert_filter_has_n_results(417, """
-            "num_of_sat_test_takers" != 50
-        """)
-        self.assert_filter_has_n_results(417, """
-            "num_of_sat_test_takers" != "50"
-        """)
-
-    def test_string_eq(self):
-        self.assert_filter_has_n_results(1, """
-            school_name = "EAST SIDE COMMUNITY SCHOOL"
-        """)
-        self.assert_filter_has_n_results(1, """
-            school_name = 'EAST SIDE COMMUNITY SCHOOL'
-        """)
-
-    def test_string_containing_special_chars(self):
-        self.assert_filter_has_n_results(0, """
-            not_existing_param = 'this "word" is within double quotes'
-        """)
-        self.assert_filter_has_n_results(0, """
-            not_existing_param = "we have a back tick ` in this sentence"
-        """)
-        self.assert_filter_has_n_results(0, """
-            some_non_existing_period > "60'"
-        """)
-        self.assert_filter_has_n_results(421, """
-            some_non_existing_period != "60'"
-        """)
-        self.assert_filter_has_n_results(0, """
-            some_non_existing_minutes = '60"'
-        """)
-        self.assert_filter_has_n_results(0, """
-            not_existing_param = "goin' word contains single quote"
-        """)
-
-    def test_string_within_array_containing_special_chars(self):
-        self.assert_filter_has_n_results(0, """
-            some_non_existing_period in ("50'", "60'")
-        """)
-        self.assert_filter_has_n_results(0, """
-            some_non_existing_minutes in ('50"', '60"')
-        """)
-        self.assert_filter_has_n_results(0, """
-            some_non_existing_quoted_param in ('"x"', '"y"')
-        """)
-
-    def test_string_ne(self):
-        self.assert_filter_has_n_results(420, """
-            school_name != "EAST SIDE COMMUNITY SCHOOL"
-        """)
-        self.assert_filter_has_n_results(420, """
-            school_name != 'EAST SIDE COMMUNITY SCHOOL'
-        """)
-
-    #def test_comparing_a_string_containing_int(self):
-    #    self.assert_filter_has_n_results(417, """
-    #        num_of_sat_test_takers != "50"
-    #    """)
-
-    #def test_comparing_a_string_containing_float(self):
-    #    self.assert_filter_has_n_results(417, """
-    #        num_of_sat_test_takers != "50.0"
-    #    """)
-
-    def test_missing_field(self):
-        self.assert_filter_has_n_results(0, """
-            numOfSatTestTakers-9-17-2013 = 99
-        """)
-        self.assert_filter_has_n_results(421, """
-            numOfSatTestTakers_9-17-2013 != 99
-        """)
-        self.assert_filter_has_n_results(0, """
-            "number of SAT Test Takers 9-17-2013" = 99
-        """)
-        self.assert_filter_has_n_results(421, """
-            "number of SAT Test Takers 9-17-2013" != 99
-        """)
-
-    def test_invalid_filter(self):
-        self.assertRaises(ParseError, Daffodil, """
-            [
-        """)
-
-    def test_unicode_filter(self):
-        self.assert_filter_has_n_results(273, u"""
-            num_of_sat_test_takers > 50
-        """)
-
-    def test_existance_has_value(self):
-        self.assert_filter_has_n_results(421, u"""
-            num_of_sat_test_takers ?= true
-        """)
-        self.assert_filter_has_n_results(0, u"""
-            num_of_sat_test_takers ?= false
-        """)
-        self.assert_filter_has_n_results(421, u"""
-            "num_of_sat_test_takers" ?= true
-        """)
-        self.assert_filter_has_n_results(0, u"""
-            "num_of_sat_test_takers" ?= false
-        """)
-        self.assert_filter_has_n_results(421, u"""
-            'num_of_sat_test_takers' ?= true
-        """)
-        self.assert_filter_has_n_results(0, u"""
-            'num_of_sat_test_takers' ?= false
-        """)
-
-    def test_existance_does_not_have_value(self):
-        self.assert_filter_has_n_results(0, u"""
-            asdf ?= true
-        """)
-        self.assert_filter_has_n_results(421, u"""
-            asdf ?= false
-        """)
-        self.assert_filter_has_n_results(0, u"""
-            "asdf" ?= true
-        """)
-        self.assert_filter_has_n_results(421, u"""
-            "asdf" ?= false
-        """)
-        self.assert_filter_has_n_results(0, u"""
-            'asdf' ?= true
-        """)
-        self.assert_filter_has_n_results(421, u"""
-            'asdf' ?= false
-        """)
-
-    def test_existance_multiple(self):
-        self.assert_filter_has_n_results(421, u"""
-            [
-                total_score ?= true
-                num_of_sat_test_takers ?= true
-            ]
-        """)
-        self.assert_filter_has_n_results(421, u"""
-            [
-                total_score ?= false
-                num_of_sat_test_takers ?= true
-            ]
-        """)
-        self.assert_filter_has_n_results(0, u"""
-            {
-                total_score ?= false
-                num_of_sat_test_takers ?= false
-            }
-        """)
-        self.assert_filter_has_n_results(4, u"""
-            {
-                total_score ?= true
-                num_of_sat_test_takers ?= true
-            }
-        """)
-        self.assert_filter_has_n_results(417, u"""
-            {
-                total_score ?= false
-                num_of_sat_test_takers ?= true
-            }
-        """)
-
-    def test_comparing_string_data_to_an_int_filter(self):
-        self.assert_filter_has_n_results(0, """
-            dbn = 7
-        """)
-        self.assert_filter_has_n_results(0, """
-            dbn > 7
-        """)
-        self.assert_filter_has_n_results(421, """
-            dbn != 7
-        """)
-        self.assert_filter_has_n_results(0, """
-            dbn = -7
-        """)
-        self.assert_filter_has_n_results(0, """
-            dbn > -7
-        """)
-        self.assert_filter_has_n_results(421, """
-            dbn != -7
-        """)
-
-    def test_comparing_string_data_to_a_float_filter(self):
-        self.assert_filter_has_n_results(0, """
-            dbn = 7.5
-        """)
-        self.assert_filter_has_n_results(0, """
-            dbn > 7.5
-        """)
-        self.assert_filter_has_n_results(421, """
-            dbn != 7.5
-        """)
-        self.assert_filter_has_n_results(0, """
-            dbn = -7.5
-        """)
-        self.assert_filter_has_n_results(0, """
-            dbn > -7.5
-        """)
-        self.assert_filter_has_n_results(421, """
-            dbn != -7.5
-        """)
+    # def test_comparing_string_data_to_a_float_filter(self):
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn = 7.5
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn > 7.5
+    #     """)
+    #     self.assert_filter_has_n_results(421, """
+    #         dbn != 7.5
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn = -7.5
+    #     """)
+    #     self.assert_filter_has_n_results(0, """
+    #         dbn > -7.5
+    #     """)
+    #     self.assert_filter_has_n_results(421, """
+    #         dbn != -7.5
+    #     """)
 
     def test_comments(self):
+        # self.assert_filter_has_n_results(4, """
+        #     # omg
+        #     num_of_sat_test_takers = 50
+        #     # omg2
+        #     num_of_sat_test_takers = 50
+        #     # omg3
+        # """)
+
         self.assert_filter_has_n_results(4, """
-            # this is a comment
-            num_of_sat_test_takers = 50
-        """)
-        self.assert_filter_has_n_results(3, """
-            # this is 1st comment
-            num_of_sat_test_takers = 10
-            sat_writing_avg_score < 400
-            # this is 2nd comment
-            sat_math_avg_score > 200
-            sat_critical_reading_avg_score <= 500
-            # this is 3d comment
+            num_of_sat_test_takers = 50 # this is inline comment
         """)
 
+        # self.assert_filter_has_n_results(3, """
+        #     # this is 1st comment
+        #     num_of_sat_test_takers = 10
+        #     sat_writing_avg_score < 400
+        #     # this is 2nd comment
+        #     sat_math_avg_score > 200
+        #     sat_critical_reading_avg_score <= 500
+        #     # this is 3d comment
+        # """)
         #
-        # or, not or, and, not and
+        # #
+        # # or, not or, and, not and
+        # #
         #
+        # self.assert_filter_has_n_results(4, """
+        #     [
+        #         # this is a comment
+        #         num_of_sat_test_takers = 50
+        #     ]
+        # """)
+        # self.assert_filter_has_n_results(413, """
+        #     ![
+        #         # this is a comment
+        #         num_of_sat_test_takers = 10
+        #         num_of_sat_test_takers = 11
+        #         num_of_sat_test_takers = 12
+        #     ]
+        # """)
+        # self.assert_filter_has_n_results(4, """
+        #     # this is 1st comment
+        #     {
+        #         # this is 2nd comment
+        #         num_of_sat_test_takers = 50 # this is 3rd comment
+        #     }
+        # """)
+        # self.assert_filter_has_n_results(370, """
+        #     !{
+        #         # this is a comment
+        #         sat_writing_avg_score >= 300
+        #         sat_writing_avg_score < 350
+        #     }
+        # """)
+        #
+        # # less expected places + bad formatting
+        # self.assert_filter_has_n_results(4, """
+        #     {# this is 1st comment
+        #     #this is 2nd comment
+        #         num_of_sat_test_takers = 50
+        #         #
+        #         #
+        #         # this is 3d comment
+        #     }
+        #
+        #     #
+        #     # and yet 4th comment
+        #     #
+        # """)
+    #
+    # def test_dollar_sign_in_variable_name(self):
+    #     # with quotes
+    #     self.assert_filter_has_n_results(1, """
+    #         "$calculated_pct" = "85"
+    #     """)
+    #     self.assert_filter_has_n_results(1, """
+    #         '$calculated_pct' ?= true
+    #     """)
+    #
+    #     # without quotes
+    #     self.assert_filter_has_n_results(1, """
+    #         $calculated_pct = "85"
+    #     """)
 
-        self.assert_filter_has_n_results(4, """
-            [
-                # this is a comment
-                num_of_sat_test_takers = 50
-            ]
-        """)
-        self.assert_filter_has_n_results(413, """
-            ![
-                # this is a comment
-                num_of_sat_test_takers = 10
-                num_of_sat_test_takers = 11
-                num_of_sat_test_takers = 12
-            ]
-        """)
-        self.assert_filter_has_n_results(4, """
-            # this is 1st comment
-            {
-                # this is 2nd comment
-                num_of_sat_test_takers = 50 # this is 3rd comment
-            }
-        """)
-        self.assert_filter_has_n_results(370, """
-            !{
-                # this is a comment
-                sat_writing_avg_score >= 300
-                sat_writing_avg_score < 350
-            }
-        """)
 
-        # less expected places + bad formatting
-        self.assert_filter_has_n_results(4, """
-            {# this is 1st comment
-            #this is 2nd comment
-                num_of_sat_test_takers = 50
-                #
-                #
-                # this is 3d comment
-            }
-
-            #
-            # and yet 4th comment
-            #
-        """)
-
-    def test_dollar_sign_in_variable_name(self):
-        # with quotes
-        self.assert_filter_has_n_results(1, """
-            "$calculated_pct" = "85"
-        """)
-        self.assert_filter_has_n_results(1, """
-            '$calculated_pct' ?= true
-        """)
-
-        # without quotes
-        self.assert_filter_has_n_results(1, """
-            $calculated_pct = "85"
-        """)
-
-
-class PredicateTests(unittest.TestCase):
-    def setUp(self):
-        self.data = {
-          "MHQ9ProgsWatched - GoldRush": "no",
-          "MHQ9ProgsWatched - PawnStars": "yes",
-          "MHQ9ProgsWatched - BornSurvivor": "no",
-          "MHQ9ProgsWatched - AirCrashInvestigation": "no",
-          "MHQ9ProgsWatched - AmericanPickers": "no",
-          "MHQ9ProgsWatched - StorageWars": "yes",
-          "MHQ9ProgsWatched - TopGear": "no",
-          "MHQ9ProgsWatched - FifthGear": "no",
-          "MHQ9ProgsWatched - WheelerDealers": "no",
-          "MHQ9ProgsWatched - FastNLoud": "no",
-          "MHQ9ProgsWatched - MythBusters": "no",
-          "MHQ9ProgsWatched - DeadliestCatch": "no",
-          "MHQ9ProgsWatched - WickedTuna": "no",
-          "MHQ9ProgsWatched - AuctionHunters": "no",
-          "MHQ9ProgsWatched - AmericanChopper": "no",
-          "MHQ9ProgsWatched - SonsOfGuns": "no"
-        }
-
-    def test_keys(self):
-        daff = Daffodil("""
-        {
-          "k1" = "no"
-          [
-            k2 = 1.7
-            k3 > 5
-          ]
-          [
-            "k4" ?= true
-            "k5" = "words"
-          ]
-        }
-        """)
-        self.assertEqual(daff.keys, set(["k1", "k2", "k3", "k4", "k5"]))
-
-    def test_matching(self):
-        daff = Daffodil("""
-        {
-           "MHQ9ProgsWatched - BornSurvivor" = "no"
-           "MHQ9ProgsWatched - WheelerDealers" = "no"
-           "MHQ9ProgsWatched - FifthGear" = "no"
-           "MHQ9ProgsWatched - AuctionHunters" = "no"
-           "MHQ9ProgsWatched - MythBusters" = "no"
-           "MHQ9ProgsWatched - GoldRush" = "no"
-           "MHQ9ProgsWatched - DeadliestCatch" = "no"
-           "MHQ9ProgsWatched - FastNLoud" = "no"
-           "MHQ9ProgsWatched - SonsOfGuns" = "no"
-           "MHQ9ProgsWatched - AmericanChopper" = "no"
-        }
-        """)
-        self.assertTrue(daff.predicate(self.data))
-
-        daff = Daffodil(u"""{
-           "MHQ9ProgsWatched - BornSurvivor" = 'no'
-           "MHQ9ProgsWatched - WheelerDealers" = 'no'
-           "MHQ9ProgsWatched - FifthGear" = 'no'
-           "MHQ9ProgsWatched - AuctionHunters" = 'no'
-           "MHQ9ProgsWatched - MythBusters" = 'no'
-           "MHQ9ProgsWatched - GoldRush" = 'no'
-           "MHQ9ProgsWatched - DeadliestCatch" = 'no'
-           "MHQ9ProgsWatched - FastNLoud" = 'no'
-           "MHQ9ProgsWatched - SonsOfGuns" = 'no'
-           "MHQ9ProgsWatched - AmericanChopper" = 'no'
-        }""")
-        self.assertTrue(daff.predicate({
-           u'MHQ9ProgsWatched - PawnStars': u'yes', u'MHQ3Gender': u'Female', u'MHQ9ProgsWatched - FastNLoud': u'no', u'MHQ8ChannelViewing - Discovery Channel': u'OncePerWeek', u'MHQ8ChannelViewing - National Geographic': u'OncePerWeek', '_sample_id': u'frutest3', u'MHQ4TVProvider - YouView': u'no', u'MHQ6Industry - MarketResearch': u'no', u'MHQ6Industry - Entertainment': u'no', u'MHQ5TVViewing': u'1-3nights', u'MHQ8ChannelViewing - ITV1': u'OncePerWeek', u'MHQ7PastParticipant': u'No', u'MHQ9ProgsWatched - StorageWars': u'yes', u'MHQ8ChannelViewing - History Channel': u'OncePerWeek', u'MHQ8ChannelViewing - BBC2': u'OncePerWeek', u'MHQ1Confidential': u'Yes', u'MHQ4TVProvider - Freeview': u'no', u'MHQ9ProgsWatched - BornSurvivor': u'no', u'MHQ9ProgsWatched - WheelerDealers': u'no', u'MHQ8ChannelViewing - Channel4': u'OncePerWeek', u'MHQ4TVProvider - IPTV': u'no', u'MHQ9ProgsWatched - AuctionHunters': u'no', u'MHQ9ProgsWatched - AirCrashInvestigation': u'no', u'MHQ8ChannelViewing - Sky Arts': u'OncePerWeek', u'MHQ2Age': u'18-34', u'MHQ8ChannelViewing - BBC1': u'OncePerWeek', u'MHQ6Industry - None': u'yes', u'MHQ4TVProvider - None': u'no', u'MHQ6Industry - RadioTV': u'no', u'MHQ6Industry - Advertising': u'no', u'MHQ9ProgsWatched - DeadliestCatch': u'no', u'MHQ9ProgsWatched - FifthGear': u'no', u'MHQ9ProgsWatched - TopGear': u'no', u'MHQ9ProgsWatched - SonsOfGuns': u'no', u'MHQ9ProgsWatched - WickedTuna': u'no', u'MHQ9ProgsWatched - GoldRush': u'no', u'MHQ9ProgsWatched - MythBusters': u'no', u'MHQ6Industry - Press': u'no', u'MHQ4TVProvider - Virgin': u'yes', '_id': '41298', u'MHQ9ProgsWatched - AmericanPickers': u'no', u'MHQ9ProgsWatched - AmericanChopper': u'no', u'MHQ4TVProvider - Sky': u'no'
-        }))
-
-    def test_not_matching(self):
-        daff = Daffodil("""
-        {
-           "MHQ9ProgsWatched - MythBusters" = "yes"
-           "MHQ9ProgsWatched - BornSurvivor" = "no"
-           "MHQ9ProgsWatched - WheelerDealers" = "no"
-           "MHQ9ProgsWatched - FifthGear" = "no"
-           "MHQ9ProgsWatched - AuctionHunters" = "no"
-           "MHQ9ProgsWatched - GoldRush" = "no"
-           "MHQ9ProgsWatched - DeadliestCatch" = "no"
-           "MHQ9ProgsWatched - FastNLoud" = "no"
-           "MHQ9ProgsWatched - SonsOfGuns" = "no"
-           "MHQ9ProgsWatched - AmericanChopper" = "no"
-        }
-        """)
-
-        self.assertFalse(daff.predicate(self.data))
+# class PredicateTests(unittest.TestCase):
+#     def setUp(self):
+#         self.data = {
+#           "MHQ9ProgsWatched - GoldRush": "no",
+#           "MHQ9ProgsWatched - PawnStars": "yes",
+#           "MHQ9ProgsWatched - BornSurvivor": "no",
+#           "MHQ9ProgsWatched - AirCrashInvestigation": "no",
+#           "MHQ9ProgsWatched - AmericanPickers": "no",
+#           "MHQ9ProgsWatched - StorageWars": "yes",
+#           "MHQ9ProgsWatched - TopGear": "no",
+#           "MHQ9ProgsWatched - FifthGear": "no",
+#           "MHQ9ProgsWatched - WheelerDealers": "no",
+#           "MHQ9ProgsWatched - FastNLoud": "no",
+#           "MHQ9ProgsWatched - MythBusters": "no",
+#           "MHQ9ProgsWatched - DeadliestCatch": "no",
+#           "MHQ9ProgsWatched - WickedTuna": "no",
+#           "MHQ9ProgsWatched - AuctionHunters": "no",
+#           "MHQ9ProgsWatched - AmericanChopper": "no",
+#           "MHQ9ProgsWatched - SonsOfGuns": "no"
+#         }
+#
+#     def test_keys(self):
+#         daff = Daffodil("""
+#         {
+#           "k1" = "no"
+#           [
+#             k2 = 1.7
+#             k3 > 5
+#           ]
+#           [
+#             "k4" ?= true
+#             "k5" = "words"
+#           ]
+#         }
+#         """)
+#         self.assertEqual(daff.keys, set(["k1", "k2", "k3", "k4", "k5"]))
+#
+#     def test_matching(self):
+#         daff = Daffodil("""
+#         {
+#            "MHQ9ProgsWatched - BornSurvivor" = "no"
+#            "MHQ9ProgsWatched - WheelerDealers" = "no"
+#            "MHQ9ProgsWatched - FifthGear" = "no"
+#            "MHQ9ProgsWatched - AuctionHunters" = "no"
+#            "MHQ9ProgsWatched - MythBusters" = "no"
+#            "MHQ9ProgsWatched - GoldRush" = "no"
+#            "MHQ9ProgsWatched - DeadliestCatch" = "no"
+#            "MHQ9ProgsWatched - FastNLoud" = "no"
+#            "MHQ9ProgsWatched - SonsOfGuns" = "no"
+#            "MHQ9ProgsWatched - AmericanChopper" = "no"
+#         }
+#         """)
+#         self.assertTrue(daff.predicate(self.data))
+#
+#         daff = Daffodil(u"""{
+#            "MHQ9ProgsWatched - BornSurvivor" = 'no'
+#            "MHQ9ProgsWatched - WheelerDealers" = 'no'
+#            "MHQ9ProgsWatched - FifthGear" = 'no'
+#            "MHQ9ProgsWatched - AuctionHunters" = 'no'
+#            "MHQ9ProgsWatched - MythBusters" = 'no'
+#            "MHQ9ProgsWatched - GoldRush" = 'no'
+#            "MHQ9ProgsWatched - DeadliestCatch" = 'no'
+#            "MHQ9ProgsWatched - FastNLoud" = 'no'
+#            "MHQ9ProgsWatched - SonsOfGuns" = 'no'
+#            "MHQ9ProgsWatched - AmericanChopper" = 'no'
+#         }""")
+#         self.assertTrue(daff.predicate({
+#            u'MHQ9ProgsWatched - PawnStars': u'yes', u'MHQ3Gender': u'Female', u'MHQ9ProgsWatched - FastNLoud': u'no', u'MHQ8ChannelViewing - Discovery Channel': u'OncePerWeek', u'MHQ8ChannelViewing - National Geographic': u'OncePerWeek', '_sample_id': u'frutest3', u'MHQ4TVProvider - YouView': u'no', u'MHQ6Industry - MarketResearch': u'no', u'MHQ6Industry - Entertainment': u'no', u'MHQ5TVViewing': u'1-3nights', u'MHQ8ChannelViewing - ITV1': u'OncePerWeek', u'MHQ7PastParticipant': u'No', u'MHQ9ProgsWatched - StorageWars': u'yes', u'MHQ8ChannelViewing - History Channel': u'OncePerWeek', u'MHQ8ChannelViewing - BBC2': u'OncePerWeek', u'MHQ1Confidential': u'Yes', u'MHQ4TVProvider - Freeview': u'no', u'MHQ9ProgsWatched - BornSurvivor': u'no', u'MHQ9ProgsWatched - WheelerDealers': u'no', u'MHQ8ChannelViewing - Channel4': u'OncePerWeek', u'MHQ4TVProvider - IPTV': u'no', u'MHQ9ProgsWatched - AuctionHunters': u'no', u'MHQ9ProgsWatched - AirCrashInvestigation': u'no', u'MHQ8ChannelViewing - Sky Arts': u'OncePerWeek', u'MHQ2Age': u'18-34', u'MHQ8ChannelViewing - BBC1': u'OncePerWeek', u'MHQ6Industry - None': u'yes', u'MHQ4TVProvider - None': u'no', u'MHQ6Industry - RadioTV': u'no', u'MHQ6Industry - Advertising': u'no', u'MHQ9ProgsWatched - DeadliestCatch': u'no', u'MHQ9ProgsWatched - FifthGear': u'no', u'MHQ9ProgsWatched - TopGear': u'no', u'MHQ9ProgsWatched - SonsOfGuns': u'no', u'MHQ9ProgsWatched - WickedTuna': u'no', u'MHQ9ProgsWatched - GoldRush': u'no', u'MHQ9ProgsWatched - MythBusters': u'no', u'MHQ6Industry - Press': u'no', u'MHQ4TVProvider - Virgin': u'yes', '_id': '41298', u'MHQ9ProgsWatched - AmericanPickers': u'no', u'MHQ9ProgsWatched - AmericanChopper': u'no', u'MHQ4TVProvider - Sky': u'no'
+#         }))
+#
+#     def test_not_matching(self):
+#         daff = Daffodil("""
+#         {
+#            "MHQ9ProgsWatched - MythBusters" = "yes"
+#            "MHQ9ProgsWatched - BornSurvivor" = "no"
+#            "MHQ9ProgsWatched - WheelerDealers" = "no"
+#            "MHQ9ProgsWatched - FifthGear" = "no"
+#            "MHQ9ProgsWatched - AuctionHunters" = "no"
+#            "MHQ9ProgsWatched - GoldRush" = "no"
+#            "MHQ9ProgsWatched - DeadliestCatch" = "no"
+#            "MHQ9ProgsWatched - FastNLoud" = "no"
+#            "MHQ9ProgsWatched - SonsOfGuns" = "no"
+#            "MHQ9ProgsWatched - AmericanChopper" = "no"
+#         }
+#         """)
+#
+#         self.assertFalse(daff.predicate(self.data))
 
 
 
@@ -1181,27 +1189,27 @@ class PrettyPrintingTests(unittest.TestCase):
         self.assertEqual(dense, expected_dense)
         self.assertEqual(pretty, expected_pretty)
 
-    def test_simple(self):
-        for fltr, dense, pretty in PRETTY_PRINT_EXPECTATIONS:
-            self.assertFilterIsCorrect(fltr, dense, pretty)
+    # def test_simple(self):
+    #     for fltr, dense, pretty in PRETTY_PRINT_EXPECTATIONS:
+    #         self.assertFilterIsCorrect(fltr, dense, pretty)
 
-    def test_multiple_passthroughs(self):
-        regexp_py_comment = re.compile('#.*?\n')
-
-        for fltr, dense_expected, pretty_expected in PRETTY_PRINT_EXPECTATIONS:
-
-            # if fltr contains a comment, it'll be discard for "dense"
-            if regexp_py_comment.search(fltr):
-                continue
-
-            d1, p1 = self.pp(fltr)
-            d1_dense, d1_pretty = self.pp(d1)
-            p1_dense, p1_pretty = self.pp(p1)
-
-            self.assertEqual(d1_pretty, pretty_expected)
-            self.assertEqual(p1_pretty, pretty_expected)
-            self.assertEqual(d1_dense, dense_expected)
-            self.assertEqual(p1_dense, dense_expected)
+    # def test_multiple_passthroughs(self):
+    #     regexp_py_comment = re.compile('#.*?\n')
+    #
+    #     for fltr, dense_expected, pretty_expected in PRETTY_PRINT_EXPECTATIONS:
+    #
+    #         # if fltr contains a comment, it'll be discard for "dense"
+    #         if regexp_py_comment.search(fltr):
+    #             continue
+    #
+    #         d1, p1 = self.pp(fltr)
+    #         d1_dense, d1_pretty = self.pp(d1)
+    #         p1_dense, p1_pretty = self.pp(p1)
+    #
+    #         self.assertEqual(d1_pretty, pretty_expected)
+    #         self.assertEqual(p1_pretty, pretty_expected)
+    #         self.assertEqual(d1_dense, dense_expected)
+    #         self.assertEqual(p1_dense, dense_expected)
 
 
 
@@ -1247,19 +1255,19 @@ except AttributeError:
 from daffodil.hstore_predicate import HStoreQueryDelegate
 from testapp.models import BasicHStoreData
 
-
-class SATDataTestsWithHStore(SATDataTests):
-
-    def setUp(self):
-        self.d = BasicHStoreData.objects.all()
-
-    def filter(self, daff_src):
-        delegate = HStoreQueryDelegate(hstore_field_name="hsdata")
-        daff = Daffodil(daff_src, delegate=delegate)
-        return daff(self.d)
-
-    def test_none(self):
-        pass
+#
+# class SATDataTestsWithHStore(SATDataTests):
+#
+#     def setUp(self):
+#         self.d = BasicHStoreData.objects.all()
+#
+#     def filter(self, daff_src):
+#         delegate = HStoreQueryDelegate(hstore_field_name="hsdata")
+#         daff = Daffodil(daff_src, delegate=delegate)
+#         return daff(self.d)
+#
+#     def test_none(self):
+#         pass
 
 
 from django.core import management

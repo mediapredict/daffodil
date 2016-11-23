@@ -88,13 +88,21 @@ class Daffodil(object):
         return self.delegate.mk_not_any(child_expressions)
 
     def expr(self, node, children):
-        '''expr = (line_comment / all / any / not_all / not_any / condition)'''
+        '''expr = (comment / all / any / not_all / not_any / condition)'''
         if isinstance(children[0], list):
             return children[0][0]
         return children[0]
 
+    def comment(self, node, children):
+        'comment = line_comment / side_comment'
+        return children[0]
+
     def line_comment(self, node, children):
-        'line_comment = n ~"[\\s]*#[^\\n]*" &n'
+        'line_comment = n side_comment'
+        return self.delegate.mk_comment(node.text)
+
+    def side_comment(self, node, children):
+        'side_comment = ~"[\\s]*#[^\\n]*" &n'
         return self.delegate.mk_comment(node.text)
 
     def condition(self, node, children):
