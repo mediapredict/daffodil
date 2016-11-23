@@ -68,28 +68,40 @@ class Daffodil(object):
         return children[0]
 
     def all(self, node, children):
-        'all = "{" expr* _ "}"'
-        child_expressions = children[1]
+        'all = _ "{" expr* _ "}"'
+        child_expressions = children[2]
         return self.delegate.mk_all(child_expressions)
 
     def any(self, node, children):
-        'any = "[" expr* _ "]"'
-        child_expressions = children[1]
+        'any = _ "[" expr* _ "]"'
+        child_expressions = children[2]
         return self.delegate.mk_any(child_expressions)
 
     def not_all(self, node, children):
-        'not_all = "!{" expr* _ "}"'
-        child_expressions = children[1]
+        'not_all = _ "!{" expr* _ "}"'
+        child_expressions = children[2]
         return self.delegate.mk_not_all(child_expressions)
 
     def not_any(self, node, children):
-        'not_any = "![" expr* _ "]"'
-        child_expressions = children[1]
+        'not_any = _ "![" expr* _ "]"'
+        child_expressions = children[2]
         return self.delegate.mk_not_any(child_expressions)
 
     def expr(self, node, children):
-        '''expr = _ (all / any / not_all / not_any / condition / comment) _ ~"[\\n\,]?" _'''
-        return children[1][0]
+        '''expr = (comment / all / any / not_all / not_any / condition) _ ~"[\\n\,]?" _ '''
+        return children[0][0]
+
+    def comment(self, node, children):
+        'comment = ~"\\n[\\s]*#[^\\n]*" &n'
+        return self.delegate.mk_comment(node.text)
+
+    def n(self, node, children):
+        'n = ~"\\n"'
+
+    # THIS WORKS FOR 1st LINE ONLY
+    # def comment(self, node, children):
+    #     'comment = ~"\\n[\\s]*#.*?\\n"'
+    #     return self.delegate.mk_comment(node.text[:-1])
 
     def condition(self, node, children):
         'condition = _ key _ test _ value _'
@@ -147,10 +159,6 @@ class Daffodil(object):
     def float(self, node, children):
         'float = ~"-?[0-9]*\.[0-9]+"'
         return float(node.text)
-
-    def comment(self, node, children):
-        'comment = ~"#.*?\\n"'
-        return self.delegate.mk_comment(node.text[:-1])
 
     def array(self, node, children):
         'array = "(" (  _ (number / boolean / string) _ ~"[\\n\,]?" _ )+ ")"'
