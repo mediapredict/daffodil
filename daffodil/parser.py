@@ -94,15 +94,15 @@ class Daffodil(object):
         return children[0]
 
     def comment(self, node, children):
-        'comment = line_comment / side_comment'
+        'comment = block_comment / inline_comment'
         return children[0]
 
-    def line_comment(self, node, children):
-        'line_comment = n side_comment'
+    def block_comment(self, node, children):
+        'block_comment = n inline_comment'
         return self.delegate.mk_comment(node.text, False)
 
-    def side_comment(self, node, children):
-        'side_comment = ~"[\\s]*#[^\\n]*" &n'
+    def inline_comment(self, node, children):
+        'inline_comment = ~"[\\s]*#[^\\n]*" &n'
         return self.delegate.mk_comment(node.text, True)
 
     def condition(self, node, children):
