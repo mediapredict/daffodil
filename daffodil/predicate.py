@@ -48,7 +48,7 @@ class DictionaryPredicateDelegate(object):
         }
         return ops[test_str]
 
-    def mk_comment(self, comment):
+    def mk_comment(self, comment, is_inline):
         do_nothing = lambda: True
         do_nothing.ignore = True
 
