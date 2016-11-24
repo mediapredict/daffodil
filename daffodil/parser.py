@@ -68,22 +68,22 @@ class Daffodil(object):
         return children[0]
 
     def all(self, node, children):
-        'all = _ "{" expr* _ "}" &exp_sep'
+        'all = _ "{" expr* _ "}" sep'
         child_expressions = children[2]
         return self.delegate.mk_all(child_expressions)
 
     def any(self, node, children):
-        'any = _ "[" expr* _ "]" &exp_sep'
+        'any = _ "[" expr* _ "]" sep'
         child_expressions = children[2]
         return self.delegate.mk_any(child_expressions)
 
     def not_all(self, node, children):
-        'not_all = _ "!{" expr* _ "}" &exp_sep'
+        'not_all = _ "!{" expr* _ "}" sep'
         child_expressions = children[2]
         return self.delegate.mk_not_all(child_expressions)
 
     def not_any(self, node, children):
-        'not_any = _ "![" expr* _ "]" &exp_sep'
+        'not_any = _ "![" expr* _ "]" sep'
         child_expressions = children[2]
         return self.delegate.mk_not_any(child_expressions)
 
@@ -106,7 +106,7 @@ class Daffodil(object):
         return self.delegate.mk_comment(node.text)
 
     def condition(self, node, children):
-        'condition = _ key _ test _ value &exp_sep'
+        'condition = _ key _ test _ value sep'
         _, key, _, test, _, val, _ = children
         return self.delegate.mk_cmp(key, val, test)
 
@@ -186,8 +186,14 @@ class Daffodil(object):
     def n(self, node, children):
         'n = ~"\\n"'
 
-    def exp_sep(self, node, children):
-        'exp_sep = _ ~"[\\n\,]?"'
+    def sep(self, node, children):
+        'sep = _ (&sep_n / sep_c)?'
+
+    def sep_n(self, node, children):
+        'sep_n = n'
+
+    def sep_c(self, node, children):
+        'sep_c = ~"[\,]"'
 
     def __call__(self, *args):
         return self.delegate.call(self.predicate, *args)
