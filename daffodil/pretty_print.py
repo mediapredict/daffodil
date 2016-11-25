@@ -161,7 +161,7 @@ class PrettyPrintDelegate(object):
         class string(str):
             dense_hide = True
             keep_with_prev = is_inline
-        return string(comment)
+        return string(comment.strip())
 
     def mk_cmp(self, key, val, test):
         key = to_daffodil_primitive(key)

@@ -98,7 +98,7 @@ class Daffodil(object):
         return children[0]
 
     def block_comment(self, node, children):
-        'block_comment = n inline_comment'
+        'block_comment = n ~"[\\s]*#[^\\n]*" &n'
         return self.delegate.mk_comment(node.text, False)
 
     def inline_comment(self, node, children):
@@ -187,7 +187,7 @@ class Daffodil(object):
         'n = ~"\\n"'
 
     def sep(self, node, children):
-        'sep = _ (&sep_n / sep_c)?'
+        'sep = (&sep_n / sep_c)?'
 
     def sep_n(self, node, children):
         'sep_n = n'

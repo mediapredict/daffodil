@@ -764,15 +764,15 @@ PRETTY_PRINT_EXPECTATIONS = (
 # Simple with a comment
 [
 '''
-    val1 = 10
-    # a comment
+    val1 = 10 # comment 1
+    # comment 2
     val2 = 20
 ''',
 '{"val1"=10,"val2"=20}',
 '''
 {
-  "val1" = 10
-  # a comment
+  "val1" = 10 # comment 1
+  # comment 2
   "val2" = 20
 }
 '''.strip()
