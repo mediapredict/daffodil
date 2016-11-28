@@ -68,31 +68,45 @@ class Daffodil(object):
         return children[0]
 
     def all(self, node, children):
-        'all = "{" expr* _ "}"'
-        child_expressions = children[1]
+        'all = _ "{" expr* _ "}" sep'
+        child_expressions = children[2]
         return self.delegate.mk_all(child_expressions)
 
     def any(self, node, children):
-        'any = "[" expr* _ "]"'
-        child_expressions = children[1]
+        'any = _ "[" expr* _ "]" sep'
+        child_expressions = children[2]
         return self.delegate.mk_any(child_expressions)
 
     def not_all(self, node, children):
-        'not_all = "!{" expr* _ "}"'
-        child_expressions = children[1]
+        'not_all = _ "!{" expr* _ "}" sep'
+        child_expressions = children[2]
         return self.delegate.mk_not_all(child_expressions)
 
     def not_any(self, node, children):
-        'not_any = "![" expr* _ "]"'
-        child_expressions = children[1]
+        'not_any = _ "![" expr* _ "]" sep'
+        child_expressions = children[2]
         return self.delegate.mk_not_any(child_expressions)
 
     def expr(self, node, children):
-        '''expr = _ (all / any / not_all / not_any / condition ) _ ~"[\\n\,]?" _'''
-        return children[1][0]
+        '''expr = (comment / all / any / not_all / not_any / condition)'''
+        if isinstance(children[0], list):
+            return children[0][0]
+        return children[0]
+
+    def comment(self, node, children):
+        'comment = block_comment / inline_comment'
+        return children[0]
+
+    def block_comment(self, node, children):
+        'block_comment = n ~"[\\s]*#[^\\n]*" &n'
+        return self.delegate.mk_comment(node.text, False)
+
+    def inline_comment(self, node, children):
+        'inline_comment = ~"[\\s]*#[^\\n]*" &n'
+        return self.delegate.mk_comment(node.text, True)
 
     def condition(self, node, children):
-        'condition = _ key _ test _ value _'
+        'condition = _ key _ test _ value sep'
         _, key, _, test, _, val, _ = children
         return self.delegate.mk_cmp(key, val, test)
 
@@ -168,6 +182,18 @@ class Daffodil(object):
 
     def _(self, node, children):
         '_ = ~"[\\n\s]*"m'
+
+    def n(self, node, children):
+        'n = ~"\\n"'
+
+    def sep(self, node, children):
+        'sep = (&sep_n / sep_c)?'
+
+    def sep_n(self, node, children):
+        'sep_n = n'
+
+    def sep_c(self, node, children):
+        'sep_c = ~"[\,]"'
 
     def __call__(self, *args):
         return self.delegate.call(self.predicate, *args)

@@ -42,6 +42,9 @@ class HStoreQueryDelegate(object):
         if not children or not any(children):
             return "false"
 
+        if isinstance(children, list):
+            children = [c for c in children if c]
+
         sql_expr = " OR ".join("({})".format(child_exp) for child_exp in children)
 
         if any(breaks_optimizer(child_exp) for child_exp in children):
@@ -68,6 +71,9 @@ class HStoreQueryDelegate(object):
     def mk_all(self, children):
         if not children or not any(children):
             return "true"
+
+        if isinstance(children, list):
+            children = [c for c in children if c]
 
         sql_expr = " AND ".join("({})".format(child_exp) for child_exp in children if child_exp)
 
@@ -97,6 +103,9 @@ class HStoreQueryDelegate(object):
 
     def mk_not_all(self, children):
         return " NOT ({0})".format(self.mk_all(children))
+
+    def mk_comment(self, comment, is_inline):
+        return ""
 
     def mk_test(self, daff_test_str):
         test_str = daff_test_str

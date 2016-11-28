@@ -76,8 +76,27 @@ class DaffodilWrapper(UserList):
         return u"{3}{1}\n{0}\n{3}{2}".format(children, self.opener, self.closer, self.wrapper_indent)
 
     def format_children(self, children):
+        if self.dense:
+            # abandon comments
+            children = [
+                c for c in children
+                if not getattr(c, "dense_hide", False)
+            ]
+        else:
+            # join inline comments
+            lcomments_indexes = [
+              index for index, c in enumerate(children)
+              if getattr(c, "keep_with_prev", False)
+            ]
+
+            for i in reversed(lcomments_indexes):
+                children[i-1:i+1] = [" ".join(children[i-1:i+1])]
+
         # apply indent and join children
-        children = self.sep.join(indent(c, self.child_indent) for c in children)
+        children = self.sep.join(
+            indent(c, self.child_indent)
+            for c in children
+        )
 
         if self.dense:
             return self.format_dense(children)
@@ -93,26 +112,7 @@ class DaffodilWrapper(UserList):
             if isinstance(child, DaffodilWrapper):
                 child.indent_level = self.indent_level + 1
 
-        def sort_key(obj):
-            if not isinstance(obj, DaffodilWrapper):
-                if obj is True:
-                    return -2, obj
-                elif obj is False:
-                    return -1, obj
-                else:
-                    return 0, obj
-            
-            if obj.grouping == 'any':
-                return 1, unicode(obj)
-            
-            elif obj.grouping == 'all':
-                return 2, unicode(obj)
-           
-        # Sort so that different filters with the same expressions will
-        # print the same way
-        children = sorted(self, key=sort_key)
-
-        return self.format_children(children)
+        return self.format_children(self)
 
 
 class DaffodilArrayWrapper(DaffodilWrapper):
@@ -156,6 +156,12 @@ class PrettyPrintDelegate(object):
 
     def mk_test(self, test_str):
         return test_str
+
+    def mk_comment(self, comment, is_inline):
+        class string(str):
+            dense_hide = True
+            keep_with_prev = is_inline
+        return string(comment.strip())
 
     def mk_cmp(self, key, val, test):
         key = to_daffodil_primitive(key)

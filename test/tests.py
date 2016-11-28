@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import unittest
+import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -537,7 +538,7 @@ class SATDataTests(unittest.TestCase):
         self.assert_filter_has_n_results(421, """
             dbn != -7
         """)
-    
+
     def test_comparing_string_data_to_a_float_filter(self):
         self.assert_filter_has_n_results(0, """
             dbn = 7.5
@@ -556,6 +557,85 @@ class SATDataTests(unittest.TestCase):
         """)
         self.assert_filter_has_n_results(421, """
             dbn != -7.5
+        """)
+
+    def test_comments(self):
+        self.assert_filter_has_n_results(4, """
+            {{num_of_sat_test_takers = 50,num_of_sat_test_takers = 50}}
+        """)
+
+        self.assert_filter_has_n_results(4, """
+            # omg1
+            num_of_sat_test_takers = 50
+            # omg2
+            num_of_sat_test_takers = 50 # omg3
+            # omg4
+        """)
+
+        self.assert_filter_has_n_results(0, """
+            {val1 = 10,val2 = 29}
+        """)
+
+        self.assert_filter_has_n_results(4, """
+            num_of_sat_test_takers = 50 # this is inline comment
+        """)
+
+        self.assert_filter_has_n_results(3, """
+            # this is 1st comment
+            num_of_sat_test_takers = 10
+            sat_writing_avg_score < 400
+            # this is 2nd comment
+            sat_math_avg_score > 200
+            sat_critical_reading_avg_score <= 500
+            # this is 3d comment
+        """)
+
+        #
+        # or, not or, and, not and
+        #
+
+        self.assert_filter_has_n_results(4, """
+            [
+                # this is a comment
+                num_of_sat_test_takers = 50
+            ]
+        """)
+        self.assert_filter_has_n_results(413, """
+            ![
+                # this is a comment
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+            ]
+        """)
+        self.assert_filter_has_n_results(4, """
+            # this is 1st comment
+            {
+                # this is 2nd comment
+                num_of_sat_test_takers = 50 # this is 3rd comment
+            }
+        """)
+        self.assert_filter_has_n_results(370, """
+            !{
+                # this is a comment
+                sat_writing_avg_score >= 300
+                sat_writing_avg_score < 350
+            }
+        """)
+
+        # less expected places + bad formatting
+        self.assert_filter_has_n_results(4, """
+            {# this is 1st comment
+            #this is 2nd comment
+                num_of_sat_test_takers = 50
+                #
+                #
+                # this is 3d comment
+            }
+
+            #
+            # and yet 4th comment
+            #
         """)
 
     def test_dollar_sign_in_variable_name(self):
@@ -609,7 +689,7 @@ class PredicateTests(unittest.TestCase):
         }
         """)
         self.assertEqual(daff.keys, set(["k1", "k2", "k3", "k4", "k5"]))
-    
+
     def test_matching(self):
         daff = Daffodil("""
         {
@@ -676,6 +756,23 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''
 {
   "val1" = 10
+  "val2" = 20
+}
+'''.strip()
+],
+
+# Simple with a comment
+[
+'''
+    val1 = 10 # comment 1
+    # comment 2
+    val2 = 20
+''',
+'{"val1"=10,"val2"=20}',
+'''
+{
+  "val1" = 10 # comment 1
+  # comment 2
   "val2" = 20
 }
 '''.strip()
@@ -770,11 +867,11 @@ PRETTY_PRINT_EXPECTATIONS = (
     val2 = 20
     val1 = 10
 ''',
-'{"val1"=10,"val2"=20}',
+'{"val2"=20,"val1"=10}',
 '''
 {
-  "val1" = 10
   "val2" = 20
+  "val1" = 10
 }
 '''.strip()
 ],
@@ -1062,23 +1159,23 @@ val6 ?= true
   }, val99 < 5.525 ]
 
 ''',
-'{"val1"<10,"val2"=3,"val2"?=true,"val9"="what\'s \\"up\\"?",["val99"<5.525,{"val5"!=30,"val5"?=true},{"val5"=30,"val6"?=true}]}',
+'{"val2"=3,"val2"?=true,"val1"<10,"val9"="what\'s \\"up\\"?",[{"val6"?=true,"val5"=30},{"val5"?=true,"val5"!=30},"val99"<5.525]}',
 '''
 {
-  "val1" < 10
   "val2" = 3
   "val2" ?= true
+  "val1" < 10
   "val9" = "what's \\"up\\"?"
   [
-    "val99" < 5.525
     {
-      "val5" != 30
-      "val5" ?= true
-    }
-    {
-      "val5" = 30
       "val6" ?= true
+      "val5" = 30
     }
+    {
+      "val5" ?= true
+      "val5" != 30
+    }
+    "val99" < 5.525
   ]
 }
 '''.strip()
@@ -1089,23 +1186,30 @@ val6 ?= true
 class PrettyPrintingTests(unittest.TestCase):
     delegate_dense = PrettyPrintDelegate(dense=True)
     delegate_pretty = PrettyPrintDelegate(dense=False)
-    
+
     def pp(self, fltr):
         dense = Daffodil(fltr, delegate=self.delegate_dense)()
         pretty = Daffodil(fltr, delegate=self.delegate_pretty)()
         return dense, pretty
-        
+
     def assertFilterIsCorrect(self, fltr, expected_dense, expected_pretty):
         dense, pretty = self.pp(fltr)
         self.assertEqual(dense, expected_dense)
         self.assertEqual(pretty, expected_pretty)
-    
+
     def test_simple(self):
         for fltr, dense, pretty in PRETTY_PRINT_EXPECTATIONS:
             self.assertFilterIsCorrect(fltr, dense, pretty)
-            
+
     def test_multiple_passthroughs(self):
+        regexp_py_comment = re.compile('#.*?\n')
+
         for fltr, dense_expected, pretty_expected in PRETTY_PRINT_EXPECTATIONS:
+
+            # if fltr contains a comment, it'll be discarded for "dense"
+            if regexp_py_comment.search(fltr):
+                continue
+
             d1, p1 = self.pp(fltr)
             d1_dense, d1_pretty = self.pp(d1)
             p1_dense, p1_pretty = self.pp(p1)
@@ -1114,7 +1218,7 @@ class PrettyPrintingTests(unittest.TestCase):
             self.assertEqual(p1_pretty, pretty_expected)
             self.assertEqual(d1_dense, dense_expected)
             self.assertEqual(p1_dense, dense_expected)
-            
+
 
 
 # Borrowed gratuitously from https://gist.github.com/k4ml/2219751
