@@ -106,8 +106,15 @@ class Daffodil(object):
         return self.delegate.mk_comment(node.text, True)
 
     def condition(self, node, children):
-        'condition = _ key _ ((test _ value) / (existence _ boolean)) sep'
-        _, key, _, [[test, _, val]], _ = children
+        'condition = _ key _ test _ value sep'
+        _, key, _, test, _, val, _ = children
+
+        if (
+            getattr(test, "is_datapoint_test", False)
+            and not isinstance(val, bool)
+        ):
+            raise ValueError('"?=" operator requires boolean value (true/false)')
+
         return self.delegate.mk_cmp(key, val, test)
 
     def key(self, node, children):
@@ -121,11 +128,7 @@ class Daffodil(object):
         return node.text
 
     def test(self, node, children):
-        'test = "!=" / "<=" / ">=" / "=" / "<" / ">" / "in" / "!in"'
-        return self.delegate.mk_test(node.text)
-
-    def existence(self, node, children):
-        'existence = "?="'
+        'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">" / "in" / "!in"'
         return self.delegate.mk_test(node.text)
 
     def value(self, node, children):

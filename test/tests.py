@@ -29,9 +29,9 @@ class BaseTest(unittest.TestCase):
         return Daffodil(daff_src)(self.d)
 
 
-class ParserConfigTests(BaseTest):
+class ParserGrammarTypesTests(BaseTest):
     def test_existence_doesnt_expect_string(self):
-        with self.assertRaises(ParseError):
+        with self.assertRaises(ValueError):
             self.filter(u'whatever ?= "true"')
             self.filter(u'whatever ?= "False"')
             self.filter(u'whatever ?= "any string"')
