@@ -14,20 +14,30 @@ def load_test_data(dataset):
     filename = os.path.join(os.path.dirname(__file__), 'data', '{0}.json'.format(dataset))
     return json.load(open(filename))
 
+
 def load_nyc_opendata(dataset):
     dataset = load_test_data(dataset)
     columns = [c['fieldName'] for c in dataset['meta']['view']['columns']]
     d = [dict(zip(columns, row_values)) for row_values in dataset['data']]
 
 
-class SATDataTests(unittest.TestCase):
-
+class BaseTest(unittest.TestCase):
     def setUp(self):
         self.d = load_test_data('nyc_sat_scores')
 
     def filter(self, daff_src):
         return Daffodil(daff_src)(self.d)
 
+
+class ParserGrammarTypesTests(BaseTest):
+    def test_existence_doesnt_expect_string(self):
+        with self.assertRaises(ValueError):
+            self.filter(u'whatever ?= "true"')
+            self.filter(u'whatever ?= "False"')
+            self.filter(u'whatever ?= "any string"')
+
+
+class SATDataTests(BaseTest):
     def assert_filter_has_n_results(self, n, daff_src):
         self.assertEqual(len(self.filter(daff_src)), n)
 

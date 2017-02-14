@@ -108,6 +108,13 @@ class Daffodil(object):
     def condition(self, node, children):
         'condition = _ key _ test _ value sep'
         _, key, _, test, _, val, _ = children
+
+        if (
+            getattr(test, "is_datapoint_test", False)
+            and not isinstance(val, bool)
+        ):
+            raise ValueError('"?=" operator requires boolean value (true/false)')
+
         return self.delegate.mk_cmp(key, val, test)
 
     def key(self, node, children):
