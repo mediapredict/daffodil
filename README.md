@@ -8,20 +8,16 @@ data filtering lib
 For 18 year old women:
 
 ```
-{
-  age = 18
-  gender = "female"
-}
+age = 18
+gender = "female"
 ```
 
 For men, 18 - 35:
 
 ```
-{
-  gender = "male"
-  age >= 18
-  age <= 35
-}
+gender = "male"
+age >= 18
+age <= 35
 ```
 
 (this is what we'll use for MP)
@@ -40,22 +36,18 @@ People who are 18 years old or 21 years old:
 Women who are 18 or 21:
 
 ```
-{
-  gender = "female"
-  [
-    age = 18
-    age = 21
-  ]
-}
+gender = "female"
+[
+  age = 18
+  age = 21
+]
 ```
 
 This also works:
 
 ```
-{
-  gender = "female"
-  [ age = 18, age = 21 ]
-}
+gender = "female"
+[ age = 18, age = 21 ]
 ```
 
 "{}" means "AND"
@@ -63,17 +55,15 @@ This also works:
 Women who are 18 or 21, or between 35 and 55:
 
 ```
-{
 gender = "female"
-  [
-    age = 18
-    age = 21
-    {
-      age >= 35
-      age <= 55
-    }
-  ]
-}
+[
+  age = 18
+  age = 21
+  {
+    age >= 35
+    age <= 55
+  }
+]
 ```
 
 Quotes around the Field names are optional when the name is only letters, numbers, dashes, and underscores. The following three examples are all exactly equivalent:
