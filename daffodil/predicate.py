@@ -1,3 +1,6 @@
+from builtins import filter
+from past.builtins import basestring
+from builtins import object
 import operator as op
 
 
@@ -107,5 +110,5 @@ class DictionaryPredicateDelegate(object):
         return test_data_point
 
     def call(self, predicate, iterable):
-        return filter(predicate, iterable)
+        return list(filter(predicate, iterable))
 
