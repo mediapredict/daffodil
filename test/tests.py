@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from builtins import zip
 import sys
 import os
 import json
@@ -18,7 +20,7 @@ def load_test_data(dataset):
 def load_nyc_opendata(dataset):
     dataset = load_test_data(dataset)
     columns = [c['fieldName'] for c in dataset['meta']['view']['columns']]
-    d = [dict(zip(columns, row_values)) for row_values in dataset['data']]
+    d = [dict(list(zip(columns, row_values))) for row_values in dataset['data']]
 
 
 class BaseTest(unittest.TestCase):

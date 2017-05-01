@@ -1,3 +1,6 @@
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 from parsimonious.grammar import Grammar
 from .predicate import DictionaryPredicateDelegate
 
@@ -51,7 +54,7 @@ class Daffodil(object):
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'grammar'):
-            grammar_def = '\n'.join(v.__doc__ for k, v in vars(cls).items()
+            grammar_def = '\n'.join(v.__doc__ for k, v in list(vars(cls).items())
                                     if '__' not in k
                                       and hasattr(v, '__doc__')
                                       and v.__doc__)
@@ -137,7 +140,7 @@ class Daffodil(object):
 
     def string(self, node, children):
         'string = doubleString / singleString'
-        return unicode(node.text[1:-1]).replace(u'\\"', u'"').replace(u"\\'", u"'")
+        return str(node.text[1:-1]).replace(u'\\"', u'"').replace(u"\\'", u"'")
 
     def doubleString(self, node, children):
         r'''

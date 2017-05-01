@@ -1,4 +1,9 @@
-from UserList import UserList
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
+from collections import UserList
 
 
 def to_daffodil_primitive(val):
@@ -14,12 +19,12 @@ def to_daffodil_primitive(val):
         # wrap string in quotes
         return u'"{0}"'.format(val)
     else:
-        return unicode(val)
+        return str(val)
 
 
 def indent(s, amount=u" "):
     if isinstance(s, DaffodilWrapper):
-        return unicode(s)
+        return str(s)
     else:
         return u"{0}{1}".format(amount, s)
 
@@ -106,7 +111,7 @@ class DaffodilWrapper(UserList):
     def __unicode__(self):
         # Wrapper containing 1 wrapper has no effect
         if len(self) == 1 and isinstance(self[0], DaffodilWrapper):
-            return unicode(self[0])
+            return str(self[0])
             
         for child in self:
             if isinstance(child, DaffodilWrapper):
@@ -178,4 +183,4 @@ class PrettyPrintDelegate(object):
             return u"{0} {1} {2}".format(key, test, val)
 
     def call(self, predicate):
-        return unicode(predicate)
+        return str(predicate)
