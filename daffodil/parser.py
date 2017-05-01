@@ -67,49 +67,49 @@ class Daffodil(object):
         return method(node, [self.eval(n) for n in node])
 
     def program(self, node, children):
-        'program = expr'
+        r'program = expr'
         return children[0]
 
     def all(self, node, children):
-        'all = _ "{" expr* _ "}" sep'
+        r'all = _ "{" expr* _ "}" sep'
         child_expressions = children[2]
         return self.delegate.mk_all(child_expressions)
 
     def any(self, node, children):
-        'any = _ "[" expr* _ "]" sep'
+        r'any = _ "[" expr* _ "]" sep'
         child_expressions = children[2]
         return self.delegate.mk_any(child_expressions)
 
     def not_all(self, node, children):
-        'not_all = _ "!{" expr* _ "}" sep'
+        r'not_all = _ "!{" expr* _ "}" sep'
         child_expressions = children[2]
         return self.delegate.mk_not_all(child_expressions)
 
     def not_any(self, node, children):
-        'not_any = _ "![" expr* _ "]" sep'
+        r'not_any = _ "![" expr* _ "]" sep'
         child_expressions = children[2]
         return self.delegate.mk_not_any(child_expressions)
 
     def expr(self, node, children):
-        '''expr = (comment / all / any / not_all / not_any / condition)'''
+        r'''expr = (comment / all / any / not_all / not_any / condition)'''
         if isinstance(children[0], list):
             return children[0][0]
         return children[0]
 
     def comment(self, node, children):
-        'comment = block_comment / inline_comment'
+        r'comment = block_comment / inline_comment'
         return children[0]
 
     def block_comment(self, node, children):
-        'block_comment = n ~"[\\s]*#[^\\n]*" &n'
+        r'block_comment = n ~"[\\s]*#[^\\n]*" &n'
         return self.delegate.mk_comment(node.text, False)
 
     def inline_comment(self, node, children):
-        'inline_comment = ~"[\\s]*#[^\\n]*" &n'
+        r'inline_comment = ~"[\\s]*#[^\\n]*" &n'
         return self.delegate.mk_comment(node.text, True)
 
     def condition(self, node, children):
-        'condition = _ key _ test _ value sep'
+        r'condition = _ key _ test _ value sep'
         _, key, _, test, _, val, _ = children
 
         if (
@@ -121,25 +121,25 @@ class Daffodil(object):
         return self.delegate.mk_cmp(key, val, test)
 
     def key(self, node, children):
-        'key = bare_key / string'
+        r'key = bare_key / string'
         val = children[0]
         self.keys.add(val)
         return val
 
     def bare_key(self, node, children):
-        'bare_key = ~"[a-zA-Z0-9$_-]+"'
+        r'bare_key = ~"[a-zA-Z0-9$_-]+"'
         return node.text
 
     def test(self, node, children):
-        'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">" / "in" / "!in"'
+        r'test = "!=" / "?=" / "<=" / ">=" / "=" / "<" / ">" / "in" / "!in"'
         return self.delegate.mk_test(node.text)
 
     def value(self, node, children):
-        'value = number / boolean / string / array'
+        r'value = number / boolean / string / array'
         return children[0]
 
     def string(self, node, children):
-        'string = doubleString / singleString'
+        r'string = doubleString / singleString'
         return str(node.text[1:-1]).replace('\\"', '"').replace("\\'", "'")
 
     def doubleString(self, node, children):
@@ -155,25 +155,25 @@ class Daffodil(object):
         return node.text
 
     def number(self, node, children):
-        'number =  float / integer'
+        r'number =  float / integer'
         return children[0]
 
     def integer(self, node, children):
-        'integer = ~"-?[0-9]+"'
+        r'integer = ~"-?[0-9]+"'
         return int(node.text)
 
     def boolean(self, node, children):
-        '''
+        r'''
         boolean = ~"true|false"i
         '''
         return node.text.lower() == "true"
 
     def float(self, node, children):
-        'float = ~"-?[0-9]*\.[0-9]+"'
+        r'float = ~"-?[0-9]*\.[0-9]+"'
         return float(node.text)
 
     def array(self, node, children):
-        'array = "(" (  _ (number / boolean / string) _ ~"[\\n\,]?" _ )+ ")"'
+        r'array = "(" (  _ (number / boolean / string) _ ~"[\\n\,]?" _ )+ ")"'
         vals = [
             val[0]
             for (_, val, _, whitespace, _)
@@ -191,19 +191,19 @@ class Daffodil(object):
         return vals
 
     def _(self, node, children):
-        '_ = ~"[\\n\s]*"m'
+        r'_ = ~"[\\n\s]*"m'
 
     def n(self, node, children):
-        'n = ~"\\n"'
+        r'n = ~"\\n"'
 
     def sep(self, node, children):
-        'sep = (&sep_n / sep_c)?'
+        r'sep = (&sep_n / sep_c)?'
 
     def sep_n(self, node, children):
-        'sep_n = n'
+        r'sep_n = n'
 
     def sep_c(self, node, children):
-        'sep_c = ~"[\,]"'
+        r'sep_c = ~"[\,]"'
 
     def __call__(self, *args):
         return self.delegate.call(self.predicate, *args)
