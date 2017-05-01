@@ -59,7 +59,7 @@ class Daffodil(object):
                                       and hasattr(v, '__doc__')
                                       and v.__doc__)
             cls.grammar = Grammar(grammar_def)
-        return object.__new__(cls, *args, **kwargs)
+        return object.__new__(cls)
 
     def eval(self, source):
         node = self.parse(source) if isinstance(source, basestring) else source
