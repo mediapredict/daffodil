@@ -14,7 +14,9 @@ from daffodil.exceptions import ParseError
 
 def load_test_data(dataset):
     filename = os.path.join(os.path.dirname(__file__), 'data', '{0}.json'.format(dataset))
-    return json.load(open(filename))
+    with open(filename, 'r') as f:
+        data = json.load(f)
+    return data
 
 
 def load_nyc_opendata(dataset):
