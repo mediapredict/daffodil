@@ -11,46 +11,46 @@ def to_daffodil_primitive(val):
         raise ValueError("lists cannot be converted to a primitive daffodil type - use a DaffodilArrayWrapper")
 
     if isinstance(val, bool):
-        return u"true" if val else u"false"
+        return "true" if val else "false"
     elif isinstance(val, basestring):
         # escape quotes
-        val = val.replace(u'"', u'\\"')
+        val = val.replace('"', '\\"')
 
         # wrap string in quotes
-        return u'"{0}"'.format(val)
+        return '"{0}"'.format(val)
     else:
         return str(val)
 
 
-def indent(s, amount=u" "):
+def indent(s, amount=" "):
     if isinstance(s, DaffodilWrapper):
         return str(s)
     else:
-        return u"{0}{1}".format(amount, s)
+        return "{0}{1}".format(amount, s)
 
 
 class DaffodilWrapper(UserList):
     grouping = "all"
     dense = True
     indent_level = 1
-    indent = u"  "
+    indent = "  "
 
     WRAP_SYMBOLS = {
         "OPEN": {
-            "all": u"{",
-            "any": u"[",
-            "in": u"(",
-            "not_all": u"!{",
-            "not_any": u"![",
-            "!in": u"(",
+            "all": "{",
+            "any": "[",
+            "in": "(",
+            "not_all": "!{",
+            "not_any": "![",
+            "!in": "(",
         },
         "CLOSE": {
-            "all": u"}",
-            "any": u"]",
-            "in": u")",
-            "not_all": u"}",
-            "not_any": u"]",
-            "!in": u")",
+            "all": "}",
+            "any": "]",
+            "in": ")",
+            "not_all": "}",
+            "not_any": "]",
+            "!in": ")",
         },
     }
 
@@ -64,21 +64,21 @@ class DaffodilWrapper(UserList):
 
     @property
     def sep(self):
-        return u"," if self.dense else u"\n"
+        return "," if self.dense else "\n"
     
     @property
     def child_indent(self):
-        return u"" if self.dense else (self.indent * self.indent_level)
+        return "" if self.dense else (self.indent * self.indent_level)
     
     @property
     def wrapper_indent(self):
-        return u"" if self.dense else (self.indent * (self.indent_level - 1))
+        return "" if self.dense else (self.indent * (self.indent_level - 1))
 
     def format_dense(self, children):
-        return u"{1}{0}{2}".format(children, self.opener, self.closer)
+        return "{1}{0}{2}".format(children, self.opener, self.closer)
 
     def format_std(self, children):
-        return u"{3}{1}\n{0}\n{3}{2}".format(children, self.opener, self.closer, self.wrapper_indent)
+        return "{3}{1}\n{0}\n{3}{2}".format(children, self.opener, self.closer, self.wrapper_indent)
 
     def format_children(self, children):
         if self.dense:
@@ -108,29 +108,33 @@ class DaffodilWrapper(UserList):
 
         return self.format_std(children)
 
-    def __unicode__(self):
+    def __str__(self):
         # Wrapper containing 1 wrapper has no effect
         if len(self) == 1 and isinstance(self[0], DaffodilWrapper):
             return str(self[0])
-            
+
         for child in self:
             if isinstance(child, DaffodilWrapper):
                 child.indent_level = self.indent_level + 1
 
         return self.format_children(self)
 
+    # only for python 2.x compatibiliy
+    def __unicode__(self):
+        return self.__str__()
+
 
 class DaffodilArrayWrapper(DaffodilWrapper):
     @property
     def child_indent(self):
-        return u"" if self.dense else (self.indent * (self.indent_level + 1))
+        return "" if self.dense else (self.indent * (self.indent_level + 1))
 
     def format_children(self, children):
         children = [to_daffodil_primitive(c) for c in children]
         return super(DaffodilArrayWrapper, self).format_children(children)
 
     def format_std(self, children):
-        return u"{3}{1}\n{0}\n{4}{2}".format(
+        return "{3}{1}\n{0}\n{4}{2}".format(
             children, self.opener, self.closer, self.wrapper_indent, self.indent * self.indent_level
         )
 
@@ -178,9 +182,9 @@ class PrettyPrintDelegate(object):
             val = to_daffodil_primitive(val)
 
         if self.dense:
-            return u"{0}{1}{2}".format(key, test, val)
+            return "{0}{1}{2}".format(key, test, val)
         else:
-            return u"{0} {1} {2}".format(key, test, val)
+            return "{0} {1} {2}".format(key, test, val)
 
     def call(self, predicate):
         return str(predicate)

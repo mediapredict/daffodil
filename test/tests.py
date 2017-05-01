@@ -34,9 +34,9 @@ class BaseTest(unittest.TestCase):
 class ParserGrammarTypesTests(BaseTest):
     def test_existence_doesnt_expect_string(self):
         with self.assertRaises(ValueError):
-            self.filter(u'whatever ?= "true"')
-            self.filter(u'whatever ?= "False"')
-            self.filter(u'whatever ?= "any string"')
+            self.filter('whatever ?= "true"')
+            self.filter('whatever ?= "False"')
+            self.filter('whatever ?= "any string"')
 
 
 class SATDataTests(BaseTest):
@@ -455,76 +455,76 @@ class SATDataTests(BaseTest):
         """)
 
     def test_unicode_filter(self):
-        self.assert_filter_has_n_results(273, u"""
+        self.assert_filter_has_n_results(273, """
             num_of_sat_test_takers > 50
         """)
 
     def test_existance_has_value(self):
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             num_of_sat_test_takers ?= true
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(0, """
             num_of_sat_test_takers ?= false
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             "num_of_sat_test_takers" ?= true
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(0, """
             "num_of_sat_test_takers" ?= false
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             'num_of_sat_test_takers' ?= true
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(0, """
             'num_of_sat_test_takers' ?= false
         """)
 
     def test_existance_does_not_have_value(self):
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(0, """
             asdf ?= true
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             asdf ?= false
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(0, """
             "asdf" ?= true
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             "asdf" ?= false
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(0, """
             'asdf' ?= true
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             'asdf' ?= false
         """)
 
     def test_existance_multiple(self):
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             [
                 total_score ?= true
                 num_of_sat_test_takers ?= true
             ]
         """)
-        self.assert_filter_has_n_results(421, u"""
+        self.assert_filter_has_n_results(421, """
             [
                 total_score ?= false
                 num_of_sat_test_takers ?= true
             ]
         """)
-        self.assert_filter_has_n_results(0, u"""
+        self.assert_filter_has_n_results(0, """
             {
                 total_score ?= false
                 num_of_sat_test_takers ?= false
             }
         """)
-        self.assert_filter_has_n_results(4, u"""
+        self.assert_filter_has_n_results(4, """
             {
                 total_score ?= true
                 num_of_sat_test_takers ?= true
             }
         """)
-        self.assert_filter_has_n_results(417, u"""
+        self.assert_filter_has_n_results(417, """
             {
                 total_score ?= false
                 num_of_sat_test_takers ?= true
@@ -719,7 +719,7 @@ class PredicateTests(unittest.TestCase):
         """)
         self.assertTrue(daff.predicate(self.data))
 
-        daff = Daffodil(u"""{
+        daff = Daffodil("""{
            "MHQ9ProgsWatched - BornSurvivor" = 'no'
            "MHQ9ProgsWatched - WheelerDealers" = 'no'
            "MHQ9ProgsWatched - FifthGear" = 'no'
@@ -732,7 +732,7 @@ class PredicateTests(unittest.TestCase):
            "MHQ9ProgsWatched - AmericanChopper" = 'no'
         }""")
         self.assertTrue(daff.predicate({
-           u'MHQ9ProgsWatched - PawnStars': u'yes', u'MHQ3Gender': u'Female', u'MHQ9ProgsWatched - FastNLoud': u'no', u'MHQ8ChannelViewing - Discovery Channel': u'OncePerWeek', u'MHQ8ChannelViewing - National Geographic': u'OncePerWeek', '_sample_id': u'frutest3', u'MHQ4TVProvider - YouView': u'no', u'MHQ6Industry - MarketResearch': u'no', u'MHQ6Industry - Entertainment': u'no', u'MHQ5TVViewing': u'1-3nights', u'MHQ8ChannelViewing - ITV1': u'OncePerWeek', u'MHQ7PastParticipant': u'No', u'MHQ9ProgsWatched - StorageWars': u'yes', u'MHQ8ChannelViewing - History Channel': u'OncePerWeek', u'MHQ8ChannelViewing - BBC2': u'OncePerWeek', u'MHQ1Confidential': u'Yes', u'MHQ4TVProvider - Freeview': u'no', u'MHQ9ProgsWatched - BornSurvivor': u'no', u'MHQ9ProgsWatched - WheelerDealers': u'no', u'MHQ8ChannelViewing - Channel4': u'OncePerWeek', u'MHQ4TVProvider - IPTV': u'no', u'MHQ9ProgsWatched - AuctionHunters': u'no', u'MHQ9ProgsWatched - AirCrashInvestigation': u'no', u'MHQ8ChannelViewing - Sky Arts': u'OncePerWeek', u'MHQ2Age': u'18-34', u'MHQ8ChannelViewing - BBC1': u'OncePerWeek', u'MHQ6Industry - None': u'yes', u'MHQ4TVProvider - None': u'no', u'MHQ6Industry - RadioTV': u'no', u'MHQ6Industry - Advertising': u'no', u'MHQ9ProgsWatched - DeadliestCatch': u'no', u'MHQ9ProgsWatched - FifthGear': u'no', u'MHQ9ProgsWatched - TopGear': u'no', u'MHQ9ProgsWatched - SonsOfGuns': u'no', u'MHQ9ProgsWatched - WickedTuna': u'no', u'MHQ9ProgsWatched - GoldRush': u'no', u'MHQ9ProgsWatched - MythBusters': u'no', u'MHQ6Industry - Press': u'no', u'MHQ4TVProvider - Virgin': u'yes', '_id': '41298', u'MHQ9ProgsWatched - AmericanPickers': u'no', u'MHQ9ProgsWatched - AmericanChopper': u'no', u'MHQ4TVProvider - Sky': u'no'
+           'MHQ9ProgsWatched - PawnStars': 'yes', 'MHQ3Gender': 'Female', 'MHQ9ProgsWatched - FastNLoud': 'no', 'MHQ8ChannelViewing - Discovery Channel': 'OncePerWeek', 'MHQ8ChannelViewing - National Geographic': 'OncePerWeek', '_sample_id': 'frutest3', 'MHQ4TVProvider - YouView': 'no', 'MHQ6Industry - MarketResearch': 'no', 'MHQ6Industry - Entertainment': 'no', 'MHQ5TVViewing': '1-3nights', 'MHQ8ChannelViewing - ITV1': 'OncePerWeek', 'MHQ7PastParticipant': 'No', 'MHQ9ProgsWatched - StorageWars': 'yes', 'MHQ8ChannelViewing - History Channel': 'OncePerWeek', 'MHQ8ChannelViewing - BBC2': 'OncePerWeek', 'MHQ1Confidential': 'Yes', 'MHQ4TVProvider - Freeview': 'no', 'MHQ9ProgsWatched - BornSurvivor': 'no', 'MHQ9ProgsWatched - WheelerDealers': 'no', 'MHQ8ChannelViewing - Channel4': 'OncePerWeek', 'MHQ4TVProvider - IPTV': 'no', 'MHQ9ProgsWatched - AuctionHunters': 'no', 'MHQ9ProgsWatched - AirCrashInvestigation': 'no', 'MHQ8ChannelViewing - Sky Arts': 'OncePerWeek', 'MHQ2Age': '18-34', 'MHQ8ChannelViewing - BBC1': 'OncePerWeek', 'MHQ6Industry - None': 'yes', 'MHQ4TVProvider - None': 'no', 'MHQ6Industry - RadioTV': 'no', 'MHQ6Industry - Advertising': 'no', 'MHQ9ProgsWatched - DeadliestCatch': 'no', 'MHQ9ProgsWatched - FifthGear': 'no', 'MHQ9ProgsWatched - TopGear': 'no', 'MHQ9ProgsWatched - SonsOfGuns': 'no', 'MHQ9ProgsWatched - WickedTuna': 'no', 'MHQ9ProgsWatched - GoldRush': 'no', 'MHQ9ProgsWatched - MythBusters': 'no', 'MHQ6Industry - Press': 'no', 'MHQ4TVProvider - Virgin': 'yes', '_id': '41298', 'MHQ9ProgsWatched - AmericanPickers': 'no', 'MHQ9ProgsWatched - AmericanChopper': 'no', 'MHQ4TVProvider - Sky': 'no'
         }))
 
     def test_not_matching(self):

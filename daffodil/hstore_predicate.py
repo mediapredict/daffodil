@@ -185,15 +185,15 @@ class HStoreQueryDelegate(object):
     def cond_cast(self, val):
         def escape_single_quote(val):
             if isinstance(val, basestring):
-                return val.replace(u"'", u"''")
+                return val.replace("'", "''")
             return val
 
         def format_list(lst):
             delimiter = "'" if isinstance(lst[0], basestring) else ""
             formatted_list = ",".join(
-                [u"{1}{0}{1}".format(escape_single_quote(elem), delimiter) for elem in lst]
+                ["{1}{0}{1}".format(escape_single_quote(elem), delimiter) for elem in lst]
             )
-            return u"({0})".format(formatted_list)
+            return "({0})".format(formatted_list)
 
         def get_cast_attr(val, attr=None):
             for m in CAST_AND_TYPE_MAP:
@@ -224,7 +224,7 @@ class HStoreQueryDelegate(object):
             {
                 "type": basestring,
                 "cast": lambda v: "",
-                "value": lambda v: u"'{}'".format(escape_single_quote(v)),
+                "value": lambda v: "'{}'".format(escape_single_quote(v)),
                 "type_check": lambda v: ["", ""],
             },
             {

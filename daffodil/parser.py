@@ -140,7 +140,7 @@ class Daffodil(object):
 
     def string(self, node, children):
         'string = doubleString / singleString'
-        return str(node.text[1:-1]).replace(u'\\"', u'"').replace(u"\\'", u"'")
+        return str(node.text[1:-1]).replace('\\"', '"').replace("\\'", "'")
 
     def doubleString(self, node, children):
         r'''
