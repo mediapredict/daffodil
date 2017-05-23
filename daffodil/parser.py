@@ -1,43 +1,7 @@
-"""
-Parsing Daffodil:
- - Expressions
-    Containers
-    Comparisons
-    ** May have a comment at the end of any line
- - Containers (contain 0 or more comments and expressions, separated by newline or comma)
-    All {}
-    Any []
-    Not All !{}
-    Not Any ![]
- - Comparisons
-    key
-    operator
-    value
- - Key
-    unquoted alpha-numeric
-    double or single quoted string
- - Operators (literals)
-    =
-    !=
-    ?=
-    >
-    >=
-    <
-    <=
-    in
-    !in
- - Values
-    single or double quoted strings
-    integers
-    floats
-    booleans
-    array
-    
-"""
 from .predicate import DictionaryPredicateDelegate
 from .exceptions import ParseError
 
-# [a-zA-Z0-9$_-]+
+
 BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NUMBER_CHARS = "-.0123456789"
 QUOTE_CHARS = "\"\'"
@@ -56,10 +20,14 @@ OPERATORS = (
     "<=", "<",
     "!in", "in",
 )
+
 MAX_OP_LENGTH = max(len(op) for op in OPERATORS)
 
 
 class Token(object):
+    """
+    Base class for all tokens
+    """
     def __init__(self, content):
         self.content = content
 
@@ -80,8 +48,14 @@ class GroupStart(Token):
 
         return token.content == PAIRS[opener]
 
-class GroupEnd(Token): pass
 
+class Key(Token):
+    def __init__(self, content, quoted=True):
+        super(Key, self).__init__(content)
+        self.quoted = quoted
+
+
+class GroupEnd(Token): pass
 class LineComment(Token): pass
 class TrailingComment(Token): pass
 class Operator(Token): pass
@@ -90,10 +64,6 @@ class Number(Token): pass
 class Boolean(Token): pass
 class ArrayStart(Token): pass
 class ArrayEnd(Token): pass
-class Key(Token):
-    def __init__(self, content, quoted=True):
-        super(Key, self).__init__(content)
-        self.quoted = quoted
 
 
 class DaffodilParser(object):
