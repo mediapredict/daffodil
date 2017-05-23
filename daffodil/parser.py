@@ -9,7 +9,6 @@ QUOTE_CHARS = "\"\'"
 PAIRS = {
     "{": "}",
     "[": "]",
-    "(": ")",
 }
 
 # Evaluated in this order - commonly used ones first helps performance, make
@@ -31,10 +30,6 @@ class Token(object):
     def __init__(self, content):
         self.content = content
 
-    def __eq__(self, other):
-        if isinstance(other, Token):
-            return self.__class__ == other.__class__ and self.content == other.content
-
 
 class GroupStart(Token):
     def is_end(self, token):
@@ -49,12 +44,7 @@ class GroupStart(Token):
         return token.content == PAIRS[opener]
 
 
-class Key(Token):
-    def __init__(self, content, quoted=True):
-        super(Key, self).__init__(content)
-        self.quoted = quoted
-
-
+class Key(Token): pass
 class GroupEnd(Token): pass
 class LineComment(Token): pass
 class TrailingComment(Token): pass
@@ -206,9 +196,7 @@ class DaffodilParser(object):
             raise ParseError("Expected to find the end of an array (closing parenthesis) but didn't")
 
     def quoted_string(self):
-        self.tokens.append(
-            String(self.read_quoted_string())
-        )
+        self.tokens.append(String(self.read_quoted_string()))
 
     def number(self):
         num_start = self.pos
@@ -239,7 +227,7 @@ class DaffodilParser(object):
             self.pos += (4 if val else 5)
             self.tokens.append(Boolean(val))
         else:
-            raise ParseError("Expected Boolean value ")
+            raise ParseError("Expected Boolean value but found {}".format(chunk))
 
     def quoted_key(self):
         self.tokens.append(
@@ -257,7 +245,7 @@ class DaffodilParser(object):
             self.pos += 1
             buffer += c
 
-        self.tokens.append(Key(buffer, quoted=False))
+        self.tokens.append(Key(buffer))
 
     def operator(self):
         chunk = self.chars(MAX_OP_LENGTH)
