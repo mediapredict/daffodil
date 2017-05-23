@@ -35,10 +35,7 @@ Parsing Daffodil:
     
 """
 from .predicate import DictionaryPredicateDelegate
-
-class ParseError(Exception):
-    pass
-
+from .exceptions import ParseError
 
 # [a-zA-Z0-9$_-]+
 BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -124,7 +121,7 @@ class DaffodilParser(object):
             # then find line-comments and conditions
             if not can_accept_another_expression and c not in "}]#":
                 raise ParseError("Expected a comma, newline or end of block at byte {}".format(self.pos))
-            elif c == "!" and self.chars(+1) in "{[":
+            elif c == "!" and self.char(+1) in "{[":
                 token_content = self.chars(2)
                 self.tokens.append(GroupStart(token_content))
                 expected_closers.append(PAIRS[token_content[1]])
@@ -148,9 +145,6 @@ class DaffodilParser(object):
                 raise ParseError("Unrecognized input at byte {}".format(self.pos))
 
     def comment(self, token_type):
-        # don't include the "#" in the content
-        self.pos += 1
-
         buffer = ""
         while self.pos < self.end:
             c = self.char()
@@ -177,7 +171,7 @@ class DaffodilParser(object):
 
         self.consume_whitespace(newlines=False)
         self.operator()
-        self.consume_whitespace(newlines=False)
+        self.consume_whitespace(newlines=True)
 
         self.value()
         self.consume_whitespace(newlines=False)
@@ -433,6 +427,10 @@ class Daffodil(object):
                 test = self.delegate.mk_test(tokens.pop(0).content)
                 val = self._read_val(tokens)
 
+                is_datapoint_test = getattr(test, "is_datapoint_test", False)
+                if is_datapoint_test and not isinstance(val, bool):
+                    raise ValueError('"?=" operator requires boolean value (true/false)')
+
                 children.append(
                     self.delegate.mk_cmp(key, val, test)
                 )
@@ -454,4 +452,4 @@ class Daffodil(object):
         raise ValueError("Unexpectedly ran out of tokens")
 
     def __call__(self, *args):
-        self.delegate.call(self.predicate, *args)
+        return self.delegate.call(self.predicate, *args)
