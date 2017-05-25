@@ -2,16 +2,14 @@ from setuptools import setup
 
 setup(
     name='daffodil',
-    version='0.3.15',
+    version='0.3.16',
     author='James Robert',
     description='A Super-simple DSL for filtering datasets',
     license='MIT',
     keywords='data filtering',
     url='https://github.com/mediapredict/daffodil',
     packages=['daffodil'],
-    install_requires=[
-        "parsimonious",
-    ],
+    install_requires=[],
     long_description='A Super-simple DSL for filtering datasets',
     classifiers=[
         'License :: OSI Approved :: MIT License',
