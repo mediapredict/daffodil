@@ -1153,7 +1153,17 @@ r"v='\'a'",
 '''.strip(),
 ],
 
-
+# Daffodil separated with carraige return, line feed
+[
+u'"metropcs_precamp_qxthanks" ?= true\r\n"source" != "test"',
+u'{"metropcs_precamp_qxthanks"?=true,"source"!="test"}',
+'''
+{
+  "metropcs_precamp_qxthanks" ?= true
+  "source" != "test"
+}
+'''.strip()
+],
 
 # Complex, unordered, badly indented and nested
 [
@@ -1167,6 +1177,7 @@ val2 ?= true
 val6 ?= true
       val5 = 30
     }
+       # words!   
   {
     val5 ?= true
     val5 != 30
@@ -1185,6 +1196,7 @@ val6 ?= true
       "val6" ?= true
       "val5" = 30
     }
+    # words!
     {
       "val5" ?= true
       "val5" != 30

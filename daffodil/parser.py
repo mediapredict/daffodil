@@ -71,10 +71,9 @@ class DaffodilParser(object):
     def main(self):
         can_accept_another_expression = True
         expected_closers = []
-        while self.pos < self.end:
-            # skip over non-significant whitespace
-            self.consume_whitespace()
 
+        self.consume_whitespace()
+        while self.pos < self.end:
             c = self.char()
 
             # Fist deal with All/Any/Not All/Not Any right in the main loop...
@@ -103,6 +102,9 @@ class DaffodilParser(object):
                 can_accept_another_expression = self.condition()
             else:
                 raise ParseError("Unrecognized input at byte {}".format(self.pos))
+
+            # skip over non-significant whitespace
+            self.consume_whitespace()
 
     def comment(self, token_type):
         buffer = ""
@@ -266,7 +268,7 @@ class DaffodilParser(object):
         while self.pos < end:
             self.consume_whitespace(newlines=sep_found)
             c = src[self.pos]
-            if c == '\n':
+            if c in '\r\n':
                 sep_found = True
             elif c == ',':
                 if comma_found:
