@@ -455,6 +455,25 @@ class SATDataTests(BaseTest):
         self.assertRaises(ParseError, Daffodil, """
             [
         """)
+        self.assertRaises(ParseError, Daffodil, """
+            {
+              a = 1
+              b = 2
+            } {
+              x = 3
+              y = 4
+            }
+        """)
+        self.assertRaises(ParseError, Daffodil, """
+            [
+              a = 1
+              b = 2
+            ] [
+              c = 3
+              d = 4
+            ]
+        """)
+
 
     def test_unicode_filter(self):
         self.assert_filter_has_n_results(273, """
@@ -1153,7 +1172,17 @@ r"v='\'a'",
 '''.strip(),
 ],
 
-
+# Daffodil separated with carraige return, line feed
+[
+u'"metropcs_precamp_qxthanks" ?= true\r\n"source" != "test"',
+u'{"metropcs_precamp_qxthanks"?=true,"source"!="test"}',
+'''
+{
+  "metropcs_precamp_qxthanks" ?= true
+  "source" != "test"
+}
+'''.strip()
+],
 
 # Complex, unordered, badly indented and nested
 [
@@ -1167,6 +1196,7 @@ val2 ?= true
 val6 ?= true
       val5 = 30
     }
+       # words!   
   {
     val5 ?= true
     val5 != 30
@@ -1185,6 +1215,7 @@ val6 ?= true
       "val6" ?= true
       "val5" = 30
     }
+    # words!
     {
       "val5" ?= true
       "val5" != 30
