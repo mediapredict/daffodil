@@ -2,8 +2,9 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from past.builtins import basestring
-from builtins import object
 from collections import UserList
+
+from .base_delegate import BaseDaffodilDelegate
 
 
 def to_daffodil_primitive(val):
@@ -139,7 +140,7 @@ class DaffodilArrayWrapper(DaffodilWrapper):
         )
 
 
-class PrettyPrintDelegate(object):
+class PrettyPrintDelegate(BaseDaffodilDelegate):
     def __init__(self, dense=True):
         self.dense = dense
     
