@@ -2,6 +2,13 @@ from .base_delegate import BaseDaffodilDelegate
 
 
 class KeyExpectationDelegate(BaseDaffodilDelegate):
+    """
+    Determines which keys in a daffodil are required in data dictionaries 
+    in order to match and which keys have to be omitted to match. 
+    
+    Useful for making inferences like detecting when a key would never be set 
+    but should (or would be but shouldn't).
+    """
     def _mk_group(self, children, negate):
         expect_present = set()
         expect_omitted = set()
