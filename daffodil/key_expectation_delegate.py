@@ -1,0 +1,41 @@
+from .base_delegate import BaseDaffodilDelegate
+
+
+class KeyExpectationDelegate(BaseDaffodilDelegate):
+    def _mk_group(self, children, negate):
+        expect_present = set()
+        expect_omitted = set()
+
+        for child in children:
+            if negate:
+                child = child[::-1]
+            expect_present |= child[0]
+            expect_omitted |= child[1]
+
+        # if we expect a key to be present we can't also expect it not to be
+        expect_omitted -= expect_present
+
+        return expect_present, expect_omitted
+
+    def mk_any(self, children):
+        return self._mk_group(children, False)
+
+    def mk_all(self, children):
+        return self._mk_group(children, False)
+
+    def mk_not_any(self, children):
+        return self._mk_group(children, True)
+
+    def mk_not_all(self, children):
+        return self._mk_group(children, True)
+
+    def mk_test(self, test_str):
+        return test_str
+
+    def mk_comment(self, comment, is_inline):
+        return set(), set()
+
+    def mk_cmp(self, key, val, test):
+        if test == "?=" and val is False:
+            return set(), {key}
+        return {key}, set()

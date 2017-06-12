@@ -8,7 +8,7 @@ import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from daffodil import Daffodil, PrettyPrintDelegate
+from daffodil import Daffodil, PrettyPrintDelegate, KeyExpectationDelegate
 from daffodil.exceptions import ParseError
 
 
@@ -774,6 +774,50 @@ class PredicateTests(unittest.TestCase):
 
         self.assertFalse(daff.predicate(self.data))
 
+
+class KeyExpectationTests(unittest.TestCase):
+
+    def assert_daffodil_expectations(self, dafltr, present=set(), omitted=set()):
+        daff = Daffodil(dafltr, delegate=KeyExpectationDelegate())
+        daff_expected_present, daff_expected_omitted = daff.predicate
+        self.assertEqual(daff_expected_present, present)
+        self.assertEqual(daff_expected_omitted, omitted)
+
+
+    def test_key_expectations(self):
+        self.assert_daffodil_expectations(
+            "x = 1, y = true",
+            present={"x", "y"}
+        )
+        self.assert_daffodil_expectations(
+            "x ?= true, y ?= false",
+            present={"x"}, omitted={"y"}
+        )
+        self.assert_daffodil_expectations(
+            "!{x ?= true, y ?= false}",
+            present={"y"}, omitted={"x"}
+        )
+        self.assert_daffodil_expectations(
+            """
+                !{
+                    [
+                        x ?= true
+                        y ?= false
+                    ]
+                    ![
+                        z = "a"
+                        {
+                          a = 1
+                          b != 2
+                          c > 10
+                          d < 9
+                        }
+                    ]
+                }
+                a ?= false
+            """,
+            present={"a", "b", "c", "d", "y", "z"}, omitted={"x"}
+        )
 
 
 # input, expected_dense, expected_pretty
