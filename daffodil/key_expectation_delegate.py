@@ -5,8 +5,8 @@ class KeyExpectationDelegate(BaseDaffodilDelegate):
     """
     Determines which keys in a daffodil are required in data dictionaries 
     in order to match and which keys have to be omitted to match. 
-    
-    Useful for making inferences like detecting when a key would never be set 
+
+    Useful for making inferences like detecting when a key would never be set
     but should (or would be but shouldn't).
     """
     def _mk_group(self, children, negate):
@@ -37,12 +37,23 @@ class KeyExpectationDelegate(BaseDaffodilDelegate):
         return self._mk_group(children, True)
 
     def mk_test(self, test_str):
-        return test_str
+        if test_str != "?=":
+            return test_str
+
+        def test_fn(k, v, t):
+            return v
+
+        test_fn.is_datapoint_test = True
+        test_fn.test_str = test_str
+
+        return test_fn
 
     def mk_comment(self, comment, is_inline):
         return set(), set()
 
     def mk_cmp(self, key, val, test):
-        if test == "?=" and val is False:
+        existance = getattr(test, "is_datapoint_test", False)
+
+        if existance and val is False:
             return set(), {key}
         return {key}, set()
