@@ -8,7 +8,11 @@ import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from daffodil import Daffodil, PrettyPrintDelegate, KeyExpectationDelegate
+from daffodil import (
+    Daffodil,
+    KeyExpectationDelegate, DictionaryPredicateDelegate,
+    HStoreQueryDelegate, PrettyPrintDelegate
+)
 from daffodil.exceptions import ParseError
 
 
@@ -33,12 +37,19 @@ class BaseTest(unittest.TestCase):
         return Daffodil(daff_src)(self.d)
 
 
-class ParserGrammarTypesTests(BaseTest):
+class ParserGrammarTypesTests(unittest.TestCase):
+    def parse(self, daff_src, delegate):
+        return Daffodil(daff_src, delegate=delegate)
+
     def test_existence_doesnt_expect_string(self):
-        with self.assertRaises(ValueError):
-            self.filter('whatever ?= "true"')
-            self.filter('whatever ?= "False"')
-            self.filter('whatever ?= "any string"')
+        for delegate in [
+            HStoreQueryDelegate(hstore_field_name="dummy_name"),
+            DictionaryPredicateDelegate(), KeyExpectationDelegate()
+        ]:
+            with self.assertRaises(ValueError):
+                self.parse('whatever ?= "true"', delegate)
+                self.parse('whatever ?= "False"', delegate)
+                self.parse('whatever ?= "any string"', delegate)
 
 
 class SATDataTests(BaseTest):
