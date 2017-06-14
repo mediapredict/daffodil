@@ -342,11 +342,14 @@ class DaffodilParser(object):
 
 class Daffodil(object):
     def __init__(self, source, delegate=DictionaryPredicateDelegate()):
-        parse_result = DaffodilParser(source)
+        if isinstance(source, DaffodilParser):
+            self.parse_result = source
+        else:
+            self.parse_result = DaffodilParser(source)
 
         self.keys = set()
         self.delegate = delegate
-        self.predicate = self.make_predicate(parse_result.tokens)
+        self.predicate = self.make_predicate(self.parse_result.tokens)
 
     def _handle_group(self, parent, children):
         lookup = {

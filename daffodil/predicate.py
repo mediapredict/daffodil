@@ -1,11 +1,11 @@
 from builtins import filter
 from past.builtins import basestring
-from builtins import object
 import operator as op
 
+from .base_delegate import BaseDaffodilDelegate
 
 
-class DictionaryPredicateDelegate(object):
+class DictionaryPredicateDelegate(BaseDaffodilDelegate):
     def _mk_any_all(self, children, any_all):
         return lambda data_point: any_all(
             predicate(data_point)

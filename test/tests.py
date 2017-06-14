@@ -8,7 +8,11 @@ import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from daffodil import Daffodil, PrettyPrintDelegate
+from daffodil import (
+    Daffodil,
+    KeyExpectationDelegate, DictionaryPredicateDelegate,
+    HStoreQueryDelegate, PrettyPrintDelegate
+)
 from daffodil.exceptions import ParseError
 
 
@@ -33,12 +37,19 @@ class BaseTest(unittest.TestCase):
         return Daffodil(daff_src)(self.d)
 
 
-class ParserGrammarTypesTests(BaseTest):
+class ParserGrammarTypesTests(unittest.TestCase):
+    def parse(self, daff_src, delegate):
+        return Daffodil(daff_src, delegate=delegate)
+
     def test_existence_doesnt_expect_string(self):
-        with self.assertRaises(ValueError):
-            self.filter('whatever ?= "true"')
-            self.filter('whatever ?= "False"')
-            self.filter('whatever ?= "any string"')
+        for delegate in [
+            HStoreQueryDelegate(hstore_field_name="dummy_name"),
+            DictionaryPredicateDelegate(), KeyExpectationDelegate()
+        ]:
+            with self.assertRaises(ValueError):
+                self.parse('whatever ?= "true"', delegate)
+                self.parse('whatever ?= "False"', delegate)
+                self.parse('whatever ?= "any string"', delegate)
 
 
 class SATDataTests(BaseTest):
@@ -774,6 +785,50 @@ class PredicateTests(unittest.TestCase):
 
         self.assertFalse(daff.predicate(self.data))
 
+
+class KeyExpectationTests(unittest.TestCase):
+
+    def assert_daffodil_expectations(self, dafltr, present=set(), omitted=set()):
+        daff = Daffodil(dafltr, delegate=KeyExpectationDelegate())
+        daff_expected_present, daff_expected_omitted = daff.predicate
+        self.assertEqual(daff_expected_present, present)
+        self.assertEqual(daff_expected_omitted, omitted)
+
+
+    def test_key_expectations(self):
+        self.assert_daffodil_expectations(
+            "x = 1, y = true",
+            present={"x", "y"}
+        )
+        self.assert_daffodil_expectations(
+            "x ?= true, y ?= false",
+            present={"x"}, omitted={"y"}
+        )
+        self.assert_daffodil_expectations(
+            "!{x ?= true, y ?= false}",
+            present={"y"}, omitted={"x"}
+        )
+        self.assert_daffodil_expectations(
+            """
+                !{
+                    [
+                        x ?= true
+                        y ?= false
+                    ]
+                    ![
+                        z = "a"
+                        {
+                          a = 1
+                          b != 2
+                          c > 10
+                          d < 9
+                        }
+                    ]
+                }
+                a ?= false
+            """,
+            present={"a", "b", "c", "d", "y", "z"}, omitted={"x"}
+        )
 
 
 # input, expected_dense, expected_pretty

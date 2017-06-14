@@ -2,8 +2,10 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from past.builtins import basestring
-from builtins import object
 from collections import UserString
+
+from .base_delegate import BaseDaffodilDelegate
+
 
 RE_CASE = "CASE WHEN ({0}->'{1}' ~ E'"
 RE_THEN = "') THEN "
@@ -38,7 +40,7 @@ def make_sql_array(*strings):
         ",".join(escape_string_sql(s) for s in strings)
     )
 
-class HStoreQueryDelegate(object):
+class HStoreQueryDelegate(BaseDaffodilDelegate):
 
     def __init__(self, hstore_field_name):
         self.field = hstore_field_name
