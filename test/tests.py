@@ -1342,9 +1342,6 @@ class PrettyPrintingTests(unittest.TestCase):
                 self.assertEqual(d1_pretty, pretty_expected)
 
 
-
-
-
 # Borrowed gratuitously from https://gist.github.com/k4ml/2219751
 from os import path as osp
 
