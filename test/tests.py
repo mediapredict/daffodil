@@ -866,6 +866,29 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Comment at the end
+[
+'val1 = 10\n# comment 2',
+'{"val1"=10}',
+'''
+{
+  "val1" = 10
+  # comment 2
+}
+'''.strip()
+],
+
+# Only a comment
+[
+'# comment 1',
+'{}',
+'''
+{
+  # comment 1
+}
+'''.strip()
+],
+
 # Simple array lookup
 [
 '''
@@ -1302,22 +1325,23 @@ class PrettyPrintingTests(unittest.TestCase):
             self.assertFilterIsCorrect(fltr, dense, pretty)
 
     def test_multiple_passthroughs(self):
-        regexp_py_comment = re.compile('#.*?\n')
+        regexp_py_comment = re.compile('#.*?(\n|$)')
 
         for fltr, dense_expected, pretty_expected in PRETTY_PRINT_EXPECTATIONS:
-
-            # if fltr contains a comment, it'll be discarded for "dense"
-            if regexp_py_comment.search(fltr):
-                continue
-
             d1, p1 = self.pp(fltr)
             d1_dense, d1_pretty = self.pp(d1)
             p1_dense, p1_pretty = self.pp(p1)
 
-            self.assertEqual(d1_pretty, pretty_expected)
             self.assertEqual(p1_pretty, pretty_expected)
             self.assertEqual(d1_dense, dense_expected)
             self.assertEqual(p1_dense, dense_expected)
+
+            # don't check re-printing dense as pretty if there are comments because
+            # the comments are discarded by dense version
+            if not regexp_py_comment.search(fltr):
+                self.assertEqual(d1_pretty, pretty_expected)
+
+
 
 
 

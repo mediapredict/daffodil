@@ -58,7 +58,7 @@ class ArrayEnd(Token): pass
 
 class DaffodilParser(object):
     def __init__(self, src):
-        self.src = "{" + src + "}"
+        self.src = "{" + src + "\n}"
         self.pos = 0
         self.end = len(self.src)
 
