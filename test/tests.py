@@ -6,6 +6,8 @@ import json
 import unittest
 import re
 
+from daffodil.simulation_delegate import SimulationMatchingDelegate
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from daffodil import (
@@ -794,7 +796,6 @@ class KeyExpectationTests(unittest.TestCase):
         self.assertEqual(daff_expected_present, present)
         self.assertEqual(daff_expected_omitted, omitted)
 
-
     def test_key_expectations(self):
         self.assert_daffodil_expectations(
             "x = 1, y = true",
@@ -829,6 +830,43 @@ class KeyExpectationTests(unittest.TestCase):
             """,
             present={"a", "b", "c", "d", "y", "z"}, omitted={"x"}
         )
+
+
+class SimulationDelegatesTests(unittest.TestCase):
+    def mk_predicate(self, dafltr):
+        return Daffodil(dafltr, delegate=SimulationMatchingDelegate()).predicate
+
+    def assertMatch(self, matches, possibility_space, dafltr):
+        pred = self.mk_predicate(dafltr)
+        self.assertEqual(pred(possibility_space), matches)
+
+    def test_known_matches(self):
+        possibility_space = {
+            "lang": "en",
+            "mp_birth_year": [],
+            "mp_gender": ["male", "female"],
+        }
+        self.assertMatch(True, possibility_space, "lang ?= true")
+        self.assertMatch(True, possibility_space, "mp_birth_year ?= true")
+        self.assertMatch(True, possibility_space, "mp_gender ?= true")
+        self.assertMatch(True, possibility_space, "fake_key ?= false")
+        self.assertMatch(True, possibility_space, "lang = 'en'")
+        self.assertMatch(True, possibility_space, "lang != 'hi'")
+        self.assertMatch(True, possibility_space, "mp_gender != 'dude'")
+        self.assertMatch(True, possibility_space, "mp_gender > 'dude'")
+        self.assertMatch(True, possibility_space, "mp_gender >= 'dude'")
+        self.assertMatch(True, possibility_space, "mp_gender >= 'female'")
+
+        self.assertMatch(False, possibility_space, "lang ?= false")
+        self.assertMatch(False, possibility_space, "mp_birth_year ?= false")
+        self.assertMatch(False, possibility_space, "mp_gender ?= false")
+        self.assertMatch(False, possibility_space, "fake_key ?= true")
+        self.assertMatch(False, possibility_space, "lang != 'en'")
+        self.assertMatch(False, possibility_space, "lang = 'hi'")
+        self.assertMatch(False, possibility_space, "mp_gender = 'dude'")
+        self.assertMatch(False, possibility_space, "mp_gender < 'dude'")
+        self.assertMatch(False, possibility_space, "mp_gender <= 'dude'")
+        self.assertMatch(False, possibility_space, "mp_gender < 'female'")
 
 
 # input, expected_dense, expected_pretty
