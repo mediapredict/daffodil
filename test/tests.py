@@ -856,6 +856,8 @@ class SimulationDelegatesTests(unittest.TestCase):
         self.assertMatch(True, possibility_space, "mp_gender > 'dude'")
         self.assertMatch(True, possibility_space, "mp_gender >= 'dude'")
         self.assertMatch(True, possibility_space, "mp_gender >= 'female'")
+        self.assertMatch(True, possibility_space, "mp_gender in ('male', 'dude', 'lady', 'female')")
+        self.assertMatch(True, possibility_space, "mp_gender !in ('dude', 'lady')")
 
         self.assertMatch(False, possibility_space, "lang ?= false")
         self.assertMatch(False, possibility_space, "mp_birth_year ?= false")
@@ -867,6 +869,18 @@ class SimulationDelegatesTests(unittest.TestCase):
         self.assertMatch(False, possibility_space, "mp_gender < 'dude'")
         self.assertMatch(False, possibility_space, "mp_gender <= 'dude'")
         self.assertMatch(False, possibility_space, "mp_gender < 'female'")
+        self.assertMatch(False, possibility_space, "mp_gender !in ('male', 'dude', 'lady', 'female')")
+        self.assertMatch(False, possibility_space, "mp_gender in ('dude', 'lady')")
+
+        self.assertMatch(None, possibility_space, "mp_birth_year = '1995'")
+        self.assertMatch(None, possibility_space, "mp_birth_year < '1995'")
+        self.assertMatch(None, possibility_space, "mp_birth_year <= '1995'")
+        self.assertMatch(None, possibility_space, "mp_birth_year > '1995'")
+        self.assertMatch(None, possibility_space, "mp_birth_year >= '1995'")
+        self.assertMatch(None, possibility_space, "mp_birth_year in ('1995', '1996', '1997')")
+        self.assertMatch(None, possibility_space, "mp_birth_year !in ('1995', '1996', '1997')")
+        self.assertMatch(None, possibility_space, "mp_gender in ('male', 'dude')")
+        self.assertMatch(None, possibility_space, "mp_gender !in ('male', 'dude')")
 
 
 # input, expected_dense, expected_pretty
