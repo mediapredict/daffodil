@@ -1,10 +1,13 @@
 from __future__ import absolute_import
+
 from builtins import zip
 import sys
 import os
 import json
 import unittest
 import re
+
+from future.moves import itertools
 
 from daffodil.simulation_delegate import SimulationMatchingDelegate
 
@@ -846,41 +849,73 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_birth_year": [],
             "mp_gender": ["male", "female"],
         }
-        self.assertMatch(True, possibility_space, "lang ?= true")
-        self.assertMatch(True, possibility_space, "mp_birth_year ?= true")
-        self.assertMatch(True, possibility_space, "mp_gender ?= true")
-        self.assertMatch(True, possibility_space, "fake_key ?= false")
-        self.assertMatch(True, possibility_space, "lang = 'en'")
-        self.assertMatch(True, possibility_space, "lang != 'hi'")
-        self.assertMatch(True, possibility_space, "mp_gender != 'dude'")
-        self.assertMatch(True, possibility_space, "mp_gender > 'dude'")
-        self.assertMatch(True, possibility_space, "mp_gender >= 'dude'")
-        self.assertMatch(True, possibility_space, "mp_gender >= 'female'")
-        self.assertMatch(True, possibility_space, "mp_gender in ('male', 'dude', 'lady', 'female')")
-        self.assertMatch(True, possibility_space, "mp_gender !in ('dude', 'lady')")
+        known_true = [
+            "lang ?= true # comment\n",
+            "mp_birth_year ?= true\n # comment\n",
+            "mp_gender ?= true",
+            "fake_key ?= false",
+            "lang = 'en'",
+            "lang != 'hi'",
+            "mp_gender != 'dude'",
+            "mp_gender > 'dude'",
+            "mp_gender >= 'dude'",
+            "mp_gender >= 'female'",
+            "mp_gender in ('male', 'dude', 'lady', 'female')",
+            "mp_gender !in ('dude', 'lady')",
+        ]
+        known_false = [
+            "lang ?= false # comment\n",
+            "mp_birth_year ?= false\n # comment\n",
+            "mp_gender ?= false",
+            "fake_key ?= true",
+            "lang != 'en'",
+            "lang = 'hi'",
+            "mp_gender = 'dude'",
+            "mp_gender < 'dude'",
+            "mp_gender <= 'dude'",
+            "mp_gender < 'female'",
+            "mp_gender !in ('male', 'dude', 'lady', 'female')",
+            "mp_gender in ('dude', 'lady')",
+        ]
+        unknown = [
+            "mp_birth_year = '1995' # comment\n",
+            "mp_birth_year = '1995'\n # comment\n",
+            "mp_birth_year < '1995'",
+            "mp_birth_year <= '1995'",
+            "mp_birth_year > '1995'",
+            "mp_birth_year >= '1995'",
+            "mp_birth_year in ('1995', '1996', '1997')",
+            "mp_birth_year !in ('1995', '1996', '1997')",
+            "mp_gender in ('male', 'dude')",
+            "mp_gender !in ('male', 'dude')",
+        ]
+        
+        for dafltr in known_true:
+            self.assertMatch(True, possibility_space, dafltr)
 
-        self.assertMatch(False, possibility_space, "lang ?= false")
-        self.assertMatch(False, possibility_space, "mp_birth_year ?= false")
-        self.assertMatch(False, possibility_space, "mp_gender ?= false")
-        self.assertMatch(False, possibility_space, "fake_key ?= true")
-        self.assertMatch(False, possibility_space, "lang != 'en'")
-        self.assertMatch(False, possibility_space, "lang = 'hi'")
-        self.assertMatch(False, possibility_space, "mp_gender = 'dude'")
-        self.assertMatch(False, possibility_space, "mp_gender < 'dude'")
-        self.assertMatch(False, possibility_space, "mp_gender <= 'dude'")
-        self.assertMatch(False, possibility_space, "mp_gender < 'female'")
-        self.assertMatch(False, possibility_space, "mp_gender !in ('male', 'dude', 'lady', 'female')")
-        self.assertMatch(False, possibility_space, "mp_gender in ('dude', 'lady')")
+        for dafltr in known_false:
+            self.assertMatch(False, possibility_space, dafltr)
 
-        self.assertMatch(None, possibility_space, "mp_birth_year = '1995'")
-        self.assertMatch(None, possibility_space, "mp_birth_year < '1995'")
-        self.assertMatch(None, possibility_space, "mp_birth_year <= '1995'")
-        self.assertMatch(None, possibility_space, "mp_birth_year > '1995'")
-        self.assertMatch(None, possibility_space, "mp_birth_year >= '1995'")
-        self.assertMatch(None, possibility_space, "mp_birth_year in ('1995', '1996', '1997')")
-        self.assertMatch(None, possibility_space, "mp_birth_year !in ('1995', '1996', '1997')")
-        self.assertMatch(None, possibility_space, "mp_gender in ('male', 'dude')")
-        self.assertMatch(None, possibility_space, "mp_gender !in ('male', 'dude')")
+        for dafltr in unknown:
+            self.assertMatch(None, possibility_space, dafltr)
+
+        for dafltr_t, dafltr_f in itertools.product(known_true, known_false):
+            self.assertMatch(False, possibility_space, "{}\n{}".format(dafltr_t, dafltr_f))
+            self.assertMatch(True, possibility_space, "!{{ {}\n{} }}".format(dafltr_t, dafltr_f))
+            self.assertMatch(True, possibility_space, "[{}\n{}]".format(dafltr_t, dafltr_f))
+            self.assertMatch(False, possibility_space, "![{}\n{}]".format(dafltr_t, dafltr_f))
+
+        for dafltr_t, dafltr_unk in itertools.product(known_true, unknown):
+            self.assertMatch(None, possibility_space, "{}\n{}".format(dafltr_t, dafltr_unk))
+            self.assertMatch(None, possibility_space, "!{{ {}\n{} }}".format(dafltr_t, dafltr_unk))
+            self.assertMatch(True, possibility_space, "[{}\n{}]".format(dafltr_t, dafltr_unk))
+            self.assertMatch(False, possibility_space, "![{}\n{}]".format(dafltr_t, dafltr_unk))
+
+        for dafltr_f, dafltr_unk in itertools.product(known_false, unknown):
+            self.assertMatch(False, possibility_space, "{}\n{}".format(dafltr_f, dafltr_unk))
+            self.assertMatch(True, possibility_space, "!{{ {}\n{} }}".format(dafltr_f, dafltr_unk))
+            self.assertMatch(None, possibility_space, "[{}\n{}]".format(dafltr_f, dafltr_unk))
+            self.assertMatch(None, possibility_space, "![{}\n{}]".format(dafltr_f, dafltr_unk))
 
 
 # input, expected_dense, expected_pretty

@@ -1,7 +1,10 @@
-from future import builtins
 from past.builtins import basestring
 
 from .base_delegate import BaseDaffodilDelegate
+
+
+# Sentinal to indicate a comment in the daffodil
+COMMENT = object()
 
 
 class SimulationMatchingDelegate(BaseDaffodilDelegate):
@@ -18,23 +21,42 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
     space, False if it's guaranteed not to, and None if it can't be determined.
     """
     def mk_not_any(self, children):
-        raise NotImplementedError()
+        wrapped = self.mk_any(children)
+
+        def pred(poss):
+            v = wrapped(poss)
+            return v if v is None else not v
+
+        return pred
 
     def mk_not_all(self, children):
-        raise NotImplementedError()
+        wrapped = self.mk_all(children)
+
+        def pred(poss):
+            v = wrapped(poss)
+            return v if v is None else not v
+
+        return pred
 
     def mk_any(self, children):
-        raise NotImplementedError()
+        def pred(poss):
+            child_vals = [child(poss) for child in children if child is not COMMENT]
+            if True in child_vals:
+                return True
+            if all(v is False for v in child_vals):
+                return False
+            return None
+        return pred
 
     def mk_comment(self, comment, is_inline):
-        raise NotImplementedError()
+        return COMMENT
 
     def mk_test(self, test_str):
         return test_str
 
     def mk_all(self, children):
         def pred(poss):
-            child_vals = [child(poss) for child in children]
+            child_vals = [child(poss) for child in children if child is not COMMENT]
             if False in child_vals:
                 return False
             if all(child_vals):
