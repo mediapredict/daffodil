@@ -37,23 +37,12 @@ class KeyExpectationDelegate(BaseDaffodilDelegate):
         return self._mk_group(children, True)
 
     def mk_test(self, test_str):
-        if test_str != "?=":
-            return test_str
-
-        def test_fn(k, v, t):
-            return v
-
-        test_fn.is_datapoint_test = True
-        test_fn.test_str = test_str
-
-        return test_fn
+        return test_str
 
     def mk_comment(self, comment, is_inline):
         return set(), set()
 
     def mk_cmp(self, key, val, test):
-        existance = getattr(test, "is_datapoint_test", False)
-
-        if existance and val is False:
+        if test == "?=" and val is False:
             return set(), {key}
         return {key}, set()

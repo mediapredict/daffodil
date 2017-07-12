@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 from builtins import zip
 import sys
 import os
@@ -6,12 +7,15 @@ import json
 import unittest
 import re
 
+from future.moves import itertools
+
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from daffodil import (
     Daffodil,
     KeyExpectationDelegate, DictionaryPredicateDelegate,
-    HStoreQueryDelegate, PrettyPrintDelegate
+    HStoreQueryDelegate, PrettyPrintDelegate, SimulationMatchingDelegate
 )
 from daffodil.exceptions import ParseError
 
@@ -794,7 +798,6 @@ class KeyExpectationTests(unittest.TestCase):
         self.assertEqual(daff_expected_present, present)
         self.assertEqual(daff_expected_omitted, omitted)
 
-
     def test_key_expectations(self):
         self.assert_daffodil_expectations(
             "x = 1, y = true",
@@ -829,6 +832,90 @@ class KeyExpectationTests(unittest.TestCase):
             """,
             present={"a", "b", "c", "d", "y", "z"}, omitted={"x"}
         )
+
+
+class SimulationDelegatesTests(unittest.TestCase):
+    def mk_predicate(self, dafltr):
+        return Daffodil(dafltr, delegate=SimulationMatchingDelegate()).predicate
+
+    def assertMatch(self, matches, possibility_space, dafltr):
+        pred = self.mk_predicate(dafltr)
+        self.assertEqual(pred(possibility_space), matches)
+
+    def test_known_matches(self):
+        possibility_space = {
+            "lang": "en",
+            "mp_birth_year": [],
+            "mp_gender": ["male", "female"],
+        }
+
+        will_match = [
+            "lang ?= true # comment\n",
+            "mp_birth_year ?= true\n # comment\n",
+            "mp_gender ?= true",
+            "fake_key ?= false",
+            "lang = 'en'",
+            "lang != 'hi'",
+            "mp_gender != 'dude'",
+            "mp_gender > 'dude'",
+            "mp_gender >= 'dude'",
+            "mp_gender >= 'female'",
+            "mp_gender in ('male', 'dude', 'lady', 'female')",
+            "mp_gender !in ('dude', 'lady')",
+        ]
+        wont_match = [
+            "lang ?= false # comment\n",
+            "mp_birth_year ?= false\n # comment\n",
+            "mp_gender ?= false",
+            "fake_key ?= true",
+            "lang != 'en'",
+            "lang = 'hi'",
+            "mp_gender = 'dude'",
+            "mp_gender < 'dude'",
+            "mp_gender <= 'dude'",
+            "mp_gender < 'female'",
+            "mp_gender !in ('male', 'dude', 'lady', 'female')",
+            "mp_gender in ('dude', 'lady')",
+        ]
+        might_match = [
+            "mp_birth_year = '1995' # comment\n",
+            "mp_birth_year = '1995'\n # comment\n",
+            "mp_birth_year < '1995'",
+            "mp_birth_year <= '1995'",
+            "mp_birth_year > '1995'",
+            "mp_birth_year >= '1995'",
+            "mp_birth_year in ('1995', '1996', '1997')",
+            "mp_birth_year !in ('1995', '1996', '1997')",
+            "mp_gender in ('male', 'dude')",
+            "mp_gender !in ('male', 'dude')",
+        ]
+        
+        for dafltr in will_match:
+            self.assertMatch(True, possibility_space, dafltr)
+
+        for dafltr in wont_match:
+            self.assertMatch(False, possibility_space, dafltr)
+
+        for dafltr in might_match:
+            self.assertMatch(None, possibility_space, dafltr)
+
+        for dafltr_t, dafltr_f in itertools.product(will_match, wont_match):
+            self.assertMatch(False, possibility_space, "{}\n{}".format(dafltr_t, dafltr_f))
+            self.assertMatch(True, possibility_space, "!{{ {}\n{} }}".format(dafltr_t, dafltr_f))
+            self.assertMatch(True, possibility_space, "[{}\n{}]".format(dafltr_t, dafltr_f))
+            self.assertMatch(False, possibility_space, "![{}\n{}]".format(dafltr_t, dafltr_f))
+
+        for dafltr_t, dafltr_maybe in itertools.product(will_match, might_match):
+            self.assertMatch(None, possibility_space, "{}\n{}".format(dafltr_t, dafltr_maybe))
+            self.assertMatch(None, possibility_space, "!{{ {}\n{} }}".format(dafltr_t, dafltr_maybe))
+            self.assertMatch(True, possibility_space, "[{}\n{}]".format(dafltr_t, dafltr_maybe))
+            self.assertMatch(False, possibility_space, "![{}\n{}]".format(dafltr_t, dafltr_maybe))
+
+        for dafltr_f, dafltr_maybe in itertools.product(wont_match, might_match):
+            self.assertMatch(False, possibility_space, "{}\n{}".format(dafltr_f, dafltr_maybe))
+            self.assertMatch(True, possibility_space, "!{{ {}\n{} }}".format(dafltr_f, dafltr_maybe))
+            self.assertMatch(None, possibility_space, "[{}\n{}]".format(dafltr_f, dafltr_maybe))
+            self.assertMatch(None, possibility_space, "![{}\n{}]".format(dafltr_f, dafltr_maybe))
 
 
 # input, expected_dense, expected_pretty
@@ -1340,9 +1427,6 @@ class PrettyPrintingTests(unittest.TestCase):
             # the comments are discarded by dense version
             if not regexp_py_comment.search(fltr):
                 self.assertEqual(d1_pretty, pretty_expected)
-
-
-
 
 
 # Borrowed gratuitously from https://gist.github.com/k4ml/2219751

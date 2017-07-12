@@ -138,6 +138,9 @@ class DaffodilParser(object):
         self.value()
         self.consume_whitespace(newlines=False)
 
+        if self.tokens[-2].content == "?=" and not isinstance(self.tokens[-1], Boolean):
+            raise ValueError('"?=" operator requires boolean value (true/false)')
+
         if self.char() == "#":
             self.comment(TrailingComment)
             return True
@@ -389,10 +392,6 @@ class Daffodil(object):
                 key = token.content
                 test = self.delegate.mk_test(tokens.pop(0).content)
                 val = self._read_val(tokens)
-
-                is_datapoint_test = getattr(test, "is_datapoint_test", False)
-                if is_datapoint_test and not isinstance(val, bool):
-                    raise ValueError('"?=" operator requires boolean value (true/false)')
 
                 children.append(
                     self.delegate.mk_cmp(key, val, test)
