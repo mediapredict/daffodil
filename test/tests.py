@@ -9,14 +9,13 @@ import re
 
 from future.moves import itertools
 
-from daffodil.simulation_delegate import SimulationMatchingDelegate
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from daffodil import (
     Daffodil,
     KeyExpectationDelegate, DictionaryPredicateDelegate,
-    HStoreQueryDelegate, PrettyPrintDelegate
+    HStoreQueryDelegate, PrettyPrintDelegate, SimulationMatchingDelegate
 )
 from daffodil.exceptions import ParseError
 
@@ -849,7 +848,8 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_birth_year": [],
             "mp_gender": ["male", "female"],
         }
-        known_true = [
+
+        will_match = [
             "lang ?= true # comment\n",
             "mp_birth_year ?= true\n # comment\n",
             "mp_gender ?= true",
@@ -863,7 +863,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender in ('male', 'dude', 'lady', 'female')",
             "mp_gender !in ('dude', 'lady')",
         ]
-        known_false = [
+        wont_match = [
             "lang ?= false # comment\n",
             "mp_birth_year ?= false\n # comment\n",
             "mp_gender ?= false",
@@ -877,7 +877,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender !in ('male', 'dude', 'lady', 'female')",
             "mp_gender in ('dude', 'lady')",
         ]
-        unknown = [
+        might_match = [
             "mp_birth_year = '1995' # comment\n",
             "mp_birth_year = '1995'\n # comment\n",
             "mp_birth_year < '1995'",
@@ -890,32 +890,32 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender !in ('male', 'dude')",
         ]
         
-        for dafltr in known_true:
+        for dafltr in will_match:
             self.assertMatch(True, possibility_space, dafltr)
 
-        for dafltr in known_false:
+        for dafltr in wont_match:
             self.assertMatch(False, possibility_space, dafltr)
 
-        for dafltr in unknown:
+        for dafltr in might_match:
             self.assertMatch(None, possibility_space, dafltr)
 
-        for dafltr_t, dafltr_f in itertools.product(known_true, known_false):
+        for dafltr_t, dafltr_f in itertools.product(will_match, wont_match):
             self.assertMatch(False, possibility_space, "{}\n{}".format(dafltr_t, dafltr_f))
             self.assertMatch(True, possibility_space, "!{{ {}\n{} }}".format(dafltr_t, dafltr_f))
             self.assertMatch(True, possibility_space, "[{}\n{}]".format(dafltr_t, dafltr_f))
             self.assertMatch(False, possibility_space, "![{}\n{}]".format(dafltr_t, dafltr_f))
 
-        for dafltr_t, dafltr_unk in itertools.product(known_true, unknown):
-            self.assertMatch(None, possibility_space, "{}\n{}".format(dafltr_t, dafltr_unk))
-            self.assertMatch(None, possibility_space, "!{{ {}\n{} }}".format(dafltr_t, dafltr_unk))
-            self.assertMatch(True, possibility_space, "[{}\n{}]".format(dafltr_t, dafltr_unk))
-            self.assertMatch(False, possibility_space, "![{}\n{}]".format(dafltr_t, dafltr_unk))
+        for dafltr_t, dafltr_maybe in itertools.product(will_match, might_match):
+            self.assertMatch(None, possibility_space, "{}\n{}".format(dafltr_t, dafltr_maybe))
+            self.assertMatch(None, possibility_space, "!{{ {}\n{} }}".format(dafltr_t, dafltr_maybe))
+            self.assertMatch(True, possibility_space, "[{}\n{}]".format(dafltr_t, dafltr_maybe))
+            self.assertMatch(False, possibility_space, "![{}\n{}]".format(dafltr_t, dafltr_maybe))
 
-        for dafltr_f, dafltr_unk in itertools.product(known_false, unknown):
-            self.assertMatch(False, possibility_space, "{}\n{}".format(dafltr_f, dafltr_unk))
-            self.assertMatch(True, possibility_space, "!{{ {}\n{} }}".format(dafltr_f, dafltr_unk))
-            self.assertMatch(None, possibility_space, "[{}\n{}]".format(dafltr_f, dafltr_unk))
-            self.assertMatch(None, possibility_space, "![{}\n{}]".format(dafltr_f, dafltr_unk))
+        for dafltr_f, dafltr_maybe in itertools.product(wont_match, might_match):
+            self.assertMatch(False, possibility_space, "{}\n{}".format(dafltr_f, dafltr_maybe))
+            self.assertMatch(True, possibility_space, "!{{ {}\n{} }}".format(dafltr_f, dafltr_maybe))
+            self.assertMatch(None, possibility_space, "[{}\n{}]".format(dafltr_f, dafltr_maybe))
+            self.assertMatch(None, possibility_space, "![{}\n{}]".format(dafltr_f, dafltr_maybe))
 
 
 # input, expected_dense, expected_pretty
