@@ -488,6 +488,10 @@ class SATDataTests(BaseTest):
               d = 4
             ]
         """)
+        self.assertRaises(ParseError, Daffodil, "a = 1 }")
+        self.assertRaises(ParseError, Daffodil, "a = 1 ]")
+        self.assertRaises(ParseError, Daffodil, "a = 1 \n}")
+        self.assertRaises(ParseError, Daffodil, "a = 1 \n]")
 
 
     def test_unicode_filter(self):
