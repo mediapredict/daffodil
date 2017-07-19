@@ -90,6 +90,8 @@ class DaffodilParser(object):
                 expected_closers.append(PAIRS[c])
                 self.pos += 1
             elif c in '}]':
+                if not expected_closers:
+                    raise ParseError("Found an closing brace \"{}\" without a corresponding opening brace.".format(c))
                 if c != expected_closers[-1]:
                     raise ParseError("Expected a {} but found {} instead".format(expected_closers[-1], c))
                 self.tokens.append(GroupEnd(c))
