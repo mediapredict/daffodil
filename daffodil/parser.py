@@ -350,6 +350,8 @@ class Daffodil(object):
         if isinstance(source, DaffodilParser):
             self.parse_result = source
         else:
+            if 'timestamp' in source:
+                source = self.convert_timestamp_to_time(source)
             self.parse_result = DaffodilParser(source)
 
         self.keys = set()
@@ -378,6 +380,20 @@ class Daffodil(object):
             return token.content
         else:
             raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}". format(token))
+
+    def convert_timestamp_to_time(self, source):
+        from datetime import datetime
+        import re
+
+        timestamp = re.search(r'timestamp\(\d+-.*', source).group(0)
+        date_no_day = re.findall(r'\d+-', source)
+        year = re.sub(r'-', '', date_no_day[0])
+        month = re.sub(r'-', '', date_no_day[1])
+        extra_char_day = re.search(r'\d+\)', source).group(0)
+        day = re.sub('\)', '', extra_char_day)
+        final_stamp = int(datetime(int(year), int(month), int(day)).timestamp())
+        new_source = re.sub(r'timestamp\(\d+-.*', str(final_stamp), source)
+        return new_source
 
     def make_predicate(self, tokens, parent=None):
         if parent is None:
