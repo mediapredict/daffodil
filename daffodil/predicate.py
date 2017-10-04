@@ -58,6 +58,7 @@ class DictionaryPredicateDelegate(BaseDaffodilDelegate):
         return do_nothing
 
     def mk_cmp(self, key, val, test):
+        val = val.content
         if getattr(test, "is_datapoint_test", False):
             return lambda dp: test(dp, key, val)
         

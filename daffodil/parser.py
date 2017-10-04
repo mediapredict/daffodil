@@ -1,6 +1,6 @@
+from datetime import datetime
 from .predicate import DictionaryPredicateDelegate
 from .exceptions import ParseError
-
 
 BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NUMBER_CHARS = "-.0123456789"
@@ -27,6 +27,7 @@ class Token(object):
     """
     Base class for all tokens
     """
+
     def __init__(self, content):
         self.content = content
 
@@ -44,15 +45,39 @@ class GroupStart(Token):
         return token.content == PAIRS[opener]
 
 
+class TimeStamp(Token):
+    def __init__(self, content):
+        self.raw_content = content
+        self.content = datetime.strptime(content, "%Y-%m-%d").timestamp()
+
+
 class Key(Token): pass
+
+
 class GroupEnd(Token): pass
+
+
 class LineComment(Token): pass
+
+
 class TrailingComment(Token): pass
+
+
 class Operator(Token): pass
+
+
 class String(Token): pass
+
+
 class Number(Token): pass
+
+
 class Boolean(Token): pass
+
+
 class ArrayStart(Token): pass
+
+
 class ArrayEnd(Token): pass
 
 
@@ -149,6 +174,22 @@ class DaffodilParser(object):
         else:
             return self.separator()
 
+    def timestamp(self):
+        pos = self.pos + len("timestamp(")
+
+        buffer = ""
+        while pos < self.end:
+            c = self.src[pos]
+            pos += 1
+
+            if c == ")":
+                break
+
+            buffer += c
+
+        self.pos = pos
+        self.tokens.append(TimeStamp(buffer))
+
     def value(self):
         c = self.char()
 
@@ -158,6 +199,8 @@ class DaffodilParser(object):
             self.quoted_string()
         elif c in NUMBER_CHARS:
             self.number()
+        elif self.chars(9) == "timestamp":
+            self.timestamp()
         elif c.lower() in "tf":
             self.boolean()
 
@@ -198,7 +241,9 @@ class DaffodilParser(object):
                     raise ParseError("Couldn't parse {} value in array at byte {}".format(val_type, self.pos))
                 can_accept_another_value = self.separator()
             else:
-                raise ParseError("Values must be separated by a comma or a new line, found unexpected value at byte {}".format(self.pos))
+                raise ParseError(
+                    "Values must be separated by a comma or a new line, found unexpected value at byte {}".format(
+                        self.pos))
         else:
             raise ParseError("Expected to find the end of an array (closing parenthesis) but didn't")
 
@@ -296,8 +341,10 @@ class DaffodilParser(object):
         except IndexError:
             return ''
 
-    def chars(self, n):
-        return self.src[self.pos:self.pos+n]
+    def chars(self, n, pos=False):
+        if pos:
+            return self.src[pos:pos + n]
+        return self.src[self.pos:self.pos + n]
 
     def consume_whitespace(self, newlines=True):
         """
@@ -317,7 +364,7 @@ class DaffodilParser(object):
     def read_quoted_string(self):
         """
         Reads and returns a quoted string.
-        
+
         DOES NOT APPEND A TOKEN. That is the responsibility of the caller.
         """
         quote_char = self.char()
@@ -350,8 +397,6 @@ class Daffodil(object):
         if isinstance(source, DaffodilParser):
             self.parse_result = source
         else:
-            if 'timestamp' in source:
-                source = self.convert_timestamp_to_time(source)
             self.parse_result = DaffodilParser(source)
 
         self.keys = set()
@@ -370,30 +415,21 @@ class Daffodil(object):
     def _read_val(self, tokens):
         token = tokens.pop(0)
         if isinstance(token, ArrayStart):
-            children = []
+            array_token = Token([])
             while True:
                 if isinstance(tokens[0], ArrayEnd):
                     tokens.pop(0)
-                    return children
-                children.append(self._read_val(tokens))
-        elif isinstance(token, (String, Number, Boolean)):
-            return token.content
+                    array_token.raw_content = array_token.content
+                    array_token.content = [
+                        token.content
+                        for token in array_token.raw_content
+                    ]
+                    return array_token
+                array_token.content.append(self._read_val(tokens))
+        elif isinstance(token, (String, Number, Boolean, TimeStamp)):
+            return token
         else:
-            raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}". format(token))
-
-    def convert_timestamp_to_time(self, source):
-        from datetime import datetime
-        import re
-
-        timestamp = re.search(r'timestamp\(\d+-.*', source).group(0)
-        date_no_day = re.findall(r'\d+-', source)
-        year = re.sub(r'-', '', date_no_day[0])
-        month = re.sub(r'-', '', date_no_day[1])
-        extra_char_day = re.search(r'\d+\)', source).group(0)
-        day = re.sub('\)', '', extra_char_day)
-        final_stamp = int(datetime(int(year), int(month), int(day)).timestamp())
-        new_source = re.sub(r'timestamp\(\d+-.*', str(final_stamp), source)
-        return new_source
+            raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}".format(token))
 
     def make_predicate(self, tokens, parent=None):
         if parent is None:

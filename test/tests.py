@@ -1012,6 +1012,19 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Simple Timestamp lookup
+[
+'''
+    val1 = timestamp(2017-08-03)
+''',
+'{"val1"=timestamp(2017-08-03)}',
+'''
+{
+  "val1" = timestamp(2017-08-03)
+}
+'''
+]
+
 # Simple boolean array lookup
 [
 '''

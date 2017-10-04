@@ -1,10 +1,20 @@
 from future import standard_library
+
+from daffodil.parser import TimeStamp
+
 standard_library.install_aliases()
 from builtins import str
 from past.builtins import basestring
 from collections import UserList
 
 from .base_delegate import BaseDaffodilDelegate
+
+
+def token_to_daffodil_primitive(val):
+    if isinstance(val, TimeStamp):
+        return "timestamp({0})".format(val.raw_content)
+    else:
+        return to_daffodil_primitive(val.content)
 
 
 def to_daffodil_primitive(val):
@@ -131,7 +141,7 @@ class DaffodilArrayWrapper(DaffodilWrapper):
         return "" if self.dense else (self.indent * (self.indent_level + 1))
 
     def format_children(self, children):
-        children = [to_daffodil_primitive(c) for c in children]
+        children = [token_to_daffodil_primitive(c) for c in children]
         return super(DaffodilArrayWrapper, self).format_children(children)
 
     def format_std(self, children):
@@ -177,10 +187,10 @@ class PrettyPrintDelegate(BaseDaffodilDelegate):
         key = to_daffodil_primitive(key)
         
         # values can be boolean, string, or number
-        if isinstance(val, list):
+        if isinstance(val.content, list):
             val = self._mk_wrapped(val, test, DaffodilArrayWrapper)
         else:
-            val = to_daffodil_primitive(val)
+            val = token_to_daffodil_primitive(val)
 
         if self.dense:
             return "{0}{1}{2}".format(key, test, val)
