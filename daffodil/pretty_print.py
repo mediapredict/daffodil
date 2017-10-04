@@ -188,7 +188,7 @@ class PrettyPrintDelegate(BaseDaffodilDelegate):
         
         # values can be boolean, string, or number
         if isinstance(val.content, list):
-            val = self._mk_wrapped(val, test, DaffodilArrayWrapper)
+            val = self._mk_wrapped(val.raw_content, test, DaffodilArrayWrapper)
         else:
             val = token_to_daffodil_primitive(val)
 

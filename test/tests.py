@@ -1022,8 +1022,24 @@ PRETTY_PRINT_EXPECTATIONS = (
 {
   "val1" = timestamp(2017-08-03)
 }
+'''.strip()
+],
+
+# Array Timestamp lookup
+[
 '''
-]
+    val1 in (timestamp(2017-08-03))
+''',
+'{"val1"in(timestamp(2017-08-03))}',
+'''
+{
+  "val1" in (
+    timestamp(2017-08-03)
+  )
+}
+'''.strip()
+],
+
 
 # Simple boolean array lookup
 [

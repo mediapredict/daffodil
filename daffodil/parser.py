@@ -218,6 +218,9 @@ class DaffodilParser(object):
         elif c in NUMBER_CHARS:
             val_type = "number"
             reader = self.number
+        elif self.chars(9) == "timestamp":
+            val_type = "timestamp"
+            reader = self.timestamp
         elif c.lower() in "tf":
             val_type = "boolean"
             reader = self.boolean
