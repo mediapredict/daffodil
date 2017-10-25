@@ -225,7 +225,7 @@ class DaffodilParser(object):
             val_type = "boolean"
             reader = self.boolean
         else:
-            raise ParseError("Couldn't parse first value in array at byte {}".format(self.pos))
+            raise ParseError("Couldn't parse first value in array at byte {} ".format(self.pos))
 
         can_accept_another_value = True
         while self.pos < self.end:
