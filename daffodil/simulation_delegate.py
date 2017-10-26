@@ -65,6 +65,8 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
         return pred
 
     def mk_cmp(self, key, val, test):
+        val = val.content
+        
         def pred(poss):
             if test == "?=":
                 if val:

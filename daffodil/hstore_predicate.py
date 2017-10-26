@@ -137,6 +137,7 @@ class HStoreQueryDelegate(BaseDaffodilDelegate):
         return test_fn
 
     def mk_cmp(self, key, val, test):
+        val = val.content
         daff_key = key
         daff_test = test.test_str
         daff_val = val

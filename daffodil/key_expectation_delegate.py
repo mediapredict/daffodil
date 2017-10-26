@@ -43,6 +43,7 @@ class KeyExpectationDelegate(BaseDaffodilDelegate):
         return set(), set()
 
     def mk_cmp(self, key, val, test):
+        val = val.content
         if test == "?=" and val is False:
             return set(), {key}
         return {key}, set()
