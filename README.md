@@ -221,3 +221,37 @@ Not Any | `!["x"=5, "x"=6]` | `x` has any value except 5 or 6 (or it does not ex
 Not All | `!{"x"=2, "y"=3}` | exclude where both `x` is `2` AND `y` is `3`
 In | `x in (5, 6)` | `x` is either 5 or 6
 Not In | `x !in (5, 6)` | `x` has any value except 5 or 6 (or it does not exist)
+
+### Comment Syntax
+Comments begin with a hash mark (#) and continue to the end of the line, similar to Python comments synthax. Generally, comments look something like this:
+```
+# this is a comment
+mp_birth_year = 2002
+```
+
+In a more advanced example below comments come in different positions, some of them being inline, some multiline:
+```
+"mp_ethn_hispanic - not_hispanic_origin" = "no"
+[
+ # comment 1 (standard)
+ {
+  extend_fam_relate1 = "grandson"
+  extend_fam_age1 = "6_11yrs" # Comment 2 (inline)
+ }
+{
+  #
+  # Comment 3 (this one is multiline)
+  #
+  extend_fam_relate1 = "grand_daughter"
+  extend_fam_age1 = "6_11yrs"
+ }
+]
+```
+One may find handy the ability of commenting out an expressions checking out how expressions performs with part of it being temporarily excluded:
+```
+[
+reliant_2_q_zu_income = "100k_124k"
+reliant_2_q_zu_income = "125k_149k"
+# this won't enter filter: reliant_2_q_zu_income = "more_150k"
+]
+```
