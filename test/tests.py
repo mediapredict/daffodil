@@ -851,6 +851,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "lang": "en",
             "mp_birth_year": [],
             "mp_gender": ["male", "female"],
+            "graduation_year": [2006, 2007, 2008],
         }
 
         will_match = [
@@ -866,6 +867,8 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender >= 'female'",
             "mp_gender in ('male', 'dude', 'lady', 'female')",
             "mp_gender !in ('dude', 'lady')",
+            "graduation_year ?= true",
+            "graduation_year in (2006, 2007, 2008, 2009)",
         ]
         wont_match = [
             "lang ?= false # comment\n",
@@ -880,6 +883,8 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender < 'female'",
             "mp_gender !in ('male', 'dude', 'lady', 'female')",
             "mp_gender in ('dude', 'lady')",
+            "graduation_year < 2003",
+            "graduation_year < '2003'",
         ]
         might_match = [
             "mp_birth_year = '1995' # comment\n",
@@ -892,6 +897,8 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_birth_year !in ('1995', '1996', '1997')",
             "mp_gender in ('male', 'dude')",
             "mp_gender !in ('male', 'dude')",
+            "graduation_year >= 2007",
+            "graduation_year > '2007'",
         ]
         
         for dafltr in will_match:
