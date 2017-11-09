@@ -105,14 +105,20 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
                 return None
 
             if test in {"<", "<=", ">", ">="}:
+
+                converted_val = val
+                if type(val) != type(poss_vals[0]):
+                    pv_type = type(poss_vals[0])
+                    converted_val = pv_type(val)
+
                 if test == "<":
-                    matches = [poss_val < val for poss_val in poss_vals]
+                    matches = [poss_val < converted_val for poss_val in poss_vals]
                 elif test == "<=":
-                    matches = [poss_val <= val for poss_val in poss_vals]
+                    matches = [poss_val <= converted_val for poss_val in poss_vals]
                 elif test == ">":
-                    matches = [poss_val > val for poss_val in poss_vals]
+                    matches = [poss_val > converted_val for poss_val in poss_vals]
                 elif test == ">=":
-                    matches = [poss_val >= val for poss_val in poss_vals]
+                    matches = [poss_val >= converted_val for poss_val in poss_vals]
 
                 if all(matches):
                     return True
