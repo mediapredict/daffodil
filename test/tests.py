@@ -851,7 +851,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "lang": "en",
             "mp_birth_year": [],
             "mp_gender": ["male", "female"],
-            "graduation_year": [2006, 2007, 2008],
+            "graduation_year": ["2006", "2007", "2008"],
         }
 
         will_match = [
@@ -868,7 +868,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender in ('male', 'dude', 'lady', 'female')",
             "mp_gender !in ('dude', 'lady')",
             "graduation_year ?= true",
-            "graduation_year in (2006, 2007, 2008, 2009)",
+            "graduation_year in ('2006', '2007', '2008', '2009')",
         ]
         wont_match = [
             "lang ?= false # comment\n",
