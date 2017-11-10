@@ -853,6 +853,8 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender": ["male", "female"],
             "graduation_year": ["2006", "2007", 2008],
             "irregular_data": ["1", 2, "three", 4.0, None],
+            "irregular_single_1": "1",
+            "irregular_single_2": 2,
         }
 
         will_match = [
@@ -874,6 +876,9 @@ class SimulationDelegatesTests(unittest.TestCase):
             "irregular_data != 'fifty'",
             "irregular_data != (6, 7)",
             "irregular_data != ('8', '9')",
+            "irregular_single_1 = 1",
+            "irregular_single_1 != 3",
+            "irregular_single_2 ?= true",
         ]
         wont_match = [
             "lang ?= false # comment\n",
@@ -894,6 +899,9 @@ class SimulationDelegatesTests(unittest.TestCase):
             "irregular_data = 7",
             "irregular_data = 'eight'",
             "irregular_data in (6, 7)",
+            "irregular_single_1 = 'one'",
+            "irregular_single_1 = 5",
+            "irregular_single_2 ?= false",
         ]
         might_match = [
             "mp_birth_year = '1995' # comment\n",
