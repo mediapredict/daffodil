@@ -851,7 +851,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "lang": "en",
             "mp_birth_year": [],
             "mp_gender": ["male", "female"],
-            "graduation_year": ["2006", "2007", "2008"],
+            "graduation_year": ["2006", "2007", 2008],
         }
 
         will_match = [
@@ -899,6 +899,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender !in ('male', 'dude')",
             "graduation_year >= 2007",
             "graduation_year > '2007'",
+            "graduation_year = 2007",
         ]
         
         for dafltr in will_match:
