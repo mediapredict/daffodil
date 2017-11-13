@@ -872,6 +872,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender !in ('dude', 'lady')",
             "graduation_year ?= true",
             "graduation_year in ('2006', '2007', '2008', '2009')",
+            "graduation_year in (2006, 2007, 2008, 2009)",
             "irregular_data ?= true",
             "irregular_data != 'fifty'",
             "irregular_data != (6, 7)",
