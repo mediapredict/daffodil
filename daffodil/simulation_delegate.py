@@ -77,7 +77,7 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
             # First deal with the case where there is no value
             if key not in poss:
                 if test in {"!=", "!in"}:
-                    # These operations automaically match if there is no value
+                    # These operations automatically match if there is no value
                     return True
                 # Most operators can't match if there is no value
                 return False
@@ -89,6 +89,14 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
             # For open ends we can't make any guarantees beyond the ones above
             if not len(poss_vals):
                 return None
+
+            # 'poss_vals types' and 'val type' should not necessarily match.
+            # do the conversion without type checking (faster?)
+            val_type = type(val[0]) if isinstance(val, list) else type(val)
+            if isinstance(poss_vals, list):
+                poss_vals = self._conv_l_elems(poss_vals, val_type)
+            else:
+                poss_vals = val_type(poss_vals)
 
             if test == "=":
                 if len(poss_vals) == 1 and poss_vals[0] == val:
@@ -105,6 +113,7 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
                 return None
 
             if test in {"<", "<=", ">", ">="}:
+
                 if test == "<":
                     matches = [poss_val < val for poss_val in poss_vals]
                 elif test == "<=":
@@ -139,3 +148,17 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
 
             return None
         return pred
+
+    def _conv_l_elems(self, lst, target_type):
+        def convert(src, target_type):
+            try:
+                return True, target_type(src)
+            except:
+                return False, None
+
+        return [
+            converted for is_conv, converted in
+            [convert(elem, target_type) for elem in lst]
+            if is_conv
+        ]
+

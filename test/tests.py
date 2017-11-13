@@ -851,6 +851,10 @@ class SimulationDelegatesTests(unittest.TestCase):
             "lang": "en",
             "mp_birth_year": [],
             "mp_gender": ["male", "female"],
+            "graduation_year": ["2006", "2007", 2008],
+            "irregular_data": ["1", 2, "three", 4.0, None],
+            "irregular_single_1": "1",
+            "irregular_single_2": 2,
         }
 
         will_match = [
@@ -866,6 +870,16 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender >= 'female'",
             "mp_gender in ('male', 'dude', 'lady', 'female')",
             "mp_gender !in ('dude', 'lady')",
+            "graduation_year ?= true",
+            "graduation_year in ('2006', '2007', '2008', '2009')",
+            "graduation_year in (2006, 2007, 2008, 2009)",
+            "irregular_data ?= true",
+            "irregular_data != 'fifty'",
+            "irregular_data != (6, 7)",
+            "irregular_data != ('8', '9')",
+            "irregular_single_1 = 1",
+            "irregular_single_1 != 3",
+            "irregular_single_2 ?= true",
         ]
         wont_match = [
             "lang ?= false # comment\n",
@@ -880,6 +894,15 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_gender < 'female'",
             "mp_gender !in ('male', 'dude', 'lady', 'female')",
             "mp_gender in ('dude', 'lady')",
+            "graduation_year < 2003",
+            "graduation_year < '2003'",
+            "irregular_data ?= false",
+            "irregular_data = 7",
+            "irregular_data = 'eight'",
+            "irregular_data in (6, 7)",
+            "irregular_single_1 = 'one'",
+            "irregular_single_1 = 5",
+            "irregular_single_2 ?= false",
         ]
         might_match = [
             "mp_birth_year = '1995' # comment\n",
@@ -892,6 +915,13 @@ class SimulationDelegatesTests(unittest.TestCase):
             "mp_birth_year !in ('1995', '1996', '1997')",
             "mp_gender in ('male', 'dude')",
             "mp_gender !in ('male', 'dude')",
+            "graduation_year >= 2007",
+            "graduation_year > '2007'",
+            "graduation_year = 2007",
+            "irregular_data = 1",
+            "irregular_data = '1'",
+            "irregular_data in (1, 9)",
+            "irregular_data in ('three')",
         ]
         
         for dafltr in will_match:
