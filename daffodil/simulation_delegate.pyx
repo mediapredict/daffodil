@@ -1,5 +1,3 @@
-from past.builtins import basestring
-
 from .base_delegate import BaseDaffodilDelegate
 
 
@@ -83,7 +81,7 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
                 return False
 
             poss_vals = poss.get(key, None)
-            if isinstance(poss_vals, basestring):
+            if isinstance(poss_vals, str):
                 poss_vals = [poss_vals]
 
             # For open ends we can't make any guarantees beyond the ones above

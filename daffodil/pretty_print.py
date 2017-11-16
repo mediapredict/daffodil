@@ -1,12 +1,6 @@
-from future import standard_library
-
-from daffodil.parser import TimeStamp
-
-standard_library.install_aliases()
-from builtins import str
-from past.builtins import basestring
 from collections import UserList
 
+from .parser import TimeStamp
 from .base_delegate import BaseDaffodilDelegate
 
 
@@ -23,7 +17,7 @@ def to_daffodil_primitive(val):
 
     if isinstance(val, bool):
         return "true" if val else "false"
-    elif isinstance(val, basestring):
+    elif isinstance(val, str):
         # escape quotes
         val = val.replace('"', '\\"')
 

@@ -1,13 +1,9 @@
-from __future__ import absolute_import
-
-from builtins import zip
 import sys
 import os
 import json
 import unittest
 import re
-
-from future.moves import itertools
+import itertools
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))

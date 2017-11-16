@@ -1,3 +1,5 @@
+# cython: profile=True
+
 from datetime import datetime
 from .predicate import DictionaryPredicateDelegate
 from .exceptions import ParseError
@@ -23,11 +25,10 @@ OPERATORS = (
 MAX_OP_LENGTH = max(len(op) for op in OPERATORS)
 
 
-class Token(object):
+class Token:
     """
     Base class for all tokens
     """
-
     def __init__(self, content):
         self.content = content
 
@@ -46,7 +47,7 @@ class GroupStart(Token):
 
 
 class TimeStamp(Token):
-    def __init__(self, content):
+    def __init__(self, str content):
         self.raw_content = content
         self.content = datetime.strptime(content, "%Y-%m-%d").timestamp()
 
@@ -81,8 +82,12 @@ class ArrayStart(Token): pass
 class ArrayEnd(Token): pass
 
 
-class DaffodilParser(object):
-    def __init__(self, src):
+cdef class DaffodilParser:
+    cdef public str src
+    cdef public tokens
+    cdef int pos, end
+
+    def __init__(self, str src):
         self.src = "{" + src + "\n}"
         self.pos = 0
         self.end = len(self.src)
@@ -94,8 +99,9 @@ class DaffodilParser(object):
     # State machine
     ############################################################
     def main(self):
-        can_accept_another_expression = True
-        expected_closers = []
+        cdef bint can_accept_another_expression = True
+        cdef expected_closers = []
+        cdef str c
 
         self.consume_whitespace()
         while self.pos < self.end:
@@ -134,7 +140,8 @@ class DaffodilParser(object):
             self.consume_whitespace()
 
     def comment(self, token_type):
-        buffer = ""
+        cdef str buffer = ""
+        cdef str c
         while self.pos < self.end:
             c = self.char()
             self.pos += 1
@@ -149,7 +156,7 @@ class DaffodilParser(object):
         )
 
     def condition(self):
-        c = self.char()
+        cdef str c = self.char()
 
         if c in BARE_KEY_CHARS:
             self.bare_key()
@@ -191,7 +198,7 @@ class DaffodilParser(object):
         self.tokens.append(TimeStamp(buffer))
 
     def value(self):
-        c = self.char()
+        cdef str c = self.char()
 
         if c == "(":
             self.array()
@@ -211,7 +218,8 @@ class DaffodilParser(object):
 
         self.consume_whitespace()
 
-        c = self.char()
+        cdef str c = self.char()
+        cdef str val_type
         if c in QUOTE_CHARS:
             val_type = "string"
             reader = self.quoted_string
@@ -227,7 +235,7 @@ class DaffodilParser(object):
         else:
             raise ParseError("Couldn't parse first value in array at byte {}".format(self.pos))
 
-        can_accept_another_value = True
+        cdef bint can_accept_another_value = True
         while self.pos < self.end:
             self.consume_whitespace()
 
@@ -254,20 +262,14 @@ class DaffodilParser(object):
         self.tokens.append(String(self.read_quoted_string()))
 
     def number(self):
-        num_start = self.pos
+        cdef int num_start = self.pos
 
-        # get local references for the inner loop
-        src = self.src
-        end = self.end
-        pos = self.pos
-        while pos < end:
-            if src[pos] not in NUMBER_CHARS:
+        while self.pos < self.end:
+            if self.src[self.pos] not in NUMBER_CHARS:
                 break
-            pos += 1
+            self.pos += 1
 
-        self.pos = pos
-        buffer = src[num_start:pos]
-
+        buffer = self.src[num_start:self.pos]
         if "." not in buffer:
             val = int(buffer)
         else:
@@ -313,14 +315,12 @@ class DaffodilParser(object):
             raise ParseError("Expected operator at byte {}".format(self.pos))
 
     def separator(self):
-        sep_found = False
-        comma_found = False
+        cdef bint sep_found = False
+        cdef bint comma_found = False
 
-        src = self.src
-        end = self.end
-        while self.pos < end:
+        while self.pos < self.end:
             self.consume_whitespace(newlines=sep_found)
-            c = src[self.pos]
+            c = self.src[self.pos]
             if c in '\r\n':
                 sep_found = True
             elif c == ',':
@@ -338,18 +338,18 @@ class DaffodilParser(object):
     # Utility functions
     ############################################################
 
-    def char(self, offset=0):
+    cdef str char(self, int offset=0):
         try:
             return self.src[self.pos + offset]
         except IndexError:
-            return ''
+            return ""
 
-    def chars(self, n, pos=False):
+    cdef str chars(self, int n, pos=False):
         if pos:
             return self.src[pos:pos + n]
         return self.src[self.pos:self.pos + n]
 
-    def consume_whitespace(self, newlines=True):
+    cdef consume_whitespace(self, newlines=True):
         """
         Discards whitespace, does not append any tokens.
         """
@@ -364,7 +364,7 @@ class DaffodilParser(object):
                 break
             self.pos += 1
 
-    def read_quoted_string(self):
+    cdef read_quoted_string(self):
         """
         Reads and returns a quoted string.
 
@@ -395,7 +395,27 @@ class DaffodilParser(object):
         return buffer
 
 
-class Daffodil(object):
+cdef _read_val(tokens):
+    token = tokens.pop(0)
+    if isinstance(token, ArrayStart):
+        array_token = Token([])
+        while True:
+            if isinstance(tokens[0], ArrayEnd):
+                tokens.pop(0)
+                array_token.raw_content = array_token.content
+                array_token.content = [
+                    token.content
+                    for token in array_token.raw_content
+                ]
+                return array_token
+            array_token.content.append(_read_val(tokens))
+    elif isinstance(token, (String, Number, Boolean, TimeStamp)):
+        return token
+    else:
+        raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}".format(token))
+
+
+class Daffodil:
     def __init__(self, source, delegate=DictionaryPredicateDelegate()):
         if isinstance(source, DaffodilParser):
             self.parse_result = source
@@ -415,25 +435,6 @@ class Daffodil(object):
         }
         return lookup[parent.content](children)
 
-    def _read_val(self, tokens):
-        token = tokens.pop(0)
-        if isinstance(token, ArrayStart):
-            array_token = Token([])
-            while True:
-                if isinstance(tokens[0], ArrayEnd):
-                    tokens.pop(0)
-                    array_token.raw_content = array_token.content
-                    array_token.content = [
-                        token.content
-                        for token in array_token.raw_content
-                    ]
-                    return array_token
-                array_token.content.append(self._read_val(tokens))
-        elif isinstance(token, (String, Number, Boolean, TimeStamp)):
-            return token
-        else:
-            raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}".format(token))
-
     def make_predicate(self, tokens, parent=None):
         if parent is None:
             parent = tokens[0]
@@ -448,7 +449,7 @@ class Daffodil(object):
                 self.keys.add(token.content)
                 key = token.content
                 test = self.delegate.mk_test(tokens.pop(0).content)
-                val = self._read_val(tokens)
+                val = _read_val(tokens)
 
                 children.append(
                     self.delegate.mk_cmp(key, val, test)

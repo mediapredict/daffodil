@@ -1,8 +1,5 @@
-from builtins import object
 
-
-class BaseDaffodilDelegate(object):
-
+class BaseDaffodilDelegate:
     def mk_any(self, children):
         raise NotImplementedError()
 
@@ -26,4 +23,3 @@ class BaseDaffodilDelegate(object):
 
     def call(self, predicate, iterable):
         raise NotImplementedError()
-

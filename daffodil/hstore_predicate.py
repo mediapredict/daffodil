@@ -1,7 +1,3 @@
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from past.builtins import basestring
 from collections import UserString
 
 from .base_delegate import BaseDaffodilDelegate
@@ -29,7 +25,7 @@ def breaks_optimizer(expr):
     return (
         expr.daff_test in {"!=", "!in"} or
         (expr.daff_test == "?=" and expr.daff_val == False) or
-        (expr.daff_test == "=" and isinstance(expr.daff_val, basestring))
+        (expr.daff_test == "=" and isinstance(expr.daff_val, str))
     )
 
 def escape_string_sql(s):
@@ -125,7 +121,7 @@ class HStoreQueryDelegate(BaseDaffodilDelegate):
             if test_str == "!=":
                 test_fn.is_NE_test = True
             elif test_str == "=":
-                test_fn = lambda k, v, t: "({0} {1}))".format(k, v) if t == basestring else "{0} {1} {2}".format(k, test_str, v)
+                test_fn = lambda k, v, t: "({0} {1}))".format(k, v) if t == str else "{0} {1} {2}".format(k, test_str, v)
                 test_fn.is_EQ_test = True
             elif test_str == "!in":
                 test_fn.is_NOT_IN_test = True
@@ -160,7 +156,7 @@ class HStoreQueryDelegate(BaseDaffodilDelegate):
                 # if its cast - exclude those not matching type
                 key_format = key_format % (" NOT " + type_check[0] + " OR " if cast else "")
 
-            elif is_eq_test and _type == basestring:
+            elif is_eq_test and _type == str:
                 # here we convert '=' to '@>'
                 # instead of:
                 #   (hs_data->'univisionlanguage1') = 'both'
@@ -187,12 +183,12 @@ class HStoreQueryDelegate(BaseDaffodilDelegate):
 
     def cond_cast(self, val):
         def escape_single_quote(val):
-            if isinstance(val, basestring):
+            if isinstance(val, str):
                 return val.replace("'", "''")
             return val
 
         def format_list(lst):
-            delimiter = "'" if isinstance(lst[0], basestring) else ""
+            delimiter = "'" if isinstance(lst[0], str) else ""
             formatted_list = ",".join(
                 ["{1}{0}{1}".format(escape_single_quote(elem), delimiter) for elem in lst]
             )
@@ -225,7 +221,7 @@ class HStoreQueryDelegate(BaseDaffodilDelegate):
                 "type_check": lambda v: NUMERIC_TYPE_CHECK,
             },
             {
-                "type": basestring,
+                "type": str,
                 "cast": lambda v: "",
                 "value": lambda v: "'{}'".format(escape_single_quote(v)),
                 "type_check": lambda v: ["", ""],
