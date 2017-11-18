@@ -1,12 +1,14 @@
-# cython: profile=True
-
 from datetime import datetime
-from .predicate import DictionaryPredicateDelegate
 from .exceptions import ParseError
+from .predicate cimport DictionaryPredicateDelegate
+from .simulation_delegate cimport SimulationMatchingDelegate
+from .key_expectation_delegate cimport KeyExpectationDelegate
+from .hstore_predicate cimport HStoreQueryDelegate
 
-BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-NUMBER_CHARS = "-.0123456789"
-QUOTE_CHARS = "\"\'"
+
+DEF BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+DEF NUMBER_CHARS = "-.0123456789"
+DEF QUOTE_CHARS = "\"\'"
 
 PAIRS = {
     "{": "}",
@@ -25,15 +27,21 @@ OPERATORS = (
 MAX_OP_LENGTH = max(len(op) for op in OPERATORS)
 
 
-class Token:
+cdef class Token:
     """
     Base class for all tokens
     """
-    def __init__(self, content):
+    def __cinit__(self, content):
         self.content = content
 
 
-class GroupStart(Token):
+cdef class TimeStamp(Token):
+    def __cinit__(self, str content):
+        self.raw_content = content
+        self.content = datetime.strptime(content, "%Y-%m-%d").timestamp()
+
+
+cdef class GroupStart(Token):
     def is_end(self, token):
         if not isinstance(token, GroupEnd):
             return False
@@ -46,48 +54,64 @@ class GroupStart(Token):
         return token.content == PAIRS[opener]
 
 
-class TimeStamp(Token):
-    def __init__(self, str content):
-        self.raw_content = content
-        self.content = datetime.strptime(content, "%Y-%m-%d").timestamp()
+cdef class GroupEnd(Token): pass
 
 
-class Key(Token): pass
+cdef class Key(Token): pass
 
 
-class GroupEnd(Token): pass
+cdef class LineComment(Token): pass
 
 
-class LineComment(Token): pass
+cdef class TrailingComment(Token): pass
 
 
-class TrailingComment(Token): pass
+cdef class Operator(Token): pass
 
 
-class Operator(Token): pass
+cdef class String(Token): pass
 
 
-class String(Token): pass
+cdef class Number(Token): pass
 
 
-class Number(Token): pass
+cdef class Boolean(Token): pass
 
 
-class Boolean(Token): pass
+cdef class ArrayStart(Token): pass
 
 
-class ArrayStart(Token): pass
+cdef class ArrayEnd(Token): pass
 
 
-class ArrayEnd(Token): pass
+cdef class _ArrayToken(Token): pass
+
+
+cdef class BaseDaffodilDelegate:
+    def mk_any(self, children):
+        raise NotImplementedError()
+
+    def mk_all(self, children):
+        raise NotImplementedError()
+
+    def mk_not_any(self, children):
+        raise NotImplementedError()
+
+    def mk_not_all(self, children):
+        raise NotImplementedError()
+
+    def mk_comment(self, str comment, bint is_inline):
+        raise NotImplementedError()
+
+    cdef mk_cmp(self, Token key, Token test, Token val):
+        raise NotImplementedError()
+
+    def call(self, predicate, iterable):
+        raise NotImplementedError()
 
 
 cdef class DaffodilParser:
-    cdef public str src
-    cdef public tokens
-    cdef int pos, end
-
-    def __init__(self, str src):
+    def __cinit__(self, str src):
         self.src = "{" + src + "\n}"
         self.pos = 0
         self.end = len(self.src)
@@ -349,22 +373,20 @@ cdef class DaffodilParser:
             return self.src[pos:pos + n]
         return self.src[self.pos:self.pos + n]
 
-    cdef consume_whitespace(self, newlines=True):
+    cdef consume_whitespace(self, bint newlines=True):
         """
         Discards whitespace, does not append any tokens.
         """
-        chars = " \t"
+        cdef str chars = " \t"
         if newlines:
             chars += "\r\n"
 
-        src = self.src
-        end = self.end
-        while self.pos < end:
-            if src[self.pos] not in chars:
+        while self.pos < self.end:
+            if self.src[self.pos] not in chars:
                 break
             self.pos += 1
 
-    cdef read_quoted_string(self):
+    cdef str read_quoted_string(self):
         """
         Reads and returns a quoted string.
 
@@ -373,32 +395,31 @@ cdef class DaffodilParser:
         quote_char = self.char()
 
         # (pos + 1) because we start after the quote character
-        pos = self.pos + 1
-        src = self.src
-        end = self.end
+        self.pos += 1
 
-        buffer = ""
-        while pos < end:
-            c = src[pos]
-            pos += 1
+        cdef str buffer = ""
+        while self.pos < self.end:
+            c = self.src[self.pos]
+            self.pos += 1
 
             # Escaped quotes and backslashes
-            if c == "\\" and src[pos] in "\"\'\\":
-                c = src[pos]
-                pos += 1
+            if c == "\\" and self.src[self.pos] in "\"\'\\":
+                c = self.src[self.pos]
+                self.pos += 1
             elif c == quote_char:
                 break
 
             buffer += c
 
-        self.pos = pos
         return buffer
 
 
-cdef _read_val(tokens):
-    token = tokens.pop(0)
+cdef object _read_val(tokens):
+    cdef _ArrayToken array_token
+    cdef Token token = tokens.pop(0)
+
     if isinstance(token, ArrayStart):
-        array_token = Token([])
+        array_token = _ArrayToken([])
         while True:
             if isinstance(tokens[0], ArrayEnd):
                 tokens.pop(0)
@@ -415,8 +436,8 @@ cdef _read_val(tokens):
         raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}".format(token))
 
 
-class Daffodil:
-    def __init__(self, source, delegate=DictionaryPredicateDelegate()):
+cdef class Daffodil:
+    def __init__(self, source, BaseDaffodilDelegate delegate=DictionaryPredicateDelegate()):
         if isinstance(source, DaffodilParser):
             self.parse_result = source
         else:
@@ -436,6 +457,8 @@ class Daffodil:
         return lookup[parent.content](children)
 
     def make_predicate(self, tokens, parent=None):
+        cdef Token key_token, test_token
+
         if parent is None:
             parent = tokens[0]
             return self.make_predicate(tokens[1:], parent)
@@ -447,12 +470,12 @@ class Daffodil:
                 return self._handle_group(parent, children)
             elif isinstance(token, Key):
                 self.keys.add(token.content)
-                key = token.content
-                test = self.delegate.mk_test(tokens.pop(0).content)
-                val = _read_val(tokens)
-
                 children.append(
-                    self.delegate.mk_cmp(key, val, test)
+                    self.delegate.mk_cmp(
+                        token,
+                        tokens.pop(0),
+                        _read_val(tokens),
+                    )
                 )
             elif isinstance(token, LineComment):
                 children.append(

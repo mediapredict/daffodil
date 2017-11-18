@@ -1,11 +1,11 @@
-from .base_delegate import BaseDaffodilDelegate
+from .parser cimport Token, BaseDaffodilDelegate
 
 
 # Sentinal to indicate a comment in the daffodil
 COMMENT = object()
 
 
-class SimulationMatchingDelegate(BaseDaffodilDelegate):
+cdef class SimulationMatchingDelegate(BaseDaffodilDelegate):
     """
     For use in simulations like the QA subsystem in KF.
 
@@ -62,9 +62,14 @@ class SimulationMatchingDelegate(BaseDaffodilDelegate):
             return None
         return pred
 
-    def mk_cmp(self, key, val, test):
-        val = val.content
-        
+    cdef mk_cmp(self, Token key, Token test, Token val):
+        return self._mk_cmp(
+            key.content,
+            val.content,
+            self.mk_test(test.content)
+        )
+
+    def _mk_cmp(self, str key, object val, object test):
         def pred(poss):
             if test == "?=":
                 if val:

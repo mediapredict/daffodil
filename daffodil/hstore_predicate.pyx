@@ -1,6 +1,5 @@
 from collections import UserString
-
-from .base_delegate import BaseDaffodilDelegate
+from .parser cimport Token, BaseDaffodilDelegate
 
 
 RE_CASE = "CASE WHEN ({0}->'{1}' ~ E'"
@@ -36,9 +35,10 @@ def make_sql_array(*strings):
         ",".join(escape_string_sql(s) for s in strings)
     )
 
-class HStoreQueryDelegate(BaseDaffodilDelegate):
+cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
+    cdef public str field
 
-    def __init__(self, hstore_field_name):
+    def __cinit__(self, hstore_field_name):
         self.field = hstore_field_name
 
     def mk_any(self, children):
@@ -132,7 +132,14 @@ class HStoreQueryDelegate(BaseDaffodilDelegate):
         test_fn.test_str = daff_test_str
         return test_fn
 
-    def mk_cmp(self, key, val, test):
+    cdef mk_cmp(self, Token key, Token test, Token val):
+        return self._mk_cmp(
+            key.content,
+            val,
+            self.mk_test(test.content)
+        )
+
+    def _mk_cmp(self, key, val, test):
         val = val.content
         daff_key = key
         daff_test = test.test_str
