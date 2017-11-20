@@ -201,9 +201,9 @@ Arrays:
 
 ### Functions
 
-- `datetime(YYYY-MM-DD)` this is a helper function which generates the unix timestamp corresponding to the date entered. When the daffodil is evaluated the datetime is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. 
+- `timestamp(YYYY-MM-DD)` this is a helper function which generates the unix timestamp corresponding to the date entered. When the daffodil is evaluated the timestamp is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. 
 
-Example: people who began `mystudy` after halloween 2017: `mystudy__started >= datetime(2017-10-31)`
+Example: people who began `mystudy` after halloween 2017: `mystudy__started >= timestamp(2017-10-31)`
 
 ### Comparison operators
 
