@@ -38,10 +38,10 @@ cdef class CMPFunctionHandler:
     cdef object val
     cdef bint err_ret_val
 
-    def __call__(self, dict data_point):
+    def __call__(self, object data_point):
         return self._call(data_point)
 
-    cdef bint _call(self, dict data_point):
+    cdef bint _call(self, object data_point):
         cdef object dp_val
         cdef object cmp_val
 
@@ -80,7 +80,7 @@ cdef class CMPFunctionHandler:
 
 
 cdef class DPCMPFunctionHandler(CMPFunctionHandler):
-    cdef bint _call(self, dict data_point):
+    cdef bint _call(self, object data_point):
         if data_point is None:
             return not self.val
 
