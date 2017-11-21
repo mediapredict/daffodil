@@ -40,7 +40,7 @@ cdef class Token:
 
 
 cdef class TimeStamp(Token):
-    def __init__(self, str content):
+    def __cinit__(self, str content):
         self.raw_content = content
 
         for ts_fmt in TS_FORMATS:
