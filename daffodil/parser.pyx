@@ -1,10 +1,14 @@
-from datetime import datetime
-from .predicate import DictionaryPredicateDelegate
+from datetime import datetime, timezone
 from .exceptions import ParseError
+from .predicate cimport DictionaryPredicateDelegate
+from .simulation_delegate cimport SimulationMatchingDelegate
+from .key_expectation_delegate cimport KeyExpectationDelegate
+from .hstore_predicate cimport HStoreQueryDelegate
 
-BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-NUMBER_CHARS = "-.0123456789"
-QUOTE_CHARS = "\"\'"
+
+DEF BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+DEF NUMBER_CHARS = "-.0123456789"
+DEF QUOTE_CHARS = "\"\'"
 
 PAIRS = {
     "{": "}",
@@ -22,17 +26,35 @@ OPERATORS = (
 
 MAX_OP_LENGTH = max(len(op) for op in OPERATORS)
 
+DEF TS_FORMATS = (
+    "%Y-%m-%d %H:%M",
+    "%Y-%m-%d",
+)
 
-class Token(object):
+cdef class Token:
     """
     Base class for all tokens
     """
-
-    def __init__(self, content):
+    def __cinit__(self, content):
         self.content = content
 
 
-class GroupStart(Token):
+cdef class TimeStamp(Token):
+    def __cinit__(self, str content):
+        self.raw_content = content
+
+        for ts_fmt in TS_FORMATS:
+            try:
+                dt = datetime.strptime(content, ts_fmt).replace(tzinfo=timezone.utc)
+                self.content = dt.timestamp()
+                break
+            except ValueError:
+                continue
+        else:
+            raise ParseError(f'"timestamp({content})" couldn\'t be parsed')
+
+
+cdef class GroupStart(Token):
     def is_end(self, token):
         if not isinstance(token, GroupEnd):
             return False
@@ -45,44 +67,64 @@ class GroupStart(Token):
         return token.content == PAIRS[opener]
 
 
-class TimeStamp(Token):
-    def __init__(self, content):
-        self.raw_content = content
-        self.content = datetime.strptime(content, "%Y-%m-%d").timestamp()
+cdef class GroupEnd(Token): pass
 
 
-class Key(Token): pass
+cdef class Key(Token): pass
 
 
-class GroupEnd(Token): pass
+cdef class LineComment(Token): pass
 
 
-class LineComment(Token): pass
+cdef class TrailingComment(Token): pass
 
 
-class TrailingComment(Token): pass
+cdef class Operator(Token): pass
 
 
-class Operator(Token): pass
+cdef class String(Token): pass
 
 
-class String(Token): pass
+cdef class Number(Token): pass
 
 
-class Number(Token): pass
+cdef class Boolean(Token): pass
 
 
-class Boolean(Token): pass
+cdef class ArrayStart(Token): pass
 
 
-class ArrayStart(Token): pass
+cdef class ArrayEnd(Token): pass
 
 
-class ArrayEnd(Token): pass
+cdef class _ArrayToken(Token): pass
 
 
-class DaffodilParser(object):
-    def __init__(self, src):
+cdef class BaseDaffodilDelegate:
+    def mk_any(self, children):
+        raise NotImplementedError()
+
+    def mk_all(self, children):
+        raise NotImplementedError()
+
+    def mk_not_any(self, children):
+        raise NotImplementedError()
+
+    def mk_not_all(self, children):
+        raise NotImplementedError()
+
+    def mk_comment(self, str comment, bint is_inline):
+        raise NotImplementedError()
+
+    cdef mk_cmp(self, Token key, Token test, Token val):
+        raise NotImplementedError()
+
+    def call(self, predicate, iterable):
+        raise NotImplementedError()
+
+
+cdef class DaffodilParser:
+    def __cinit__(self, str src):
         self.src = "{" + src + "\n}"
         self.pos = 0
         self.end = len(self.src)
@@ -94,8 +136,9 @@ class DaffodilParser(object):
     # State machine
     ############################################################
     def main(self):
-        can_accept_another_expression = True
-        expected_closers = []
+        cdef bint can_accept_another_expression = True
+        cdef expected_closers = []
+        cdef str c
 
         self.consume_whitespace()
         while self.pos < self.end:
@@ -134,7 +177,8 @@ class DaffodilParser(object):
             self.consume_whitespace()
 
     def comment(self, token_type):
-        buffer = ""
+        cdef str buffer = ""
+        cdef str c
         while self.pos < self.end:
             c = self.char()
             self.pos += 1
@@ -149,7 +193,7 @@ class DaffodilParser(object):
         )
 
     def condition(self):
-        c = self.char()
+        cdef str c = self.char()
 
         if c in BARE_KEY_CHARS:
             self.bare_key()
@@ -175,9 +219,9 @@ class DaffodilParser(object):
             return self.separator()
 
     def timestamp(self):
-        pos = self.pos + len("timestamp(")
+        cdef int pos = self.pos + len("timestamp(")
 
-        buffer = ""
+        cdef str buffer = ""
         while pos < self.end:
             c = self.src[pos]
             pos += 1
@@ -191,7 +235,7 @@ class DaffodilParser(object):
         self.tokens.append(TimeStamp(buffer))
 
     def value(self):
-        c = self.char()
+        cdef str c = self.char()
 
         if c == "(":
             self.array()
@@ -211,7 +255,8 @@ class DaffodilParser(object):
 
         self.consume_whitespace()
 
-        c = self.char()
+        cdef str c = self.char()
+        cdef str val_type
         if c in QUOTE_CHARS:
             val_type = "string"
             reader = self.quoted_string
@@ -227,7 +272,7 @@ class DaffodilParser(object):
         else:
             raise ParseError("Couldn't parse first value in array at byte {}".format(self.pos))
 
-        can_accept_another_value = True
+        cdef bint can_accept_another_value = True
         while self.pos < self.end:
             self.consume_whitespace()
 
@@ -254,20 +299,14 @@ class DaffodilParser(object):
         self.tokens.append(String(self.read_quoted_string()))
 
     def number(self):
-        num_start = self.pos
+        cdef int num_start = self.pos
 
-        # get local references for the inner loop
-        src = self.src
-        end = self.end
-        pos = self.pos
-        while pos < end:
-            if src[pos] not in NUMBER_CHARS:
+        while self.pos < self.end:
+            if self.src[self.pos] not in NUMBER_CHARS:
                 break
-            pos += 1
+            self.pos += 1
 
-        self.pos = pos
-        buffer = src[num_start:pos]
-
+        buffer = self.src[num_start:self.pos]
         if "." not in buffer:
             val = int(buffer)
         else:
@@ -313,14 +352,12 @@ class DaffodilParser(object):
             raise ParseError("Expected operator at byte {}".format(self.pos))
 
     def separator(self):
-        sep_found = False
-        comma_found = False
+        cdef bint sep_found = False
+        cdef bint comma_found = False
 
-        src = self.src
-        end = self.end
-        while self.pos < end:
+        while self.pos < self.end:
             self.consume_whitespace(newlines=sep_found)
-            c = src[self.pos]
+            c = self.src[self.pos]
             if c in '\r\n':
                 sep_found = True
             elif c == ',':
@@ -338,33 +375,31 @@ class DaffodilParser(object):
     # Utility functions
     ############################################################
 
-    def char(self, offset=0):
+    cdef str char(self, int offset=0):
         try:
             return self.src[self.pos + offset]
         except IndexError:
-            return ''
+            return ""
 
-    def chars(self, n, pos=False):
+    cdef str chars(self, int n, pos=False):
         if pos:
             return self.src[pos:pos + n]
         return self.src[self.pos:self.pos + n]
 
-    def consume_whitespace(self, newlines=True):
+    cdef consume_whitespace(self, bint newlines=True):
         """
         Discards whitespace, does not append any tokens.
         """
-        chars = " \t"
+        cdef str chars = " \t"
         if newlines:
             chars += "\r\n"
 
-        src = self.src
-        end = self.end
-        while self.pos < end:
-            if src[self.pos] not in chars:
+        while self.pos < self.end:
+            if self.src[self.pos] not in chars:
                 break
             self.pos += 1
 
-    def read_quoted_string(self):
+    cdef str read_quoted_string(self):
         """
         Reads and returns a quoted string.
 
@@ -373,30 +408,49 @@ class DaffodilParser(object):
         quote_char = self.char()
 
         # (pos + 1) because we start after the quote character
-        pos = self.pos + 1
-        src = self.src
-        end = self.end
+        self.pos += 1
 
-        buffer = ""
-        while pos < end:
-            c = src[pos]
-            pos += 1
+        cdef str buffer = ""
+        while self.pos < self.end:
+            c = self.src[self.pos]
+            self.pos += 1
 
             # Escaped quotes and backslashes
-            if c == "\\" and src[pos] in "\"\'\\":
-                c = src[pos]
-                pos += 1
+            if c == "\\" and self.src[self.pos] in "\"\'\\":
+                c = self.src[self.pos]
+                self.pos += 1
             elif c == quote_char:
                 break
 
             buffer += c
 
-        self.pos = pos
         return buffer
 
 
-class Daffodil(object):
-    def __init__(self, source, delegate=DictionaryPredicateDelegate()):
+cdef object _read_val(tokens):
+    cdef _ArrayToken array_token
+    cdef Token token = tokens.pop(0)
+
+    if isinstance(token, ArrayStart):
+        array_token = _ArrayToken([])
+        while True:
+            if isinstance(tokens[0], ArrayEnd):
+                tokens.pop(0)
+                array_token.raw_content = array_token.content
+                array_token.content = [
+                    token.content
+                    for token in array_token.raw_content
+                ]
+                return array_token
+            array_token.content.append(_read_val(tokens))
+    elif isinstance(token, (String, Number, Boolean, TimeStamp)):
+        return token
+    else:
+        raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}".format(token))
+
+
+cdef class Daffodil:
+    def __init__(self, source, BaseDaffodilDelegate delegate=DictionaryPredicateDelegate()):
         if isinstance(source, DaffodilParser):
             self.parse_result = source
         else:
@@ -415,26 +469,9 @@ class Daffodil(object):
         }
         return lookup[parent.content](children)
 
-    def _read_val(self, tokens):
-        token = tokens.pop(0)
-        if isinstance(token, ArrayStart):
-            array_token = Token([])
-            while True:
-                if isinstance(tokens[0], ArrayEnd):
-                    tokens.pop(0)
-                    array_token.raw_content = array_token.content
-                    array_token.content = [
-                        token.content
-                        for token in array_token.raw_content
-                    ]
-                    return array_token
-                array_token.content.append(self._read_val(tokens))
-        elif isinstance(token, (String, Number, Boolean, TimeStamp)):
-            return token
-        else:
-            raise ValueError("Expected Array, String, Number, or Boolean Token. Got {}".format(token))
-
     def make_predicate(self, tokens, parent=None):
+        cdef Token key_token, test_token
+
         if parent is None:
             parent = tokens[0]
             return self.make_predicate(tokens[1:], parent)
@@ -446,12 +483,12 @@ class Daffodil(object):
                 return self._handle_group(parent, children)
             elif isinstance(token, Key):
                 self.keys.add(token.content)
-                key = token.content
-                test = self.delegate.mk_test(tokens.pop(0).content)
-                val = self._read_val(tokens)
-
                 children.append(
-                    self.delegate.mk_cmp(key, val, test)
+                    self.delegate.mk_cmp(
+                        token,
+                        tokens.pop(0),
+                        _read_val(tokens),
+                    )
                 )
             elif isinstance(token, LineComment):
                 children.append(

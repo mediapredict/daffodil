@@ -1,13 +1,6 @@
-from future import standard_library
-
-from daffodil.parser import TimeStamp
-
-standard_library.install_aliases()
-from builtins import str
-from past.builtins import basestring
 from collections import UserList
 
-from .base_delegate import BaseDaffodilDelegate
+from .parser cimport Token, TimeStamp, BaseDaffodilDelegate
 
 
 def token_to_daffodil_primitive(val):
@@ -23,7 +16,7 @@ def to_daffodil_primitive(val):
 
     if isinstance(val, bool):
         return "true" if val else "false"
-    elif isinstance(val, basestring):
+    elif isinstance(val, str):
         # escape quotes
         val = val.replace('"', '\\"')
 
@@ -150,8 +143,10 @@ class DaffodilArrayWrapper(DaffodilWrapper):
         )
 
 
-class PrettyPrintDelegate(BaseDaffodilDelegate):
-    def __init__(self, dense=True):
+cdef class PrettyPrintDelegate(BaseDaffodilDelegate):
+    cdef public bint dense
+
+    def __cinit__(self, dense=True):
         self.dense = dense
     
     def _mk_wrapped(self, children, grouping, wrapper=DaffodilWrapper):
@@ -183,7 +178,14 @@ class PrettyPrintDelegate(BaseDaffodilDelegate):
             keep_with_prev = is_inline
         return string(comment.strip())
 
-    def mk_cmp(self, key, val, test):
+    cdef mk_cmp(self, Token key, Token test, Token val):
+        return self._mk_cmp(
+            key.content,
+            val,
+            self.mk_test(test.content)
+        )
+
+    def _mk_cmp(self, key, val, test):
         key = to_daffodil_primitive(key)
         
         # values can be boolean, string, or number

@@ -1,7 +1,7 @@
-from .base_delegate import BaseDaffodilDelegate
+from .parser cimport Token, BaseDaffodilDelegate
 
 
-class KeyExpectationDelegate(BaseDaffodilDelegate):
+cdef class KeyExpectationDelegate(BaseDaffodilDelegate):
     """
     Determines which keys in a daffodil are required in data dictionaries 
     in order to match and which keys have to be omitted to match. 
@@ -42,7 +42,14 @@ class KeyExpectationDelegate(BaseDaffodilDelegate):
     def mk_comment(self, comment, is_inline):
         return set(), set()
 
-    def mk_cmp(self, key, val, test):
+    cdef mk_cmp(self, Token key, Token test, Token val):
+        return self._mk_cmp(
+            key.content,
+            val,
+            self.mk_test(test.content)
+        )
+
+    def _mk_cmp(self, key, val, test):
         val = val.content
         if test == "?=" and val is False:
             return set(), {key}
