@@ -1,14 +1,22 @@
 from distutils.core import setup
 
+cython_installed = False
+try:
+    import Cython
+    cython_installed = True
+except ImportError:
+    pass
+
 extra_kwargs = {}
 
-try:
-    # TODO: in the future distribute c sources instead of pyx files
-    #   https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
+if cython_installed:
     from Cython.Build import cythonize
     import Cython.Compiler.Options
+
     Cython.Compiler.Options.cimport_from_pyx = True
 
+    # TODO: in the future distribute c sources instead of pyx files
+    #   https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
     extra_kwargs['ext_modules'] = cythonize(
         'daffodil/*.pyx',
         compiler_directives={
@@ -19,8 +27,6 @@ try:
             'profile': False,
         }
     )
-except ImportError:
-    pass
 
 
 setup(
