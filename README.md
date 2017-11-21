@@ -201,11 +201,11 @@ Arrays:
 
 ### Functions
 
-- `datetime(YYYY-MM-DD)` or `datetime(YYYY-MM-DD HH:MM)` this is a helper function which generates the unix timestamp corresponding to the date (and optionally, time) entered. When the daffodil is evaluated the datetime is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. If hours and minutes are entered they are interpreted as 24 hour time UTC.
+- `timestamp(YYYY-MM-DD)` or `timestamp(YYYY-MM-DD HH:MM)` this is a helper function which generates the unix timestamp corresponding to the date (and optionally, time) entered. When the daffodil is evaluated the datetime is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. If hours and minutes are entered they are interpreted as 24 hour time UTC.
 
 Examples:
 - people who began `mystudy` after halloween 2017:
-  `mystudy__started >= datetime(2017-10-31)`
+  `mystudy__started >= timestamp(2017-10-31)`
 - people who participated in `balloonstudy` while the Macy's thanksgiving day parade was on tv (Nov 23, 9AM to 12PM Eastern time):
   ```
   balloonstudy__started >= timestamp(2017-11-23 2:00)
