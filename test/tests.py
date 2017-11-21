@@ -445,6 +445,54 @@ class SATDataTests(BaseTest):
             school_name != 'EAST SIDE COMMUNITY SCHOOL'
         """)
 
+    def test_timestamp_eq(self):
+        self.assert_filter_has_n_results(1, """
+            created = timestamp(2017-11-21 16:27)
+        """)
+        self.assert_filter_has_n_results(0, """
+            created = timestamp(2017-11-21)
+        """)
+
+    def test_timestamp_ne(self):
+        self.assert_filter_has_n_results(420, """
+            created != timestamp(2017-11-21 16:27)
+        """)
+        self.assert_filter_has_n_results(421, """
+            created != timestamp(2017-06-01)
+        """)
+
+    def test_timestamp_gt(self):
+        self.assert_filter_has_n_results(2, """
+            created > timestamp(2017-06-01)
+        """)
+        self.assert_filter_has_n_results(0, """
+            created > timestamp(2017-11-21 16:27)
+        """)
+
+    def test_timestamp_gte(self):
+        self.assert_filter_has_n_results(2, """
+            created >= timestamp(2017-06-01)
+        """)
+        self.assert_filter_has_n_results(1, """
+            created >= timestamp(2017-11-21 16:27)
+        """)
+
+    def test_timestamp_lt(self):
+        self.assert_filter_has_n_results(2, """
+            created < timestamp(2017-06-01)
+        """)
+        self.assert_filter_has_n_results(3, """
+            created < timestamp(2017-11-21 16:27)
+        """)
+
+    def test_timestamp_lte(self):
+        self.assert_filter_has_n_results(2, """
+            created <= timestamp(2017-06-01)
+        """)
+        self.assert_filter_has_n_results(4, """
+            created <= timestamp(2017-11-21 16:27)
+        """)
+
     #def test_comparing_a_string_containing_int(self):
     #    self.assert_filter_has_n_results(417, """
     #        num_of_sat_test_takers != "50"
@@ -495,7 +543,6 @@ class SATDataTests(BaseTest):
         self.assertRaises(ParseError, Daffodil, "a = 1 ]")
         self.assertRaises(ParseError, Daffodil, "a = 1 \n}")
         self.assertRaises(ParseError, Daffodil, "a = 1 \n]")
-
 
     def test_unicode_filter(self):
         self.assert_filter_has_n_results(273, """
