@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from .exceptions import ParseError
 from .predicate cimport DictionaryPredicateDelegate
 from .simulation_delegate cimport SimulationMatchingDelegate
@@ -26,6 +26,10 @@ OPERATORS = (
 
 MAX_OP_LENGTH = max(len(op) for op in OPERATORS)
 
+DEF TS_FORMATS = (
+    "%Y-%m-%d %H:%M",
+    "%Y-%m-%d",
+)
 
 cdef class Token:
     """
@@ -36,9 +40,18 @@ cdef class Token:
 
 
 cdef class TimeStamp(Token):
-    def __cinit__(self, str content):
+    def __init__(self, str content):
         self.raw_content = content
-        self.content = datetime.strptime(content, "%Y-%m-%d").timestamp()
+
+        for ts_fmt in TS_FORMATS:
+            try:
+                dt = datetime.strptime(content, ts_fmt).replace(tzinfo=timezone.utc)
+                self.content = dt.timestamp()
+                break
+            except ValueError:
+                continue
+        else:
+            raise ParseError(f'"timestamp({content})" couldn\'t be parsed')
 
 
 cdef class GroupStart(Token):
@@ -206,9 +219,9 @@ cdef class DaffodilParser:
             return self.separator()
 
     def timestamp(self):
-        pos = self.pos + len("timestamp(")
+        cdef int pos = self.pos + len("timestamp(")
 
-        buffer = ""
+        cdef str buffer = ""
         while pos < self.end:
             c = self.src[pos]
             pos += 1

@@ -20,7 +20,10 @@ setup(
         'daffodil/*.pyx',
         compiler_directives={
             'language_level': "3",
-            'profile': True,
+
+            # controls extensions which allow cprofile to see cython functions but
+            # has a small performance penalty
+            'profile': False,
         }
     ),
     long_description='A Super-simple DSL for filtering datasets',

@@ -1,3 +1,4 @@
+from builtins import zip
 import sys
 import os
 import json
@@ -48,8 +49,14 @@ class ParserGrammarTypesTests(unittest.TestCase):
         ]:
             with self.assertRaises(ValueError):
                 self.parse('whatever ?= "true"', delegate)
+            with self.assertRaises(ValueError):
                 self.parse('whatever ?= "False"', delegate)
+            with self.assertRaises(ValueError):
                 self.parse('whatever ?= "any string"', delegate)
+            with self.assertRaises(ParseError):
+                self.parse('whatever >= timestamp(2017-13-10)', delegate)
+            with self.assertRaises(ParseError):
+                self.parse('whatever in (timestamp(2017-11-21 21:99), timestamp(2021-11-21 14:30))', delegate)
 
 
 class SATDataTests(BaseTest):
@@ -1042,11 +1049,13 @@ PRETTY_PRINT_EXPECTATIONS = (
 [
 '''
     val1 = timestamp(2017-08-03)
+    val2 = timestamp(2017-08-03 15:21)
 ''',
-'{"val1"=timestamp(2017-08-03)}',
+'{"val1"=timestamp(2017-08-03),"val2"=timestamp(2017-08-03 15:21)}',
 '''
 {
   "val1" = timestamp(2017-08-03)
+  "val2" = timestamp(2017-08-03 15:21)
 }
 '''.strip()
 ],
@@ -1054,13 +1063,14 @@ PRETTY_PRINT_EXPECTATIONS = (
 # Array Timestamp lookup
 [
 '''
-    val1 in (timestamp(2017-08-03))
+    val1 in (timestamp(2017-08-03), timestamp(2017-08-03 20:32))
 ''',
-'{"val1"in(timestamp(2017-08-03))}',
+'{"val1"in(timestamp(2017-08-03),timestamp(2017-08-03 20:32))}',
 '''
 {
   "val1" in (
     timestamp(2017-08-03)
+    timestamp(2017-08-03 20:32)
   )
 }
 '''.strip()
