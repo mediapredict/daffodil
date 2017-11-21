@@ -9,7 +9,7 @@ Cython.Compiler.Options.cimport_from_pyx = True
 
 setup(
     name='daffodil',
-    version='0.5.0',
+    version='0.5.1',
     author='James Robert',
     description='A Super-simple DSL for filtering datasets',
     license='MIT',

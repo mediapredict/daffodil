@@ -493,6 +493,23 @@ class SATDataTests(BaseTest):
             created <= timestamp(2017-11-21 16:27)
         """)
 
+    def test_timestamp_in(self):
+        self.assert_filter_has_n_results(1, """
+            created in (
+                timestamp(2017-06-01)
+                timestamp(2017-11-21 16:27)
+            )
+        """)
+
+    def test_timestamp_notin(self):
+        self.assert_filter_has_n_results(420, """
+            created !in (
+                timestamp(2017-06-01)
+                timestamp(2017-11-21 16:27)
+            )
+        """)
+
+
     #def test_comparing_a_string_containing_int(self):
     #    self.assert_filter_has_n_results(417, """
     #        num_of_sat_test_takers != "50"
