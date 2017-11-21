@@ -169,6 +169,7 @@ cdef class DictionaryPredicateDelegate(BaseDaffodilDelegate):
             cmp.test = _in
         elif test_str == '!in':
             cmp.test = _not_in
+            cmp.err_ret_val = True
         else:
             raise ValueError('"{}" is not a valid operator')
 
