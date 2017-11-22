@@ -155,6 +155,9 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
         else:
             is_eq_test = getattr(test, "is_EQ_test", False)
             _type, cast, val, type_check = self.cond_cast(val)
+            test_ignores_missing_data = (
+                daff_test in {"=", "in", "<", "<=", ">", ">="}
+            )
 
             if getattr(test, "is_NE_test", False) or getattr(test, "is_NOT_IN_test", False):
                 # here we cover:
@@ -171,7 +174,7 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
                 #   hs_data @> hstore('univisionlanguage1', 'both')
                 key_format = "{0} @> hstore('{1}',"
 
-            elif getattr(test, "is_IN_test", False) or is_eq_test:
+            elif test_ignores_missing_data:
                 # here we convert '=' to '? AND =':
                 # hs_answers?'industries - luxury' AND hs_answers->'industries - luxury' = 'yes'
                 key_format = "({0}?'{1}') AND {3} ({0}->'{1}'){2}"
