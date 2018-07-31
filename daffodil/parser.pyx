@@ -1,3 +1,4 @@
+import string
 from datetime import datetime, timezone
 from .exceptions import ParseError
 from .predicate cimport DictionaryPredicateDelegate
@@ -454,11 +455,18 @@ cdef class Daffodil:
         if isinstance(source, DaffodilParser):
             self.parse_result = source
         else:
-            self.parse_result = DaffodilParser(source)
+            self.parse_result = DaffodilParser(
+                self.clean_input_source(source)
+            )
 
         self.keys = set()
         self.delegate = delegate
         self.predicate = self.make_predicate(self.parse_result.tokens)
+
+    def clean_input_source(self, source):
+        return ''.join(
+            filter(string.printable.__contains__, source)
+        )
 
     def _handle_group(self, parent, children):
         lookup = {
