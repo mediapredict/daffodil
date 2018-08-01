@@ -100,18 +100,6 @@ class SATDataTests(BaseTest):
         self.assert_filter_has_n_results(421, "![ ]")
         self.assert_filter_has_n_results(421, "![\n]")
 
-    # def test_dirty(self):
-    #     dirty_string = """(
-    #         2082237
-    #         ﻿2082261
-    #         ﻿2082360)
-    #     """
-    #     self.assert_filter_has_n_results(0, f"""
-    #         num_of_sat_test_takers in {dirty_string}
-    #     """)
-    #
-    #     print("went fine ****")
-
     def test_none(self):
         self.d = [None]
         self.assert_filter_has_n_results(1, """
