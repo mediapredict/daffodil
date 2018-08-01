@@ -58,6 +58,22 @@ class ParserGrammarTypesTests(unittest.TestCase):
             with self.assertRaises(ParseError):
                 self.parse('whatever in (timestamp(2017-11-21 21:99), timestamp(2021-11-21 14:30))', delegate)
 
+    def test_dirty_strings_parsed(self):
+        #
+        # string containing '7\n\ufeff208' substring
+        # (end of 1st and beginning of the 2nd line)
+        #
+        dirty_string = """(
+            2082237
+            ﻿2082261
+            ﻿2082360)
+        """
+        for delegate in [
+            HStoreQueryDelegate(hstore_field_name="dummy_name"),
+            DictionaryPredicateDelegate(), KeyExpectationDelegate()
+        ]:
+            self.parse(f"whatever in {dirty_string}", delegate)
+
 
 class SATDataTests(BaseTest):
     def assert_filter_has_n_results(self, n, daff_src):
