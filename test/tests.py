@@ -166,6 +166,24 @@ class SATDataTests(BaseTest):
             num_of_sat_test_takers < 50
         """)
 
+    def test_non_existing_tag_lt_gt(self):
+        self.assert_filter_has_n_results(0, """
+            tag_with_null_value < 1236
+        """)
+        self.assert_filter_has_n_results(0, """
+            tag_with_null_value >= 1236
+        """)
+        self.assert_filter_has_n_results(0, """
+            tag_with_null_value = 1236
+        """)
+        # doesn't break the "sane part" of evaluation
+        self.assert_filter_has_n_results(4, """
+            [
+                tag_with_null_value >= 1236
+                num_of_sat_test_takers = 50
+            ]
+        """)
+
     def test_int_lte(self):
         self.assert_filter_has_n_results(148, """
             num_of_sat_test_takers <= 50
@@ -1006,7 +1024,7 @@ class SimulationDelegatesTests(unittest.TestCase):
             "irregular_data in (1, 9)",
             "irregular_data in ('three')",
         ]
-        
+
         for dafltr in will_match:
             self.assertMatch(True, possibility_space, dafltr)
 
