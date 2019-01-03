@@ -14,16 +14,28 @@ cdef bint _ne(a, b):
     return a != b
 
 cdef bint _lt(a, b):
-    return a < b
+    try:
+        return a < b
+    except TypeError:
+        return False
 
 cdef bint _le(a, b):
-    return a <= b
+    try:
+        return a <= b
+    except TypeError:
+        return False
 
 cdef bint _gt(a, b):
-    return a > b
+    try:
+        return a > b
+    except TypeError:
+        return False
 
 cdef bint _ge(a, b):
-    return a >= b
+    try:
+        return a >= b
+    except TypeError:
+        return False
 
 
 _do_nothing_predicate = lambda: True
