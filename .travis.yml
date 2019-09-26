@@ -1,18 +1,20 @@
 env:
-  matrix:
-    - DJANGO=1.9
-    - DJANGO=1.10
-    - DJANGO=1.11
+  - DJANGO=2.1
+  - DJANGO=2.2
 language: python
 python:
   - "3.6"
+  - "3.7"
+services:
+  - postgresql
 install:
   - pip install django==${DJANGO}
   - "pip install psycopg2 git+https://github.com/mediapredict/django-hstore.git@v1.4.3"
   - "pip install ."
 addons:
-  postgresql: "9.3"
+  postgresql: "10"
 before_script:
   - psql -c 'create database daffodil_hstore_test;' -U postgres
   - psql daffodil_hstore_test -c 'CREATE EXTENSION IF NOT EXISTS hstore;' -U postgres
+  - python setup.py install
 script: python test/tests.py
