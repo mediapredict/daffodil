@@ -31,7 +31,7 @@ if cython_installed:
 
 setup(
     name='daffodil',
-    version='0.5.7',
+    version='0.5.8',
     author='James Robert',
     description='A Super-simple DSL for filtering datasets',
     license='MIT',

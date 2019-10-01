@@ -399,6 +399,16 @@ class SATDataTests(BaseTest):
                 num_of_sat_test_takers = 12
             ]
         """)
+        self.assert_filter_has_n_results(338, """
+            sat_writing_avg_score > 350
+            sat_writing_avg_score < 500
+            [
+                sat_writing_avg_score ?= true
+                num_of_sat_test_takers = 10
+                num_of_sat_test_takers = 11
+                num_of_sat_test_takers = 12
+            ]
+        """)
 
     def test_not_and_mixed_with_not_or(self):
         self.assert_filter_has_n_results(81, """
