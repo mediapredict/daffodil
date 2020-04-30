@@ -469,6 +469,9 @@ class SATDataTests(BaseTest):
         self.assert_filter_has_n_results(0, """
             not_existing_param = "goin' word contains single quote"
         """)
+        self.assert_filter_has_n_results(1, """
+            school_name = 'UNIVERSITY NEIGHBORHOOD HIGH SCHOOL\\'
+        """)
 
     def test_string_within_array_containing_special_chars(self):
         self.assert_filter_has_n_results(0, """
