@@ -20,6 +20,10 @@ def to_daffodil_primitive(val):
         # escape quotes
         val = val.replace('"', '\\"')
 
+        # escape trailing backslash
+        if val and val[-1] == "\\":
+            val = f"{val}\\"
+
         # wrap string in quotes
         return '"{0}"'.format(val)
     else:
