@@ -605,6 +605,8 @@ class SATDataTests(BaseTest):
         self.assertRaises(ParseError, Daffodil, "a = 1 \n}")
         self.assertRaises(ParseError, Daffodil, "a = 1 \n]")
 
+        self.assertRaises(ValueError, Daffodil, "a = 'bcd\\'")
+
     def test_unicode_filter(self):
         self.assert_filter_has_n_results(273, """
             num_of_sat_test_takers > 50
