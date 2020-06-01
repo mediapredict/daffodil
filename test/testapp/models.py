@@ -1,7 +1,6 @@
 from django.db import models
-from django_hstore import hstore
+from django.contrib.postgres.fields import HStoreField
 
 
 class BasicHStoreData(models.Model):
-    hsdata = hstore.DictionaryField()
-    objects = hstore.HStoreManager()
+    hsdata = HStoreField()
