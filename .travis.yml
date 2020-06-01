@@ -8,6 +8,7 @@ python:
 services:
   - postgresql
 install:
+  - pip install psycopg2-binary==2.8.4
   - pip install django==${DJANGO}
   - "pip install ."
 addons:
