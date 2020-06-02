@@ -1630,7 +1630,7 @@ SETTINGS = dict(
     DEBUG=True,
     TEMPLATE_DEBUG=True,
     INSTALLED_APPS=[
-        "django_hstore",
+        "django.contrib.postgres",
         "testapp",
     ],
     ROOT_URLCONF=this,
