@@ -14,8 +14,10 @@ addons:
 before_install:
   - sudo apt-get update
   - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/12/main/postgresql.conf
+  - sudo sed -i -e '/local.*peer/s/postgres/all/' -e 's/peer\|md5/trust/g' /etc/postgresql/*/main/pg_hba.conf
   - sudo service postgresql stop
   - sudo service postgresql start 12
+  - sleep 1
 install:
   - pip install psycopg2-binary==2.8.4
   - pip install django==${DJANGO}
