@@ -262,3 +262,10 @@ reliant_2_q_zu_income = "125k_149k"
 # this won't enter filter: reliant_2_q_zu_income = "more_150k"
 ]
 ```
+When the entire expressions is commented out it'll match all, just like an empty expression or like `{}` [seen above](https://github.com/mediapredict/daffodil#empty-and-blocks-and-or-blocks):
+```
+# {
+#   age = 18
+#   gender = "female"
+# }
+```
