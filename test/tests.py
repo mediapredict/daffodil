@@ -120,11 +120,6 @@ class SATDataTests(BaseTest):
             num_of_sat_test_takers = 50
         """)
 
-    def test_int_eq(self):
-        self.assert_filter_has_n_results(4, """
-            num_of_sat_test_takers = 50
-        """)
-
     def test_int_in_list(self):
         self.assert_filter_has_n_results(8, """
             num_of_sat_test_takers in (10, 11, 12)
@@ -194,9 +189,18 @@ class SATDataTests(BaseTest):
             num_of_sat_test_takers <= 50
         """)
 
-    def test_int_zero_leading(self):
+    def test_int_zero_leading_as_a_string(self):
         self.assert_filter_has_n_results(1, """
             zip_code = 8002
+        """)
+        self.assert_filter_has_n_results(3, """
+            zip_code in (8002, 8003, 10004)
+        """)
+        self.assert_filter_has_n_results(2, """
+            {
+                zip_code > 8001
+                zip_code < 8004
+            }
         """)
 
     def test_float_eq(self):
