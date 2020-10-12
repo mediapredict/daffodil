@@ -214,7 +214,7 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
                     return [m["type"]] + [m[a](val) for a in ["cast", "value", "type_check"]]
 
         NUMERIC_TYPE_CHECK = [
-                "({0}->'{1}') ~ E'^(?=.+)(?:[1-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
+                "({0}->'{1}') ~ E'^(?=.+)(?:[0-9]\\\d*|0)?(?:\\\.\\\d+)?$'",
                 " AND "
         ]
         CAST_AND_TYPE_MAP = [
