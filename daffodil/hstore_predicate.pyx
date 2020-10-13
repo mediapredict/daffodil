@@ -18,6 +18,7 @@ class ExpressionStr(UserString):
 
 
 def breaks_optimizer(expr):
+    return False
     if not isinstance(expr, ExpressionStr):
         return True
 
