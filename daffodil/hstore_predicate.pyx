@@ -18,8 +18,12 @@ class ExpressionStr(UserString):
 
 
 def forces_optimizer(children):
-    return (
-        len(children > 1) and all(expr == "!=" for expr in children)
+    if len(children) <= 1:
+        return False
+
+    return all(
+        isinstance(expr, ExpressionStr) and expr.daff_test == "!="
+        for expr in children
     )
 
 
