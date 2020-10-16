@@ -17,6 +17,16 @@ class ExpressionStr(UserString):
     daff_val = ''
 
 
+def forces_optimizer(children):
+    if len(children) <= 1:
+        return False
+
+    return all(
+        isinstance(expr, ExpressionStr) and expr.daff_test == "?="
+        for expr in children
+    )
+
+
 def breaks_optimizer(expr):
     if not isinstance(expr, ExpressionStr):
         return True
@@ -26,6 +36,17 @@ def breaks_optimizer(expr):
         expr.daff_test == "?=" or
         (expr.daff_test == "=" and isinstance(expr.daff_val, str))
     )
+
+
+def optimize_it(children):
+    if forces_optimizer(children):
+        return True
+
+    if any(breaks_optimizer(child_exp) for child_exp in children):
+        return False
+
+    return True
+
 
 def escape_string_sql(s):
     return "'{}'".format(s)
@@ -49,8 +70,7 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
             children = [c for c in children if c]
 
         sql_expr = " OR ".join("({})".format(child_exp) for child_exp in children)
-
-        if any(breaks_optimizer(child_exp) for child_exp in children):
+        if not optimize_it(children):
             return sql_expr
 
         keys = {child_exp.daff_key for child_exp in children}
