@@ -21,7 +21,7 @@ extra_kwargs = {
 
 setup(
     name='daffodil',
-    version='0.5.15',
+    version='0.5.16',
     author='James Robert',
     description='A Super-simple DSL for filtering datasets',
     license='MIT',
