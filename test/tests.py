@@ -1554,7 +1554,7 @@ val2 ?= true
 val6 ?= true
       val5 = 30
     }
-       # words!   
+       # words!
   {
     val5 ?= true
     val5 != 30
@@ -1639,6 +1639,7 @@ SETTINGS = dict(
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'daffodil_hstore_test',
             'USER': "postgres",
+            'HOST': "postgres",
         }
     },
     DEBUG=True,
