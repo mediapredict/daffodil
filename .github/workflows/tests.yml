@@ -16,6 +16,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: daffodil_hstore_test
+          POSTGRES_PORT: 5432
         # map port on service container to port on docker host
         ports:
           - 5432:5432
