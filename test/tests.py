@@ -567,6 +567,15 @@ class SATDataTests(BaseTest):
             )
         """)
 
+    def test_or_nonexistence(self):
+        self.assert_filter_has_n_results(4, """
+        num_of_sat_test_takers = 50
+        [
+            non_existing ?= false
+            non_existing_too ?= false
+        ]
+        """)
+
 
     #def test_comparing_a_string_containing_int(self):
     #    self.assert_filter_has_n_results(417, """
