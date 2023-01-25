@@ -10,3 +10,5 @@ env
 /.idea
 /build
 /daffodil/*.c
+*~
+*.so

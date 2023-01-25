@@ -22,7 +22,7 @@ def forces_optimizer(children):
         return False
 
     return all(
-        isinstance(expr, ExpressionStr) and expr.daff_test == "?="
+        isinstance(expr, ExpressionStr) and expr.daff_test == "?=" and expr.daff_val == True
         for expr in children
     )
 
