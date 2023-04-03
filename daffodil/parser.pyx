@@ -1,5 +1,5 @@
 import string
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from .exceptions import ParseError
 from .predicate cimport DictionaryPredicateDelegate
 from .simulation_delegate cimport SimulationMatchingDelegate
@@ -27,10 +27,23 @@ OPERATORS = (
 
 MAX_OP_LENGTH = max(len(op) for op in OPERATORS)
 
+CURRENT_YEAR = "CURRENT_YEAR"
+CURRENT_MONTH = "CURRENT_MONTH"
+CURRENT_WEEK = "CURRENT_WEEK"
+CURRENT_DAY = "CURRENT_DAY"
+
 DEF TS_FORMATS = (
     "%Y-%m-%d %H:%M",
-    "%Y-%m-%d",
+    "%Y-%m-%d"
 )
+
+DEF TS_CONSTANTS = (
+    CURRENT_YEAR,
+    CURRENT_MONTH,
+    CURRENT_WEEK,
+    CURRENT_DAY,
+)
+
 
 cdef class Token:
     """
@@ -42,7 +55,12 @@ cdef class Token:
 
 cdef class TimeStamp(Token):
     def __cinit__(self, str content):
+        content = content.strip()
         self.raw_content = content
+
+        if content in TS_CONSTANTS:
+            self.content = self.date_func_to_timestamp(content)
+            return
 
         for ts_fmt in TS_FORMATS:
             try:
@@ -53,6 +71,16 @@ cdef class TimeStamp(Token):
                 continue
         else:
             raise ParseError(f'"timestamp({content})" couldn\'t be parsed')
+
+    def date_func_to_timestamp(self, time_unit):
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        return int({
+            CURRENT_YEAR: today.replace(month=1, day=1),
+            CURRENT_MONTH: today.replace(day=1),
+            CURRENT_WEEK: today - timedelta(days=today.weekday()),
+            CURRENT_DAY: today,
+        }[time_unit].timestamp())
 
 
 cdef class GroupStart(Token):
