@@ -1,6 +1,6 @@
-[
+NYC_SAT_SCORES = [
   {"created":1485361620,"sat_writing_avg_score": 363, "total_score": "1120.0", "$calculated_pct": "85", "dbn": "01M292", "school_name": "HENRY STREET SCHOOL FOR INTERNATIONAL STUDIES", "num_of_sat_test_takers": 29, "sat_math_avg_score": 404, "sat_critical_reading_avg_score": 355},
-  {"created":1494001626,"sat_writing_avg_score": 366, "total_score": "1115", "dbn": "01M448", "school_name": "UNIVERSITY NEIGHBORHOOD HIGH SCHOOL", "num_of_sat_test_takers": 91, "sat_math_avg_score": 423, "sat_critical_reading_avg_score": 383, "tag_with_null_value": null},
+  {"created":1494001626,"sat_writing_avg_score": 366, "total_score": "1115", "dbn": "01M448", "school_name": "UNIVERSITY NEIGHBORHOOD HIGH SCHOOL", "num_of_sat_test_takers": 91, "sat_math_avg_score": 423, "sat_critical_reading_avg_score": 383, "tag_with_null_value": None},
   {"created":1502641626,"sat_writing_avg_score": 370, "total_score": "1120.0", "dbn": "01M450", "school_name": "EAST SIDE COMMUNITY SCHOOL", "num_of_sat_test_takers": 70, "sat_math_avg_score": 402, "sat_critical_reading_avg_score": 377},
   {"created":1511281620,"sat_writing_avg_score": 359, "total_score": "1130.0", "dbn": "01M458", "school_name": "FORSYTH SATELLITE ACADEMY", "num_of_sat_test_takers": 7, "sat_math_avg_score": 401, "sat_critical_reading_avg_score": 414},
   {"zip_code":"10004","sat_writing_avg_score": 384, "dbn": "01M509", "school_name": "MARTA VALLE HIGH SCHOOL", "num_of_sat_test_takers": 44, "sat_math_avg_score": 433, "sat_critical_reading_avg_score": 390},

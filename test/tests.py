@@ -6,6 +6,7 @@ import unittest
 import re
 import itertools
 
+from data.nyc_sat_scores import NYC_SAT_SCORES
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -17,22 +18,9 @@ from daffodil import (
 from daffodil.exceptions import ParseError
 
 
-def load_test_data(dataset):
-    filename = os.path.join(os.path.dirname(__file__), 'data', '{0}.json'.format(dataset))
-    with open(filename, 'r') as f:
-        data = json.load(f)
-    return data
-
-
-def load_nyc_opendata(dataset):
-    dataset = load_test_data(dataset)
-    columns = [c['fieldName'] for c in dataset['meta']['view']['columns']]
-    d = [dict(list(zip(columns, row_values))) for row_values in dataset['data']]
-
-
 class BaseTest(unittest.TestCase):
     def setUp(self):
-        self.d = load_test_data('nyc_sat_scores')
+        self.d = NYC_SAT_SCORES
 
     def filter(self, daff_src):
         return Daffodil(daff_src)(self.d)
@@ -1697,7 +1685,7 @@ if __name__ == "__main__":
     management.call_command("migrate")
 
     BasicHStoreData.objects.all().delete()
-    for record in load_test_data('nyc_sat_scores'):
+    for record in NYC_SAT_SCORES:
         BasicHStoreData.objects.create(hsdata=record)
 
     unittest.main()
