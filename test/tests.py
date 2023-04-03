@@ -1,7 +1,5 @@
-from builtins import zip
 import sys
 import os
-import json
 import unittest
 import re
 import itertools
@@ -553,6 +551,46 @@ class SATDataTests(BaseTest):
                 timestamp(2017-06-01)
                 timestamp(2017-11-21 16:27)
             )
+        """)
+
+    def test_timestamp_current_day(self):
+        self.assert_filter_has_n_results(4, """
+            _ack1 > timestamp(CURRENT_DAY)
+        """)
+        self.assert_filter_has_n_results(1, """
+            _ack1 < timestamp(CURRENT_DAY)
+        """)
+
+    def test_timestamp_current_week(self):
+        self.assert_filter_has_n_results(3, """
+            _ack2 > timestamp(CURRENT_WEEK)
+        """)
+        self.assert_filter_has_n_results(2, """
+            _ack2 < timestamp(CURRENT_WEEK)
+        """)
+
+    def test_timestamp_current_month(self):
+        self.assert_filter_has_n_results(2, """
+            _ack3 >= timestamp(CURRENT_MONTH)
+        """)
+        self.assert_filter_has_n_results(3, """
+            _ack3 < timestamp(CURRENT_MONTH)
+        """)
+
+    def test_timestamp_current_year(self):
+        self.assert_filter_has_n_results(1, """
+            _ack4 > timestamp(CURRENT_YEAR)
+        """)
+        self.assert_filter_has_n_results(4, """
+            _ack4 <= timestamp(CURRENT_YEAR)
+        """)
+
+    def test_timestamp_current_date_mix(self):
+        self.assert_filter_has_n_results(2, """
+            _ack1 >= timestamp(CURRENT_DAY )
+            _ack2 > timestamp( CURRENT_WEEK)
+            _ack3 ?= true
+            _ack4 < timestamp( CURRENT_YEAR )
         """)
 
     def test_or_nonexistence(self):

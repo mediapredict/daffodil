@@ -32,18 +32,18 @@ CURRENT_MONTH = "CURRENT_MONTH"
 CURRENT_WEEK = "CURRENT_WEEK"
 CURRENT_DAY = "CURRENT_DAY"
 
+TS_CONSTANTS = (
+    CURRENT_YEAR,
+    CURRENT_MONTH,
+    CURRENT_WEEK,
+    CURRENT_DAY
+)
+
+
 DEF TS_FORMATS = (
     "%Y-%m-%d %H:%M",
     "%Y-%m-%d"
 )
-
-DEF TS_CONSTANTS = (
-    CURRENT_YEAR,
-    CURRENT_MONTH,
-    CURRENT_WEEK,
-    CURRENT_DAY,
-)
-
 
 cdef class Token:
     """
