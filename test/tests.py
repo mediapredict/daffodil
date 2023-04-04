@@ -1,11 +1,10 @@
-from builtins import zip
 import sys
 import os
-import json
 import unittest
 import re
 import itertools
 
+from data.nyc_sat_scores import NYC_SAT_SCORES
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -17,22 +16,9 @@ from daffodil import (
 from daffodil.exceptions import ParseError
 
 
-def load_test_data(dataset):
-    filename = os.path.join(os.path.dirname(__file__), 'data', '{0}.json'.format(dataset))
-    with open(filename, 'r') as f:
-        data = json.load(f)
-    return data
-
-
-def load_nyc_opendata(dataset):
-    dataset = load_test_data(dataset)
-    columns = [c['fieldName'] for c in dataset['meta']['view']['columns']]
-    d = [dict(list(zip(columns, row_values))) for row_values in dataset['data']]
-
-
 class BaseTest(unittest.TestCase):
     def setUp(self):
-        self.d = load_test_data('nyc_sat_scores')
+        self.d = NYC_SAT_SCORES
 
     def filter(self, daff_src):
         return Daffodil(daff_src)(self.d)
@@ -565,6 +551,46 @@ class SATDataTests(BaseTest):
                 timestamp(2017-06-01)
                 timestamp(2017-11-21 16:27)
             )
+        """)
+
+    def test_timestamp_current_day(self):
+        self.assert_filter_has_n_results(4, """
+            _ack1 > timestamp(CURRENT_DAY)
+        """)
+        self.assert_filter_has_n_results(1, """
+            _ack1 < timestamp(CURRENT_DAY)
+        """)
+
+    def test_timestamp_current_week(self):
+        self.assert_filter_has_n_results(3, """
+            _ack2 > timestamp(CURRENT_WEEK)
+        """)
+        self.assert_filter_has_n_results(2, """
+            _ack2 < timestamp(CURRENT_WEEK)
+        """)
+
+    def test_timestamp_current_month(self):
+        self.assert_filter_has_n_results(2, """
+            _ack3 >= timestamp(CURRENT_MONTH)
+        """)
+        self.assert_filter_has_n_results(3, """
+            _ack3 < timestamp(CURRENT_MONTH)
+        """)
+
+    def test_timestamp_current_year(self):
+        self.assert_filter_has_n_results(1, """
+            _ack4 > timestamp(CURRENT_YEAR)
+        """)
+        self.assert_filter_has_n_results(4, """
+            _ack4 <= timestamp(CURRENT_YEAR)
+        """)
+
+    def test_timestamp_current_date_mix(self):
+        self.assert_filter_has_n_results(2, """
+            _ack1 >= timestamp(CURRENT_DAY )
+            _ack2 > timestamp( CURRENT_WEEK)
+            _ack3 ?= true
+            _ack4 < timestamp( CURRENT_YEAR )
         """)
 
     def test_or_nonexistence(self):
@@ -1697,7 +1723,7 @@ if __name__ == "__main__":
     management.call_command("migrate")
 
     BasicHStoreData.objects.all().delete()
-    for record in load_test_data('nyc_sat_scores'):
+    for record in NYC_SAT_SCORES:
         BasicHStoreData.objects.create(hsdata=record)
 
     unittest.main()

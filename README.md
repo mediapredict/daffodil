@@ -200,8 +200,13 @@ Arrays:
 - `"x" in ("red", "green", "blue")`
 
 ### Functions
-
+timestamp
 - `timestamp(YYYY-MM-DD)` or `timestamp(YYYY-MM-DD HH:MM)` this is a helper function which generates the unix timestamp corresponding to the date (and optionally, time) entered. When the daffodil is evaluated the datetime is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. If hours and minutes are entered they are interpreted as 24 hour time UTC.
+- `timestamp([CURRENT_RANGE])` where `CURRENT_RANGE` option may be one of the following
+  - CURRENT_DAY 
+  - CURRENT_WEEK (week starting with Monday)
+  - CURRENT_MONTH
+  - CURRENT_YEAR
 
 Examples:
 - people who began `mystudy` after halloween 2017:
@@ -211,7 +216,17 @@ Examples:
   balloonstudy__started >= timestamp(2017-11-23 2:00)
   balloonstudy__started < timestamp(2017-11-23 17:00)
   ```
+- people who participated in `balloonstudy` this month:
 
+  ```
+  balloonstudy__started >= timestamp(CURRENT_MONTH)
+  ``` 
+- people who participated in `balloonstudy` this week except today:
+
+  ```
+  balloonstudy__started >= timestamp(CURRENT_WEEK)
+  balloonstudy__started < timestamp(CURRENT_DAY)
+  ``` 
 ### Comparison operators
 
 Operator | Example | Meaning
