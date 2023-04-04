@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from random import randint
 
 
-now = datetime.now()
-day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+now = datetime.now().replace(tzinfo=timezone.utc)
+day_start = now.replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=timezone.utc)
 
 
 def random_until_now(start):
