@@ -561,6 +561,7 @@ class SATDataTests(BaseTest):
             _ack1 < timestamp(CURRENT_DAY)
         """)
 
+
     def test_timestamp_current_week(self):
         self.assert_filter_has_n_results(3, """
             _ack2 > timestamp(CURRENT_WEEK)
