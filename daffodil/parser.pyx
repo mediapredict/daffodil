@@ -80,7 +80,7 @@ cdef class TimeStamp(Token):
             CURRENT_MONTH: today.replace(day=1),
             CURRENT_WEEK: today - timedelta(days=today.weekday()),
             CURRENT_DAY: today,
-        }[time_unit].replace(tzinfo=timezone.utc).timestamp())
+        }[time_unit].timestamp())
 
 
 cdef class GroupStart(Token):
