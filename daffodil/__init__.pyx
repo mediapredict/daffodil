@@ -1,4 +1,4 @@
-from .parser import Daffodil
+from .parser import Daffodil, TimeStamp
 from .predicate import DictionaryPredicateDelegate
 from .hstore_predicate import HStoreQueryDelegate
 from .pretty_print import PrettyPrintDelegate

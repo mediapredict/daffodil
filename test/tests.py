@@ -3,13 +3,16 @@ import os
 import unittest
 import re
 import itertools
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from data.nyc_sat_scores import NYC_SAT_SCORES
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from daffodil import (
-    Daffodil,
+    Daffodil, TimeStamp,
     KeyExpectationDelegate, DictionaryPredicateDelegate,
     HStoreQueryDelegate, PrettyPrintDelegate, SimulationMatchingDelegate
 )
@@ -1656,6 +1659,49 @@ class PrettyPrintingTests(unittest.TestCase):
             # the comments are discarded by dense version
             if not regexp_py_comment.search(fltr):
                 self.assertEqual(d1_pretty, pretty_expected)
+
+
+class TimeStampOffsetTests(unittest.TestCase):
+    def test_simple(self):
+        ts_start_today = TimeStamp("CURRENT_DAY").content
+        ts_start_3_days_ago = TimeStamp("CURRENT_DAY - 3").content
+
+        self.assertAlmostEqual(
+            ts_start_3_days_ago + 3 * 24 * 3600,
+            ts_start_today,
+            delta=1
+        )
+
+    def test_other_date_formats(self):
+        dates_expr = (
+            ("CURRENT_WEEK", "CURRENT_WEEK - 2", {"weeks": 2}),
+            ("CURRENT_MONTH", "CURRENT_MONTH - 8", {"months": 8}),
+            ("CURRENT_YEAR", "CURRENT_YEAR - 3", {"years": 3}),
+        )
+
+        _to_date = datetime.fromtimestamp
+
+        for now, some_time_ago, offset in dates_expr:
+
+            ts_now = TimeStamp(now).content
+            ts_some_time_ago = TimeStamp(some_time_ago).content
+
+            self.assertEqual(
+                _to_date(ts_now), _to_date(ts_some_time_ago) + relativedelta(**offset)
+            )
+
+    def test_wrong_format(self):
+        for wrong_format in (
+            "CURRENT_DAY-ABC",
+            "CURRENT_YEAR--",
+            "CURRENT_WEEK-",
+            "CURRENT_DAY -",
+            "CURRENT_DAY --9",
+            "CURRENT_MONTHABC",
+            "CURRENT_DAY3",
+        ):
+            with self.assertRaises(ValueError):
+                TimeStamp(wrong_format).content
 
 
 # Borrowed gratuitously from https://gist.github.com/k4ml/2219751

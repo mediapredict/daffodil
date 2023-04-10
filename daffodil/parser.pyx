@@ -78,6 +78,9 @@ cdef class TimeStamp(Token):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         time_unit, *offset = (elem.strip() for elem in date_expression.split("-"))
 
+        if time_unit not in TS_CONSTANTS:
+            raise ValueError(f"timestamp has no `{time_unit}` option. Use one of the following: {TS_CONSTANTS}")
+
         try:
             offset = 0 if offset == [] else int(offset[0])
         except ValueError:
