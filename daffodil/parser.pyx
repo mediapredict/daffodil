@@ -57,6 +57,8 @@ cdef class Token:
 
 cdef class TimeStamp(Token):
     def __cinit__(self, str content):
+        self.uses_offset = False
+
         content = content.strip()
         self.raw_content = content
 
@@ -85,6 +87,8 @@ cdef class TimeStamp(Token):
             offset = 0 if offset == [] else int(offset[0])
         except ValueError:
             raise ValueError(f"Integer expected after `-`. Got {offset} instead.")
+
+        self.uses_offset = bool(offset)
 
         return int({
             CURRENT_YEAR: today.replace(month=1, day=1) - relativedelta(years=offset),

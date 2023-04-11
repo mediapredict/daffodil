@@ -1249,6 +1249,21 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Timestamp spaces
+[
+'''
+    val1 = timestamp( CURRENT_DAY -1 )
+    val2 = timestamp(CURRENT_WEEK  )
+''',
+'{"val1"=timestamp(CURRENT_DAY-1),"val2"=timestamp(CURRENT_WEEK)}',
+'''
+{
+  "val1" = timestamp(CURRENT_DAY-1)
+  "val2" = timestamp(CURRENT_WEEK)
+}
+'''.strip()
+],
+
 # Array Timestamp lookup
 [
 '''
