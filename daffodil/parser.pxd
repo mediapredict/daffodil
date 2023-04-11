@@ -3,6 +3,7 @@ cdef class Token:
 
 cdef class TimeStamp(Token):
     cpdef public str raw_content
+    cpdef public bint uses_offset
 
 cdef class GroupStart(Token): pass
 cdef class GroupEnd(Token): pass

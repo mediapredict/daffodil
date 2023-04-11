@@ -202,11 +202,17 @@ Arrays:
 ### Functions
 timestamp
 - `timestamp(YYYY-MM-DD)` or `timestamp(YYYY-MM-DD HH:MM)` this is a helper function which generates the unix timestamp corresponding to the date (and optionally, time) entered. When the daffodil is evaluated the datetime is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. If hours and minutes are entered they are interpreted as 24 hour time UTC.
-- `timestamp([CURRENT_RANGE])` where `CURRENT_RANGE` option may be one of the following
-  - CURRENT_DAY 
-  - CURRENT_WEEK (week starting with Monday)
-  - CURRENT_MONTH
-  - CURRENT_YEAR
+- `timestamp([CURRENT_RANGE][-OFFSET])` 
+  - where `CURRENT_RANGE` option may be one of the following
+    - CURRENT_DAY 
+    - CURRENT_WEEK (week starting with Monday)
+    - CURRENT_MONTH
+    - CURRENT_YEAR
+  - and `OFFSET` may be any positive integer, so expressions like the following are legit:
+    - CURRENT_DAY-3 (3 days before today 00:00:00)
+    - CURRENT_WEEK-10 (10 weeks before the beginning of this week)
+    - ...
+
 
 Examples:
 - people who began `mystudy` after halloween 2017:
@@ -226,6 +232,11 @@ Examples:
   ```
   balloonstudy__started >= timestamp(CURRENT_WEEK)
   balloonstudy__started < timestamp(CURRENT_DAY)
+  ```
+- people who participated in `balloonstudy` during the past 5 months:
+
+  ```
+  balloonstudy__started > timestamp(CURRENT_MONTH-5)
   ``` 
 ### Comparison operators
 

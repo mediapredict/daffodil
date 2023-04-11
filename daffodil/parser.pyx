@@ -6,6 +6,8 @@ from .simulation_delegate cimport SimulationMatchingDelegate
 from .key_expectation_delegate cimport KeyExpectationDelegate
 from .hstore_predicate cimport HStoreQueryDelegate
 
+from dateutil.relativedelta import relativedelta
+
 
 DEF BARE_KEY_CHARS = "$-_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 DEF NUMBER_CHARS = "-.0123456789"
@@ -55,10 +57,12 @@ cdef class Token:
 
 cdef class TimeStamp(Token):
     def __cinit__(self, str content):
+        self.uses_offset = False
+
         content = content.strip()
         self.raw_content = content
 
-        if content in TS_CONSTANTS:
+        if any(content.startswith(tsc) for tsc in TS_CONSTANTS):
             self.content = self.date_func_to_timestamp(content)
             return
 
@@ -72,15 +76,26 @@ cdef class TimeStamp(Token):
         else:
             raise ParseError(f'"timestamp({content})" couldn\'t be parsed')
 
-    def date_func_to_timestamp(self, time_unit):
+    def date_func_to_timestamp(self, date_expression):
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        time_unit, *offset = (elem.strip() for elem in date_expression.split("-"))
+
+        if time_unit not in TS_CONSTANTS:
+            raise ValueError(f"timestamp has no `{time_unit}` option. Use one of the following: {TS_CONSTANTS}")
+
+        try:
+            offset = 0 if offset == [] else int(offset[0])
+        except ValueError:
+            raise ValueError(f"Integer expected after `-`. Got {offset} instead.")
+
+        self.uses_offset = bool(offset)
 
         return int({
-            CURRENT_YEAR: today.replace(month=1, day=1),
-            CURRENT_MONTH: today.replace(day=1),
-            CURRENT_WEEK: today - timedelta(days=today.weekday()),
-            CURRENT_DAY: today,
-        }[time_unit].replace(tzinfo=timezone.utc).timestamp())
+            CURRENT_YEAR: today.replace(month=1, day=1) - relativedelta(years=offset),
+            CURRENT_MONTH: today.replace(day=1) - relativedelta(months=offset),
+            CURRENT_WEEK: today - timedelta(days=today.weekday()) - relativedelta(weeks=offset),
+            CURRENT_DAY: today - relativedelta(days=offset),
+        }[time_unit].timestamp())
 
 
 cdef class GroupStart(Token):

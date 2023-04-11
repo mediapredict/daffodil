@@ -5,7 +5,10 @@ from .parser cimport Token, TimeStamp, BaseDaffodilDelegate
 
 def token_to_daffodil_primitive(val):
     if isinstance(val, TimeStamp):
-        return "timestamp({0})".format(val.raw_content)
+        output = val.raw_content
+        if val.uses_offset:
+            output = val.raw_content.replace(" ", "")
+        return f"timestamp({output})"
     else:
         return to_daffodil_primitive(val.content)
 

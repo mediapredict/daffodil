@@ -3,13 +3,16 @@ import os
 import unittest
 import re
 import itertools
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from data.nyc_sat_scores import NYC_SAT_SCORES
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from daffodil import (
-    Daffodil,
+    Daffodil, TimeStamp,
     KeyExpectationDelegate, DictionaryPredicateDelegate,
     HStoreQueryDelegate, PrettyPrintDelegate, SimulationMatchingDelegate
 )
@@ -561,6 +564,7 @@ class SATDataTests(BaseTest):
             _ack1 < timestamp(CURRENT_DAY)
         """)
 
+
     def test_timestamp_current_week(self):
         self.assert_filter_has_n_results(3, """
             _ack2 > timestamp(CURRENT_WEEK)
@@ -592,6 +596,32 @@ class SATDataTests(BaseTest):
             _ack3 ?= true
             _ack4 < timestamp( CURRENT_YEAR )
         """)
+
+    def test_timestamp_offsets(self):
+        self.assert_filter_has_n_results(4, """
+            _ack1 > timestamp(CURRENT_DAY - 1)
+        """)
+        self.assert_filter_has_n_results(0, """
+            _ack2 < timestamp(CURRENT_WEEK - 5)
+        """)
+        self.assert_filter_has_n_results(3, """
+            _ack3 < timestamp(CURRENT_MONTH - 6)
+        """)
+        self.assert_filter_has_n_results(5, """
+            _ack4 > timestamp(CURRENT_YEAR - 11)
+        """)
+        # range
+        self.assert_filter_has_n_results(2, """
+            _ack2 > timestamp(CURRENT_WEEK - 7)
+            _ack2 < timestamp(CURRENT_WEEK - 3)
+        """)
+        # mixed
+        self.assert_filter_has_n_results(2, """
+            _ack1 > timestamp(CURRENT_DAY - 3)
+            _ack3 > timestamp(CURRENT_MONTH - 2)
+            _ack4 > timestamp(CURRENT_YEAR - 10)
+        """)
+
 
     def test_or_nonexistence(self):
         self.assert_filter_has_n_results(4, """
@@ -1219,6 +1249,21 @@ PRETTY_PRINT_EXPECTATIONS = (
 '''.strip()
 ],
 
+# Timestamp spaces
+[
+'''
+    val1 = timestamp( CURRENT_DAY -1 )
+    val2 = timestamp(CURRENT_WEEK  )
+''',
+'{"val1"=timestamp(CURRENT_DAY-1),"val2"=timestamp(CURRENT_WEEK)}',
+'''
+{
+  "val1" = timestamp(CURRENT_DAY-1)
+  "val2" = timestamp(CURRENT_WEEK)
+}
+'''.strip()
+],
+
 # Array Timestamp lookup
 [
 '''
@@ -1655,6 +1700,49 @@ class PrettyPrintingTests(unittest.TestCase):
             # the comments are discarded by dense version
             if not regexp_py_comment.search(fltr):
                 self.assertEqual(d1_pretty, pretty_expected)
+
+
+class TimeStampOffsetTests(unittest.TestCase):
+    def test_simple(self):
+        ts_start_today = TimeStamp("CURRENT_DAY").content
+        ts_start_3_days_ago = TimeStamp("CURRENT_DAY - 3").content
+
+        self.assertAlmostEqual(
+            ts_start_3_days_ago + 3 * 24 * 3600,
+            ts_start_today,
+            delta=1
+        )
+
+    def test_other_date_formats(self):
+        dates_expr = (
+            ("CURRENT_WEEK", "CURRENT_WEEK - 2", {"weeks": 2}),
+            ("CURRENT_MONTH", "CURRENT_MONTH - 8", {"months": 8}),
+            ("CURRENT_YEAR", "CURRENT_YEAR - 3", {"years": 3}),
+        )
+
+        _to_date = datetime.fromtimestamp
+
+        for now, some_time_ago, offset in dates_expr:
+
+            ts_now = TimeStamp(now).content
+            ts_some_time_ago = TimeStamp(some_time_ago).content
+
+            self.assertEqual(
+                _to_date(ts_now), _to_date(ts_some_time_ago) + relativedelta(**offset)
+            )
+
+    def test_wrong_format(self):
+        for wrong_format in (
+            "CURRENT_DAY-ABC",
+            "CURRENT_YEAR--",
+            "CURRENT_WEEK-",
+            "CURRENT_DAY -",
+            "CURRENT_DAY --9",
+            "CURRENT_MONTHABC",
+            "CURRENT_DAY3",
+        ):
+            with self.assertRaises(ValueError):
+                TimeStamp(wrong_format).content
 
 
 # Borrowed gratuitously from https://gist.github.com/k4ml/2219751
