@@ -597,6 +597,32 @@ class SATDataTests(BaseTest):
             _ack4 < timestamp( CURRENT_YEAR )
         """)
 
+    def test_timestamp_offsets(self):
+        self.assert_filter_has_n_results(4, """
+            _ack1 > timestamp(CURRENT_DAY - 1)
+        """)
+        self.assert_filter_has_n_results(0, """
+            _ack2 < timestamp(CURRENT_WEEK - 5)
+        """)
+        self.assert_filter_has_n_results(3, """
+            _ack3 < timestamp(CURRENT_MONTH - 6)
+        """)
+        self.assert_filter_has_n_results(5, """
+            _ack4 > timestamp(CURRENT_YEAR - 11)
+        """)
+        # range
+        self.assert_filter_has_n_results(2, """
+            _ack2 > timestamp(CURRENT_WEEK - 7)
+            _ack2 < timestamp(CURRENT_WEEK - 3)
+        """)
+        # mixed
+        self.assert_filter_has_n_results(2, """
+            _ack1 > timestamp(CURRENT_DAY - 3)
+            _ack3 > timestamp(CURRENT_MONTH - 2)
+            _ack4 > timestamp(CURRENT_YEAR - 10)
+        """)
+
+
     def test_or_nonexistence(self):
         self.assert_filter_has_n_results(4, """
             num_of_sat_test_takers = 50
