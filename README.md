@@ -202,9 +202,9 @@ Arrays:
 ### Functions
 timestamp
 - `timestamp(YYYY-MM-DD)` or `timestamp(YYYY-MM-DD HH:MM)` this is a helper function which generates the unix timestamp corresponding to the date (and optionally, time) entered. When the daffodil is evaluated the datetime is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. If hours and minutes are entered they are interpreted as 24 hour time UTC.
-- `timestamp([CURRENT_RANGE][-OFFSET])` 
-  - where `CURRENT_RANGE` option may be one of the following
-    - CURRENT_DAY 
+- `timestamp([CURRENT_DATE][-OFFSET])` - this is a timestamp at `00:00:00 am` of the given `CURRENT_DATE` 
+  - where `CURRENT_DATE` option may be one of the following
+    - CURRENT_DAY
     - CURRENT_WEEK (week starting with Monday)
     - CURRENT_MONTH
     - CURRENT_YEAR
@@ -222,15 +222,24 @@ Examples:
   balloonstudy__started >= timestamp(2017-11-23 2:00)
   balloonstudy__started < timestamp(2017-11-23 17:00)
   ```
-- people who participated in `balloonstudy` this month:
+- people who participated in `balloonstudy` this month, meaning "`balloonstudy__started` timestamp greater than the timestamp taken at `00:00:00 am` on the first day of the current month":
 
   ```
-  balloonstudy__started >= timestamp(CURRENT_MONTH)
+  balloonstudy__started > timestamp(CURRENT_MONTH)
   ``` 
+  `>=` and `=` can be used interchangeably. The only difference is that `>=` will treat `00:00:00 am` of the first day as a timestamp belonging to CURRENT_MONTH, while `>` would treat it as a timestamp belonging to the last day of the previous month.
+
+- people who participated in balloonstudy today:
+
+  ```
+  balloonstudy__started > timestamp(CURRENT_MONTH)
+  ```
+  Note: If `>` gets replaced with `=` it would match only those who participated exactly at `00:00:00 am` (early morning today).
+
 - people who participated in `balloonstudy` this week except today:
 
   ```
-  balloonstudy__started >= timestamp(CURRENT_WEEK)
+  balloonstudy__started > timestamp(CURRENT_WEEK)
   balloonstudy__started < timestamp(CURRENT_DAY)
   ```
 - people who participated in `balloonstudy` during the past 5 months:
@@ -238,6 +247,7 @@ Examples:
   ```
   balloonstudy__started > timestamp(CURRENT_MONTH-5)
   ``` 
+
 ### Comparison operators
 
 Operator | Example | Meaning
