@@ -205,7 +205,7 @@ timestamp
 - `timestamp([CURRENT_DATE][-OFFSET])` - this is a timestamp at `00:00:00 am` of the given `CURRENT_DATE` 
   - where `CURRENT_DATE` option may be one of the following
     - CURRENT_DAY
-    - CURRENT_WEEK (week starting with Monday)
+    - CURRENT_WEEK (week starting on Monday)
     - CURRENT_MONTH
     - CURRENT_YEAR
   - and `OFFSET` may be any positive integer, so expressions like the following are legit:
@@ -227,14 +227,14 @@ Examples:
   ```
   balloonstudy__started > timestamp(CURRENT_MONTH)
   ``` 
-  `>=` and `=` can be used interchangeably. The only difference is that `>=` will treat `00:00:00 am` of the first day as a timestamp belonging to CURRENT_MONTH, while `>` would treat it as a timestamp belonging to the last day of the previous month.
+  `>=` and `=` can be used interchangeably. The only difference is that `>=` will treat `00:00:00 am` of the first day as a timestamp belonging to the CURRENT_MONTH, while `>` would treat it as a timestamp belonging to the last day of the previous month.
 
-- people who participated in balloonstudy today:
+- people who participated in balloonstudy this month:
 
   ```
   balloonstudy__started > timestamp(CURRENT_MONTH)
   ```
-  Note: If `>` gets replaced with `=` it would match only those who participated exactly at `00:00:00 am` (early morning today).
+  Note: If `>` gets replaced with `=` it would match only those who participated exactly at `00:00:00 am` (early morning today), which is somethign you probably don't want.
 
 - people who participated in `balloonstudy` this week except today:
 
