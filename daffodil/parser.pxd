@@ -1,9 +1,9 @@
 cdef class Token:
-    cpdef public object content
+    cdef public object content
 
 cdef class TimeStamp(Token):
-    cpdef public str raw_content
-    cpdef public bint uses_offset
+    cdef public str raw_content
+    cdef public bint uses_offset
 
 cdef class GroupStart(Token): pass
 cdef class GroupEnd(Token): pass
@@ -17,7 +17,7 @@ cdef class ArrayStart(Token): pass
 cdef class ArrayEnd(Token): pass
 
 cdef class _ArrayToken(Token):
-    cpdef public object raw_content
+    cdef public object raw_content
 
 cdef class BaseDaffodilDelegate:
     cdef mk_cmp(self, Token key, Token test, Token val)
