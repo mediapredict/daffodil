@@ -1759,7 +1759,7 @@ SETTINGS = dict(
     SITE_ID=1,
     DATABASES = {
         'default':{
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'daffodil_hstore_test',
             'USER': "postgres",
             'PASSWORD': "postgres",
@@ -1776,8 +1776,6 @@ SETTINGS = dict(
     ROOT_URLCONF=this,
     MIDDLEWARE_CLASSES=(),
 )
-
-print("DOES THIS LINE GET CALLED?!")
 
 if not settings.configured:
     settings.configure(**SETTINGS)
