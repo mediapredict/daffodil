@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.contrib.postgres.operations import HStoreExtension
 from django.contrib.postgres.fields import HStoreField
 
 
@@ -11,7 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL("CREATE EXTENSION if not exists hstore;"),
+        HStoreExtension(),
         migrations.CreateModel(
             name='BasicHStoreData',
             fields=[
