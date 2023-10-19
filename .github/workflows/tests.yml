@@ -10,7 +10,7 @@ jobs:
     services:
       postgres:
         # Docker hub postgres image
-        image: postgres:13.5
+        image: postgres:15
         # Postgres env vars
         env:
           POSTGRES_USER: postgres

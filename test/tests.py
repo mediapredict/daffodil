@@ -1808,9 +1808,6 @@ class SATDataTestsWithHStore(SATDataTests):
 from django.core import management
 
 if __name__ == "__main__":
-    if not settings.configured:
-        settings.configure(**SETTINGS)
-
     management.call_command("migrate")
 
     BasicHStoreData.objects.all().delete()
@@ -1818,4 +1815,3 @@ if __name__ == "__main__":
         BasicHStoreData.objects.create(hsdata=record)
 
     unittest.main()
-
