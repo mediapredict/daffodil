@@ -1754,40 +1754,43 @@ def rel_path(*p):
 rel_path.path = osp.abspath(osp.dirname(__file__))
 this = osp.splitext(osp.basename(__file__))[0]
 
-from django.conf import settings
-SETTINGS = dict(
-    SITE_ID=1,
-    DATABASES = {
-        'default':{
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'daffodil_hstore_test',
-            'USER': "postgres",
-            'PASSWORD': "postgres",
-            'HOST': '127.0.0.1',
-            'PORT': 5432,
-        }
-    },
-    DEBUG=True,
-    TEMPLATE_DEBUG=True,
-    INSTALLED_APPS=[
-        "django.contrib.postgres",
-        "testapp",
-    ],
-    ROOT_URLCONF=this,
-    MIDDLEWARE_CLASSES=(),
-)
 
-print("DOES THIS LINE GET CALLED?!")
+def engage_django_setup():
+    from django.conf import settings
+    import django
+    from traceback import print_exc
+    SETTINGS = dict(
+        SITE_ID=1,
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'daffodil_hstore_test',
+                'USER': "postgres",
+                'PASSWORD': "postgres",
+                'HOST': '127.0.0.1',
+                'PORT': 5432,
+            }
+        },
+        DEBUG=True,
+        TEMPLATE_DEBUG=True,
+        INSTALLED_APPS=[
+            "django.contrib.postgres",
+            "testapp",
+        ],
+        ROOT_URLCONF=this,
+        MIDDLEWARE_CLASSES=(),
+    )
 
-if not settings.configured:
-    settings.configure(**SETTINGS)
+    if not settings.configured:
+        settings.configure(**SETTINGS)
 
-import django
-from traceback import print_exc
-try:
-    django.setup()
-except AttributeError:
-    print_exc()
+    try:
+        django.setup()
+    except AttributeError:
+        print_exc()
+
+
+engage_django_setup()
 
 
 from daffodil.hstore_predicate import HStoreQueryDelegate
@@ -1811,6 +1814,7 @@ class SATDataTestsWithHStore(SATDataTests):
 from django.core import management
 
 if __name__ == "__main__":
+    engage_django_setup()
     management.call_command("migrate")
 
     BasicHStoreData.objects.all().delete()
