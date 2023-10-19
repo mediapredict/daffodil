@@ -1781,10 +1781,11 @@ if not settings.configured:
     settings.configure(**SETTINGS)
 
 import django
+from traceback import print_exc
 try:
     django.setup()
 except AttributeError:
-    pass
+    print_exc()
 
 
 from daffodil.hstore_predicate import HStoreQueryDelegate
