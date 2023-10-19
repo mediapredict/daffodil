@@ -1777,8 +1777,7 @@ SETTINGS = dict(
     MIDDLEWARE_CLASSES=(),
 )
 
-if not settings.configured:
-    settings.configure(**SETTINGS)
+settings.configure(**SETTINGS)
 
 import django
 try:
