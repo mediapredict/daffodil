@@ -1,4 +1,4 @@
 Cython==0.29.32
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.9
 Django==4.2.6
 python-dateutil==2.8.2
