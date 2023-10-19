@@ -1777,7 +1777,8 @@ SETTINGS = dict(
     MIDDLEWARE_CLASSES=(),
 )
 
-settings.configure(**SETTINGS)
+if not settings.configured:
+    settings.configure(**SETTINGS)
 
 import django
 try:
@@ -1807,6 +1808,9 @@ class SATDataTestsWithHStore(SATDataTests):
 from django.core import management
 
 if __name__ == "__main__":
+    if not settings.configured:
+        settings.configure(**SETTINGS)
+
     management.call_command("migrate")
 
     BasicHStoreData.objects.all().delete()
