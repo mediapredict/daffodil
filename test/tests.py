@@ -1777,6 +1777,8 @@ SETTINGS = dict(
     MIDDLEWARE_CLASSES=(),
 )
 
+print("DOES THIS LINE GET CALLED?!")
+
 if not settings.configured:
     settings.configure(**SETTINGS)
 
