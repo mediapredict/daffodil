@@ -1759,7 +1759,7 @@ SETTINGS = dict(
     SITE_ID=1,
     DATABASES = {
         'default':{
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'daffodil_hstore_test',
             'USER': "postgres",
             'PASSWORD': "postgres",
@@ -1815,4 +1815,3 @@ if __name__ == "__main__":
         BasicHStoreData.objects.create(hsdata=record)
 
     unittest.main()
-
