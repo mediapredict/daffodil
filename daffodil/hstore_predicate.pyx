@@ -47,6 +47,16 @@ def should_optimize_existence(children):
     return True
 
 
+def breaks_equality_optimizer(children):
+    if any(not isinstance(child_exp, ExpressionStr) for child_exp in children):
+        return True
+
+    return len([
+        True for child_exp in children
+        if child_exp.daff_test == "=" and isinstance(child_exp.daff_val, str)
+    ]) < 2
+
+
 def escape_string_sql(s):
     return "'{}'".format(s)
 
@@ -91,6 +101,27 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
         else:
             return optimization_expr
 
+    def optimize_and_equality(self, children, sql_expr):
+        keys = {child_exp.daff_key for child_exp in children}
+        if len(keys) <= 1:
+            return sql_expr
+
+        # 'country_code=>argentina, $MH_Age_Breaks=>18-34, _started__year_mo=>202404'
+        keys_and_values = ", ".join(
+            f'"{child_exp.daff_key}"=>"{child_exp.daff_val}"'
+            for child_exp in children if child_exp.daff_test == "="
+        )
+        optimization_expr = f"{self.field} @> '{keys_and_values}'"
+
+        sql_expr = f" AND ".join(
+            f"({child_exp})"
+            for child_exp in children if child_exp.daff_test != "="
+        )
+        if sql_expr:
+            return f"{optimization_expr} AND ({sql_expr})"
+        else:
+            return optimization_expr
+
     def mk_all(self, children):
         if not children or not any(children):
             return "true"
@@ -101,7 +132,9 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
         sql_expr = " AND ".join(f"({child_exp})" for child_exp in children if child_exp)
 
         if any(breaks_existence_optimizer(child_exp) for child_exp in children):
-            return sql_expr
+            if breaks_equality_optimizer(children):
+                return sql_expr
+            return self.optimize_and_equality(children, sql_expr)
         return self.optimize_existence(children, sql_expr, "?&", "AND")
 
     def mk_not_any(self, children):
