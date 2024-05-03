@@ -297,6 +297,49 @@ class SATDataTests(BaseTest):
             }
         """)
 
+    def test_optimization_string_equality(self):
+        # just one key - skip block level optimization
+        self.assert_filter_has_n_results(4, """
+            {
+                updated = "1714724220"
+                updated = "1714724220"
+            }
+        """)
+
+        # optimized, equality alone
+        self.assert_filter_has_n_results(3, """
+            {
+                updated = "1714724220"
+                zip_code = "10019"
+            }
+        """)
+
+        # optimized, while keeping existence test out of optimization
+        self.assert_filter_has_n_results(1, """
+            {
+                updated = "1714724220"
+                dbn = "02M296"
+                not_existing_param ?= false
+            }
+        """)
+
+    def test_optimization_string_equality_integers_skipped(self):
+        self.assert_filter_has_n_results(3, """
+            {
+                updated = 1714724220
+                zip_code = 10019
+            }
+        """)
+
+        # mixed content. one integer is enough to skip the optimization
+        self.assert_filter_has_n_results(1, """
+            {
+                updated = 1714724220
+                dbn = "02M296"
+                not_existing_param ?= false
+            }
+        """)
+
     def test_not_and(self):
         self.assert_filter_has_n_results(370, """
             !{

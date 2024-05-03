@@ -17,7 +17,7 @@ class ExpressionStr(UserString):
     daff_val = ''
 
 
-def forces_optimizer(children):
+def forces_existence_optimizer(children):
     if len(children) <= 1:
         return False
 
@@ -27,25 +27,39 @@ def forces_optimizer(children):
     )
 
 
-def breaks_optimizer(expr):
-    if not isinstance(expr, ExpressionStr):
-        return True
+def breaks_existence_optimizer(children):
+    def _breaks_existence_optimizer(expr):
+        if not isinstance(expr, ExpressionStr):
+            return True
 
-    return (
-        expr.daff_test in {"!=", "!in"} or
-        expr.daff_test == "?=" or
-        (expr.daff_test == "=" and isinstance(expr.daff_val, str))
+        return (
+            expr.daff_test in {"!=", "!in", "?="} or
+            (expr.daff_test == "=" and isinstance(expr.daff_val, str))
+        )
+
+    return any(
+        _breaks_existence_optimizer(child_exp) for child_exp in children
     )
 
 
-def optimize_it(children):
-    if forces_optimizer(children):
+def should_optimize_existence(children):
+    if forces_existence_optimizer(children):
         return True
 
-    if any(breaks_optimizer(child_exp) for child_exp in children):
+    if breaks_existence_optimizer(children):
         return False
 
     return True
+
+
+def breaks_equality_optimizer(children):
+    if any(not isinstance(child_exp, ExpressionStr) for child_exp in children):
+        return True
+
+    return len([
+        True for child_exp in children
+        if child_exp.daff_test == "=" and isinstance(child_exp.daff_val, str)
+    ]) < 2
 
 
 def escape_string_sql(s):
@@ -69,25 +83,46 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
         if isinstance(children, list):
             children = [c for c in children if c]
 
-        sql_expr = " OR ".join("({})".format(child_exp) for child_exp in children)
-        if not optimize_it(children):
-            return sql_expr
+        sql_expr = " OR ".join(f"({child_exp})" for child_exp in children)
 
+        if should_optimize_existence(children):
+            return self.optimize_existence(children, sql_expr, "?|", "OR")
+        return sql_expr
+
+    def optimize_existence(self, children, sql_expr, hstore_oper, logical_oper):
         keys = {child_exp.daff_key for child_exp in children}
         if len(keys) <= 1:
             return sql_expr
 
-        optimization_expr = "{field} ?| {keys}".format(
-            field=self.field,
-            keys=make_sql_array(*keys)
-        )
+        keys = make_sql_array(*keys)
+        optimization_expr = f"{self.field} {hstore_oper} {keys}"
 
-        sql_expr = " OR ".join("({})".format(child_exp)
-                               for child_exp in children
-                               if child_exp.daff_test != "?="
-                               )
+        sql_expr = f" {logical_oper} ".join(
+            f"({child_exp})"
+            for child_exp in children if child_exp.daff_test != "?="
+        )
         if sql_expr:
-            return "{0} AND ({1})".format(optimization_expr, sql_expr)
+            return f"{optimization_expr} AND ({sql_expr})"
+        else:
+            return optimization_expr
+
+    def optimize_equality_and(self, children, sql_expr):
+        to_optimize = [child_exp for child_exp in children if child_exp.daff_test == "="]
+        if len({child_exp.daff_key for child_exp in to_optimize}) <= 1:
+            return sql_expr
+
+        keys_and_values = ", ".join(
+            f'"{child_exp.daff_key}"=>"{child_exp.daff_val}"'
+            for child_exp in to_optimize
+        )
+        optimization_expr = f"{self.field} @> '{keys_and_values}'"
+
+        sql_expr = f" AND ".join(
+            f"({child_exp})"
+            for child_exp in children if child_exp.daff_test != "="
+        )
+        if sql_expr:
+            return f"{optimization_expr} AND ({sql_expr})"
         else:
             return optimization_expr
 
@@ -98,28 +133,15 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
         if isinstance(children, list):
             children = [c for c in children if c]
 
-        sql_expr = " AND ".join("({})".format(child_exp) for child_exp in children if child_exp)
+        sql_expr = " AND ".join(f"({child_exp})" for child_exp in children if child_exp)
 
-        if any(breaks_optimizer(child_exp) for child_exp in children):
-            return sql_expr
+        if not breaks_existence_optimizer(children):
+            return self.optimize_existence(children, sql_expr, "?&", "AND")
 
-        keys = {child_exp.daff_key for child_exp in children}
-        if len(keys) <= 1:
-            return sql_expr
+        if not breaks_equality_optimizer(children):
+            return self.optimize_equality_and(children, sql_expr)
 
-        optimization_expr = "{field} ?& {keys}".format(
-            field=self.field,
-            keys=make_sql_array(*keys)
-        )
-
-        sql_expr = " AND ".join("({})".format(child_exp)
-                               for child_exp in children
-                               if child_exp.daff_test != "?="
-                               )
-        if sql_expr:
-            return "{0} AND {1}".format(optimization_expr, sql_expr)
-        else:
-            return optimization_expr
+        return sql_expr
 
     def mk_not_any(self, children):
         return " NOT ({0})".format(self.mk_any(children))
