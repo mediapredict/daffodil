@@ -58,7 +58,7 @@ def breaks_equality_optimizer(children):
 
     return len([
         True for child_exp in children
-        if child_exp.daff_test == "=" and isinstance(child_exp.daff_val, str)
+        if child_exp.daff_test == "=" and isinstance(child_exp.daff_val, (str, int))
     ]) < 2
 
 
