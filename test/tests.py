@@ -314,6 +314,15 @@ class SATDataTests(BaseTest):
             }
         """)
 
+        # reproduce a bug - repeated key in AND expression
+        self.assert_filter_has_n_results(3, """
+            {
+                updated = "1714724220"
+                zip_code = "10019"
+                zip_code = "9999999999"
+            }
+        """)
+
         # optimized, while keeping existence test out of optimization
         self.assert_filter_has_n_results(1, """
             {
