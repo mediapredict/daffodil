@@ -108,7 +108,10 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
 
     def optimize_equality_and(self, children, sql_expr):
         to_optimize = [child_exp for child_exp in children if child_exp.daff_test == "="]
-        if len({child_exp.daff_key for child_exp in to_optimize}) <= 1:
+        keys = [child_exp.daff_key for child_exp in to_optimize]
+        unique_keys = set(keys)
+
+        if len(unique_keys) < 2 or len(keys) != len(unique_keys):
             return sql_expr
 
         keys_and_values = ", ".join(
