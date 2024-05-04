@@ -298,14 +298,6 @@ class SATDataTests(BaseTest):
         """)
 
     def test_optimization_string_equality(self):
-        # just one key - skip block level optimization
-        self.assert_filter_has_n_results(4, """
-            {
-                updated = "1714724220"
-                updated = "1714724220"
-            }
-        """)
-
         # optimized, equality alone
         self.assert_filter_has_n_results(3, """
             {
@@ -323,20 +315,46 @@ class SATDataTests(BaseTest):
             }
         """)
 
+        # optimized, equality with mixed content, int + str
+        self.assert_filter_has_n_results(3, """
+            {
+                updated = 1714724220
+                zip_code = "10019"
+            }
+        """)
+
     def test_optimization_string_equality_integers_skipped(self):
+        # just one unique key
+        self.assert_filter_has_n_results(4, """
+            {
+                updated = "1714724220"
+                updated = "1714724220"
+            }
+        """)
+
+        # again just one unique key which is an optimization candidate
+        self.assert_filter_has_n_results(4, """
+            {
+                updated = "1714724220"
+                non_existing ?= false
+            }
+        """)
+
+        # repeated key in AND expression
+        self.assert_filter_has_n_results(0, """
+            {
+                updated = "1714724220"
+                zip_code = "10019"
+                zip_code = "9999999999"
+            }
+        """)
+
+        # integers only so "existence optimization" kicks in first
+        # ...and we never get to "equality optimization"
         self.assert_filter_has_n_results(3, """
             {
                 updated = 1714724220
                 zip_code = 10019
-            }
-        """)
-
-        # mixed content. one integer is enough to skip the optimization
-        self.assert_filter_has_n_results(1, """
-            {
-                updated = 1714724220
-                dbn = "02M296"
-                not_existing_param ?= false
             }
         """)
 
