@@ -27,26 +27,29 @@ def forces_existence_optimizer(children):
     )
 
 
-def breaks_existence_optimizer(children):
+def breaks_existence_optimizer(children, extra_unwanted=None):
     def _breaks_existence_optimizer(expr):
         if not isinstance(expr, ExpressionStr):
             return True
 
         return (
-            expr.daff_test in {"!=", "!in", "?="} or
-            (expr.daff_test == "=" and isinstance(expr.daff_val, str))
+            expr.daff_test in {"!=", "!in"} | extra_unwanted or
+            expr.daff_test in {"?="} and expr.daff_val == False
         )
+
+    if extra_unwanted is None:
+        extra_unwanted = set()
 
     return any(
         _breaks_existence_optimizer(child_exp) for child_exp in children
     )
 
 
-def should_optimize_existence(children):
+def should_optimize_any_existence(children):
     if forces_existence_optimizer(children):
         return True
 
-    if breaks_existence_optimizer(children):
+    if breaks_existence_optimizer(children, {"?="}):
         return False
 
     return True
@@ -85,7 +88,7 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
 
         sql_expr = " OR ".join(f"({child_exp})" for child_exp in children)
 
-        if should_optimize_existence(children):
+        if should_optimize_any_existence(children):
             return self.optimize_existence(children, sql_expr, "?|", "OR")
         return sql_expr
 
