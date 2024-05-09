@@ -297,7 +297,7 @@ class SATDataTests(BaseTest):
             }
         """)
 
-    def test_optimization_string_equality(self):
+    def test_optimization_equality_within_and(self):
         # optimized, equality alone
         self.assert_filter_has_n_results(3, """
             {
@@ -323,7 +323,16 @@ class SATDataTests(BaseTest):
             }
         """)
 
-    def test_optimization_string_equality_integers_skipped(self):
+        # integers only
+        self.assert_filter_has_n_results(3, """
+            {
+                updated = 1714724220
+                zip_code = 10019
+            }
+        """)
+
+
+    def test_optimization_equality_within_and_skipped(self):
         # just one unique key
         self.assert_filter_has_n_results(4, """
             {
@@ -332,7 +341,7 @@ class SATDataTests(BaseTest):
             }
         """)
 
-        # again just one unique key which is an optimization candidate
+        # again just one unique key which is the optimization candidate
         self.assert_filter_has_n_results(4, """
             {
                 updated = "1714724220"
@@ -349,12 +358,32 @@ class SATDataTests(BaseTest):
             }
         """)
 
-        # integers only so "existence optimization" kicks in first
-        # ...and we never get to "equality optimization"
+    def test_optimization_equality_and_existence_within_and(self):
+        # equality + existence optimization
+        self.assert_filter_has_n_results(2, """
+            {
+                updated = "1714724220"
+                zip_code = "10019"
+                sat_writing_avg_score > 361
+            }
+        """)
+
+        # equality only optimization since the existence optimization is
+        # skipped (`?=` is a deal-breaker)
         self.assert_filter_has_n_results(3, """
             {
-                updated = 1714724220
-                zip_code = 10019
+                updated = "1714724220"
+                zip_code = "10019"
+                non_existing ?= false
+            }
+        """)
+
+        # equality optimization skipped since there is only one `=` expression
+        # while the existence optimization is taking place
+        self.assert_filter_has_n_results(2, """
+            {
+                zip_code = "10019"
+                sat_writing_avg_score > 361
             }
         """)
 
