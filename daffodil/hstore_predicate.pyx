@@ -111,9 +111,9 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
 
     def optimize_equality_and(self, children, sql_expr):
         to_optimize = [child_exp for child_exp in children if child_exp.daff_test == "="]
+
         keys = [child_exp.daff_key for child_exp in to_optimize]
         unique_keys = set(keys)
-
         if len(unique_keys) < 2 or len(keys) != len(unique_keys):
             return sql_expr
 
@@ -121,16 +121,24 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
             f'"{child_exp.daff_key}"=>"{child_exp.daff_val}"'
             for child_exp in to_optimize
         )
-        optimization_expr = f"{self.field} @> '{keys_and_values}'"
+        sql_optimized = f"{self.field} @> '{keys_and_values}'"
 
-        sql_expr = f" AND ".join(
-            f"({child_exp})"
-            for child_exp in children if child_exp.daff_test != "="
+        remaining_children = [child_exp for child_exp in children if child_exp.daff_test != "="]
+        if not len(remaining_children):
+            # every single expression is an equality test, nothing more to do
+            return sql_optimized
+
+        sql_remaining = f" AND ".join(
+            f"({child_exp})" for child_exp in remaining_children
         )
-        if sql_expr:
-            return f"{optimization_expr} AND ({sql_expr})"
-        else:
-            return optimization_expr
+
+        # Apply existence optimizer if applicable
+        if not breaks_existence_optimizer(remaining_children):
+            sql_remaining = self.optimize_existence(remaining_children, sql_remaining, "?&", "AND")
+
+        return f"{sql_optimized} AND ({sql_remaining})"
+
+
 
     def mk_all(self, children):
         if not children or not any(children):
@@ -141,11 +149,11 @@ cdef class HStoreQueryDelegate(BaseDaffodilDelegate):
 
         sql_expr = " AND ".join(f"({child_exp})" for child_exp in children if child_exp)
 
-        if not breaks_existence_optimizer(children):
-            return self.optimize_existence(children, sql_expr, "?&", "AND")
-
         if not breaks_equality_optimizer(children):
             return self.optimize_equality_and(children, sql_expr)
+
+        if not breaks_existence_optimizer(children):
+            return self.optimize_existence(children, sql_expr, "?&", "AND")
 
         return sql_expr
 
