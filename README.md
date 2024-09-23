@@ -202,12 +202,12 @@ Arrays:
 ### Functions
 timestamp
 - `timestamp(YYYY-MM-DD)` or `timestamp(YYYY-MM-DD HH:MM)` this is a helper function which generates the unix timestamp corresponding to the date (and optionally, time) entered. When the daffodil is evaluated the datetime is functionally a number, but this lets you write the daffodil in a way that is easier to read and understand. If hours and minutes are entered they are interpreted as 24 hour time UTC.
-- `timestamp([CURRENT_DATE][-OFFSET])` - this is a timestamp at `00:00:00 am` of the given `CURRENT_DATE` 
-  - where `CURRENT_DATE` option may be one of the following
-    - CURRENT_DAY
-    - CURRENT_WEEK (week starting on Monday)
-    - CURRENT_MONTH
-    - CURRENT_YEAR
+- Offset example: `timestamp(CURRENT_DAY - 5)` - represents 5 days before today at 00:00:00 am. Generally this is `timestamp([CURRENT_DATE][-OFFSET])`, a timestamp at `00:00:00 am` of the given `CURRENT_DATE`
+  - where `CURRENT_DATE` option may be any of the following
+    - CURRENT_DAY (today at 00:00:00 am)
+    - CURRENT_WEEK (this week, starting on Monday at 00:00:00 am)
+    - CURRENT_MONTH (first day of this month at 00:00:00 am)
+    - CURRENT_YEAR (01/01 this year at 00:00:00 am)
   - and `OFFSET` may be any positive integer, so expressions like the following are legit:
     - CURRENT_DAY-3 (3 days before today 00:00:00)
     - CURRENT_WEEK-10 (10 weeks before the beginning of this week)
@@ -215,9 +215,9 @@ timestamp
 
 
 Examples:
-- people who began `mystudy` after halloween 2017:
+- people who began `mystudy` after Halloween 2017:
   `mystudy__started >= timestamp(2017-10-31)`
-- people who participated in `balloonstudy` while the Macy's thanksgiving day parade was on tv (Nov 23, 9AM to 12PM Eastern time):
+- people who participated in `balloonstudy` while the Macy's Thanksgiving day parade was on tv (Nov 23, 9AM to 12PM Eastern time):
   ```
   balloonstudy__started >= timestamp(2017-11-23 2:00)
   balloonstudy__started < timestamp(2017-11-23 17:00)
