@@ -351,12 +351,11 @@ cdef class DaffodilParser:
             self.pos += 1
 
         buffer = self.src[num_start:self.pos]
-        if "." not in buffer:
-            val = int(buffer)
-        else:
-            val = float(buffer)
 
-        self.tokens.append(Number(val))
+        if "." not in buffer:
+            self.tokens.append(Number(int(buffer)))
+        else:
+            self.tokens.append(Number(float(buffer)))
 
     def boolean(self):
         chunk = self.chars(5).lower()
