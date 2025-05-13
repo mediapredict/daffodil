@@ -358,6 +358,14 @@ class SATDataTests(BaseTest):
             }
         """)
 
+        # mixed content string and int
+        self.assert_filter_has_n_results(3, """
+            {
+                updated = "1714724220"
+                zip_code = 10019
+            }
+        """)
+
     def test_optimization_equality_and_existence_within_and(self):
         # equality + existence optimization
         self.assert_filter_has_n_results(2, """
