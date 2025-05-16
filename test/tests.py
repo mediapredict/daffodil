@@ -1106,6 +1106,10 @@ class KeyExpectationTests(unittest.TestCase):
             present={"y"}, omitted=set()
         )
         self.assert_daffodil_expectations(
+            "x !in (1, 2)",
+            present=set(), omitted=set()
+        )
+        self.assert_daffodil_expectations(
             "x ?= true, y ?= false",
             present={"x"}, omitted={"y"}
         )
