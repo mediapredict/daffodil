@@ -53,4 +53,6 @@ cdef class KeyExpectationDelegate(BaseDaffodilDelegate):
         val = val.content
         if test == "?=" and val is False:
             return set(), {key}
+        if test == "!=":
+            return set(), set()
         return {key}, set()
