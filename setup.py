@@ -1,41 +1,27 @@
-from distutils.core import setup
+from setuptools import setup
 from Cython.Build import cythonize
 import Cython.Compiler.Options
 
 Cython.Compiler.Options.cimport_from_pyx = True
 
-# TODO: in the future distribute c sources instead of pyx files
-#   https://stackoverflow.com/questions/4505747/how-should-i-structure-a-python-package-that-contains-cython-code
 extra_kwargs = {
     "ext_modules": cythonize(
-        'daffodil/*.pyx',
+        "daffodil/*.pyx",
         compiler_directives={
-            'language_level': "3",
+            "language_level": "3",
 
             # controls extensions which allow cprofile to see cython functions but
             # has a small performance penalty
-            'profile': False,
+            "profile": False,
         }
     )
 }
 
+# The setup() call itself becomes much simpler!
+# It will automatically read name, version, etc. from pyproject.toml's [project] table.
 setup(
-    name='daffodil',
-    version='0.8.0',
-    author='James Robert',
-    description='A Super-simple DSL for filtering datasets',
-    license='MIT',
-    keywords='data filtering',
-    url='https://github.com/mediapredict/daffodil',
-    packages=['daffodil'],
-    install_requires=['cython'],
-    long_description='A Super-simple DSL for filtering datasets',
-    classifiers=[
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
-        'Intended Audience :: Developers',
-        'Operating System :: OS Independent',
-        'Topic :: Utilities'
-    ],
+    packages=["daffodil"], # Still need to tell it where your package code is
+    # You might also need this if your project is not in a 'src' layout
+    # package_dir={'': '.'}, # If daffodil/ is directly in root
     **extra_kwargs
 )

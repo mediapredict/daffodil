@@ -1,2 +1,25 @@
 [build-system]
-requires = ["setuptools", "wheel", "Cython", "python-dateutil"]
+requires = ["setuptools>=61.0", "wheel", "cython>=0.29.36"] # Add Cython here
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "daffodil"
+version = "0.8.1"
+description = "A Super-simple DSL for filtering datasets"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "James Robert" }]
+keywords = ["data filtering"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Utilities"
+]
+
+[project.urls]
+Homepage = "https://github.com/mediapredict/daffodil"
+Repository = "https://github.com/mediapredict/daffodil"

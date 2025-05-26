@@ -1,0 +1,80 @@
+name: Release Python Package (with Cython)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # Trigger on pushes to tags like v1.0.0, v1.2.3, etc.
+
+jobs:
+  build_and_release:
+    # Use a matrix strategy to build wheels for different OS/Python versions
+    # This is CRUCIAL for Cython packages.
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.12'] # Build for multiple Python versions
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    # Install build tools. For Cython, this will implicitly pull in a C compiler
+    # on Linux/macOS runners. On Windows, setup-python usually handles basic tools.
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build setuptools wheel "cython>=0.29.36" # Explicitly install build tools
+      # For Windows, you might need extra steps if C++ build tools aren't available
+      # - name: Install MSVC for Windows (if needed)
+      #   if: runner.os == 'Windows'
+      #   uses: microsoft/setup-msbuild@v1.1
+      #   with:
+      #     msbuild-version: 'latest' # Ensure MSVC compiler is present
+
+    - name: Build sdist and wheel
+      run: |
+        # python -m build will detect your pyproject.toml
+        # For Cython, it will compile the .pyx files to C, then compile C to binary
+        python -m build --sdist --wheel .
+
+    - name: Upload artifacts for debugging (optional)
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-files-${{ matrix.os }}-${{ matrix.python-version }}
+        path: dist/
+        # Keep artifacts for a short period, as they'll be released too
+        retention-days: 1
+
+  # This job will collect all wheels from the build_and_release job and attach them
+  # It will run only ONCE after all matrix jobs are complete.
+  release:
+    runs-on: ubuntu-latest
+    needs: build_and_release # Ensure this job runs after all builds are done
+    if: startsWith(github.ref, 'refs/tags/') # Only create release if triggered by a tag push
+
+    steps:
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: all_dist_files
+
+    - name: List downloaded files (for debugging)
+      run: ls -R all_dist_files
+
+    - name: Create GitHub Release and Upload Assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: all_dist_files/**/*.whl # Upload all wheels from all subdirectories
+        # You might also want the sdist: all_dist_files/**/*.tar.gz
+        # Combine: files: all_dist_files/**/*
+        draft: false
+        prerelease: false
+        name: Release ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
