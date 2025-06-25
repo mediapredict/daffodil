@@ -14,7 +14,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from daffodil import (
     Daffodil, TimeStamp,
     KeyExpectationDelegate, DictionaryPredicateDelegate,
-    HStoreQueryDelegate, PrettyPrintDelegate, SimulationMatchingDelegate
+    HStoreQueryDelegate, PrettyPrintDelegate, SimulationMatchingDelegate,
+    ElasticSearchPredicate
 )
 from daffodil.exceptions import ParseError
 
@@ -1776,6 +1777,133 @@ val6 ?= true
 
 )
 
+# input, expected_json
+ELASTIC_SEARCH_EXPECTATIONS = (
+    [
+        """
+        dbn = "01M292"
+        sat_math_avg_score != 400
+        total_score ?= true
+        """.strip(),
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {"hs_data.dbn": "01M292"}},
+                        {
+                            "bool": {
+                                "should": [
+                                    {"bool": {"must_not": {"exists": {"field": "hs_data.sat_math_avg_score"}}}},
+                                    {"bool": {"must_not": {"term": {"hs_data.sat_math_avg_score": 400}}}},
+                                ]
+                            }
+                        },
+                        {"exists": {"field": "hs_data.total_score"}},
+                    ]
+                }
+            }
+        },
+    ],
+    [
+        """
+        [
+            sat_writing_avg_score = 380
+            sat_writing_avg_score != 390
+        ]
+        zip_code !in ("10019", "10004")
+        tag_with_null_value ?= false
+        """.strip(),
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "bool": {
+                                "should": [
+                                    {"term": {"hs_data.sat_writing_avg_score": 380}},
+                                    {
+                                        "bool": {
+                                            "should": [
+                                                {"bool": {"must_not": {"exists": {"field": "hs_data.sat_writing_avg_score"}}}},
+                                                {"bool": {"must_not": {"term": {"hs_data.sat_writing_avg_score": 390}}}},
+                                            ]
+                                        }
+                                    },
+                                ]
+                            }
+                        },
+                        {
+                            "bool": {
+                                "should": [
+                                    {"bool": {"must_not": {"exists": {"field": "hs_data.zip_code"}}}},
+                                    {
+                                        "bool": {
+                                            "must_not": {
+                                                "terms": {"hs_data.zip_code": ["10019", "10004"]}
+                                            }
+                                        }
+                                    },
+                                ]
+                            }
+                        },
+                        {"bool": {"must_not": {"exists": {"field": "hs_data.tag_with_null_value"}}}},
+                    ]
+                }
+            }
+        },
+    ],
+    [
+        """
+        sat_writing_avg_score?=true
+        [
+        tag_with_null_value ?= false
+        tag_with_null_value !in ("yes", "missing", "n/a")
+        ]
+        [
+        zip_code ?= false
+        zip_code != "10019"
+        ]
+        """.strip(),
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"exists": {"field": "hs_data.sat_writing_avg_score"}},
+                        {
+                            "bool": {
+                                "should": [
+                                    {"bool": {"must_not": {"exists": {"field": "hs_data.tag_with_null_value"}}}},
+                                    {
+                                        "bool": {
+                                            "must_not": {
+                                                "terms": {
+                                                    "hs_data.tag_with_null_value": [
+                                                        "yes",
+                                                        "missing",
+                                                        "n/a",
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    },
+                                ]
+                            }
+                        },
+                        {
+                            "bool": {
+                                "should": [
+                                    {"bool": {"must_not": {"exists": {"field": "hs_data.zip_code"}}}},
+                                    {"bool": {"must_not": {"term": {"hs_data.zip_code": "10019"}}}},
+                                ]
+                            }
+                        },
+                    ]
+                }
+            }
+        },
+    ],
+)
+
 class PrettyPrintingTests(unittest.TestCase):
     delegate_dense = PrettyPrintDelegate(dense=True)
     delegate_pretty = PrettyPrintDelegate(dense=False)
@@ -1810,6 +1938,25 @@ class PrettyPrintingTests(unittest.TestCase):
             # the comments are discarded by dense version
             if not regexp_py_comment.search(fltr):
                 self.assertEqual(d1_pretty, pretty_expected)
+
+
+class ElasticSearchPredicateTests(unittest.TestCase):
+    delegate = ElasticSearchPredicate(prefix="hs_data")
+
+    def q(self, fltr):
+        return Daffodil(fltr, delegate=self.delegate)()
+
+    def test_simple(self):
+        fltr, expected = ELASTIC_SEARCH_EXPECTATIONS[0]
+        self.assertEqual(self.q(fltr), expected)
+
+    def test_medium(self):
+        fltr, expected = ELASTIC_SEARCH_EXPECTATIONS[1]
+        self.assertEqual(self.q(fltr), expected)
+
+    def test_advanced(self):
+        fltr, expected = ELASTIC_SEARCH_EXPECTATIONS[2]
+        self.assertEqual(self.q(fltr), expected)
 
 
 class TimeStampOffsetTests(unittest.TestCase):
