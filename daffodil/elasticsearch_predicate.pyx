@@ -13,9 +13,23 @@ cdef class ElasticSearchPredicate(BaseDaffodilDelegate):
 
     def mk_any(self, children):
         children = [c for c in children if c]
-        if not children:
+        flat = []
+        for child in children:
+            if (
+                isinstance(child, dict)
+                and list(child.keys()) == ["bool"]
+                and isinstance(child["bool"], dict)
+                and list(child["bool"].keys()) == ["should"]
+            ):
+                for sub in child["bool"]["should"]:
+                    if sub not in flat:
+                        flat.append(sub)
+            else:
+                if child not in flat:
+                    flat.append(child)
+        if not flat:
             return {"match_none": {}}
-        return {"bool": {"should": children}}
+        return {"bool": {"should": flat}}
 
     def mk_all(self, children):
         children = [c for c in children if c]
