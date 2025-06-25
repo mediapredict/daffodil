@@ -21,9 +21,14 @@ cdef class ElasticSearchPredicate(BaseDaffodilDelegate):
                 and isinstance(child["bool"], dict)
                 and list(child["bool"].keys()) == ["should"]
             ):
-                for sub in child["bool"]["should"]:
-                    if sub not in flat:
-                        flat.append(sub)
+                subs = child["bool"]["should"]
+                if any(sub in flat for sub in subs):
+                    for sub in subs:
+                        if sub not in flat:
+                            flat.append(sub)
+                else:
+                    if child not in flat:
+                        flat.append(child)
             else:
                 if child not in flat:
                     flat.append(child)
