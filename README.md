@@ -305,3 +305,13 @@ When the entire expressions is commented out it'll match all, just like an empty
 #   gender = "female"
 # }
 ```
+
+## Running tests
+To create a development environment similar to our CI workflow, run:
+
+```bash
+./scripts/setup_test_env.sh
+```
+
+This installs all dependencies and executes the full test suite.
+
