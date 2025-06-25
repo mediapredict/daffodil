@@ -3,7 +3,7 @@ from .parser cimport Token, BaseDaffodilDelegate
 cdef class ElasticSearchPredicate(BaseDaffodilDelegate):
     cdef public str prefix
 
-    def __cinit__(self, prefix=""):
+    def __cinit__(self, prefix="hs_data"):
         self.prefix = prefix
 
     def _field(self, key):

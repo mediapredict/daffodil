@@ -1941,7 +1941,7 @@ class PrettyPrintingTests(unittest.TestCase):
 
 
 class ElasticSearchPredicateTests(unittest.TestCase):
-    delegate = ElasticSearchPredicate(prefix="hs_data")
+    delegate = ElasticSearchPredicate()
 
     def q(self, fltr):
         return Daffodil(fltr, delegate=self.delegate)()
