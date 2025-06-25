@@ -86,7 +86,14 @@ cdef class ElasticSearchPredicate(BaseDaffodilDelegate):
             ]}}
         if test in {"<", "<=", ">", ">="}:
             op_map = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
-            return {"range": {field: {op_map[test]: value}}}
+            op = op_map[test]
+            range_dict = {op: value}
+            if self.prefix:
+                if op in {"gt", "gte"}:
+                    range_dict.setdefault("lt", 9999999)
+                else:
+                    range_dict.setdefault("gt", -9999999)
+            return {"range": {field: range_dict}}
 
         raise ValueError(f'"{test}" is not a valid operator')
 

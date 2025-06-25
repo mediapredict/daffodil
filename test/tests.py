@@ -1902,6 +1902,20 @@ ELASTIC_SEARCH_EXPECTATIONS = (
             }
         },
     ],
+    [
+        """
+        sat_math_avg_score > 500
+        """.strip(),
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"range": {"hs_data.sat_math_avg_score": {"gt": 500, "lt": 9999999}}},
+                    ]
+                }
+            }
+        },
+    ],
 )
 
 class PrettyPrintingTests(unittest.TestCase):
@@ -1956,6 +1970,10 @@ class ElasticSearchPredicateTests(unittest.TestCase):
 
     def test_advanced(self):
         fltr, expected = ELASTIC_SEARCH_EXPECTATIONS[2]
+        self.assertEqual(self.q(fltr), expected)
+
+    def test_range_bounds(self):
+        fltr, expected = ELASTIC_SEARCH_EXPECTATIONS[3]
         self.assertEqual(self.q(fltr), expected)
 
 
