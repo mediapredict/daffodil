@@ -40,7 +40,34 @@ cdef class ElasticSearchPredicate(BaseDaffodilDelegate):
         children = [c for c in children if c]
         if not children:
             return {"match_all": {}}
-        return {"bool": {"must": children}}
+
+        merged = []
+        ranges = {}
+        for child in children:
+            if (
+                isinstance(child, dict)
+                and list(child.keys()) == ["range"]
+                and isinstance(child["range"], dict)
+                and len(child["range"]) == 1
+            ):
+                fld, ops = list(child["range"].items())[0]
+                if fld not in ranges:
+                    ranges[fld] = dict(ops)
+                else:
+                    ranges[fld].update(ops)
+                continue
+            merged.append(child)
+
+        for fld, ops in ranges.items():
+            if ("gt" in ops or "gte" in ops) and not ("lt" in ops or "lte" in ops):
+                ops.setdefault("lt", 9999999999999)
+            if ("lt" in ops or "lte" in ops) and not ("gt" in ops or "gte" in ops):
+                ops.setdefault("gt", -9999999999999)
+            merged.append({"range": {fld: ops}})
+
+        if not merged:
+            return {"match_all": {}}
+        return {"bool": {"must": merged}}
 
     def mk_not_any(self, children):
         children = [c for c in children if c]
@@ -88,11 +115,6 @@ cdef class ElasticSearchPredicate(BaseDaffodilDelegate):
             op_map = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
             op = op_map[test]
             range_dict = {op: value}
-            if self.prefix:
-                if op in {"gt", "gte"}:
-                    range_dict.setdefault("lt", 9999999999999)
-                else:
-                    range_dict.setdefault("gt", -9999999999999)
             return {"range": {field: range_dict}}
 
         raise ValueError(f'"{test}" is not a valid operator')

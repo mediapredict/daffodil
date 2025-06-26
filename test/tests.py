@@ -1916,6 +1916,25 @@ ELASTIC_SEARCH_EXPECTATIONS = (
             }
         },
     ],
+    [
+        """
+        fulcrum_supp_name ?= true
+        fulcrum_supp_name = "MyPoints"
+        _last_updated > timestamp(2018-01-01)
+        _last_updated < timestamp(2019-01-01)
+        """.strip(),
+        {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"exists": {"field": "hs_data.fulcrum_supp_name"}},
+                        {"term": {"hs_data.fulcrum_supp_name": "MyPoints"}},
+                        {"range": {"hs_data._last_updated": {"gt": 1514764800.0, "lt": 1546300800.0}}},
+                    ]
+                }
+            }
+        },
+    ],
 )
 
 class PrettyPrintingTests(unittest.TestCase):
@@ -1974,6 +1993,10 @@ class ElasticSearchPredicateTests(unittest.TestCase):
 
     def test_range_bounds(self):
         fltr, expected = ELASTIC_SEARCH_EXPECTATIONS[3]
+        self.assertEqual(self.q(fltr), expected)
+
+    def test_range_merge(self):
+        fltr, expected = ELASTIC_SEARCH_EXPECTATIONS[4]
         self.assertEqual(self.q(fltr), expected)
 
 
