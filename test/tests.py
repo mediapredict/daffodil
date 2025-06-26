@@ -1918,18 +1918,18 @@ ELASTIC_SEARCH_EXPECTATIONS = (
     ],
     [
         """
-        fulcrum_supp_name ?= true
-        fulcrum_supp_name = "MyPoints"
-        _last_updated > timestamp(2018-01-01)
-        _last_updated < timestamp(2019-01-01)
+        dbn ?= true
+        dbn = "01M292"
+        created > timestamp(2017-01-01)
+        created < timestamp(2018-01-01)
         """.strip(),
         {
             "query": {
                 "bool": {
                     "must": [
-                        {"exists": {"field": "hs_data.fulcrum_supp_name"}},
-                        {"term": {"hs_data.fulcrum_supp_name": "MyPoints"}},
-                        {"range": {"hs_data._last_updated": {"gt": 1514764800.0, "lt": 1546300800.0}}},
+                        {"exists": {"field": "hs_data.dbn"}},
+                        {"term": {"hs_data.dbn": "01M292"}},
+                        {"range": {"hs_data.created": {"gt": 1483228800.0, "lt": 1514764800.0}}},
                     ]
                 }
             }
