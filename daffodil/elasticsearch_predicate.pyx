@@ -90,9 +90,9 @@ cdef class ElasticSearchPredicate(BaseDaffodilDelegate):
             range_dict = {op: value}
             if self.prefix:
                 if op in {"gt", "gte"}:
-                    range_dict.setdefault("lt", 9999999)
+                    range_dict.setdefault("lt", 9999999999999)
                 else:
-                    range_dict.setdefault("gt", -9999999)
+                    range_dict.setdefault("gt", -9999999999999)
             return {"range": {field: range_dict}}
 
         raise ValueError(f'"{test}" is not a valid operator')

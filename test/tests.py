@@ -1910,7 +1910,7 @@ ELASTIC_SEARCH_EXPECTATIONS = (
             "query": {
                 "bool": {
                     "must": [
-                        {"range": {"hs_data.sat_math_avg_score": {"gt": 500, "lt": 9999999}}},
+                        {"range": {"hs_data.sat_math_avg_score": {"gt": 500, "lt": 9999999999999}}},
                     ]
                 }
             }
