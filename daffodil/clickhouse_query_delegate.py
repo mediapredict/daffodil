@@ -1,10 +1,10 @@
-from .parser cimport Token, BaseDaffodilDelegate
-from .parser import TimeStamp
+from .parser import BaseDaffodilDelegate, TimeStamp
 
-cdef class ClickHouseQueryDelegate(BaseDaffodilDelegate):
-    cdef public str field
 
-    def __cinit__(self, str map_field_name):
+class ClickHouseQueryDelegate(BaseDaffodilDelegate):
+    """Render ClickHouse SQL for Daffodil expressions."""
+
+    def __init__(self, map_field_name: str = "hs_data") -> None:
         self.field = map_field_name
 
     def mk_any(self, children):
@@ -25,31 +25,30 @@ cdef class ClickHouseQueryDelegate(BaseDaffodilDelegate):
     def mk_not_all(self, children):
         return f"NOT ({self.mk_all(children)})"
 
-    def mk_comment(self, comment, bint is_inline):
+    def mk_comment(self, comment, is_inline: bool):
         return ""
 
-    def mk_test(self, test_str):
+    def mk_test(self, test_str: str):
         return test_str
 
-    cdef mk_cmp(self, Token key, Token test, Token val):
+    def mk_cmp(self, key, test, val):
         return self._mk_cmp(key.content, val, test.content)
 
-    def _mk_cmp(self, str key, object val, str test):
+    def _mk_cmp(self, key: str, val, test: str):
         val = val.content
+        field_expr = f"{self.field}.{key}"
+
         if test == "?=":
-            if val:
-                return f"has({self.field}, '{key}')"
-            else:
-                return f"NOT has({self.field}, '{key}')"
+            return f"isNotNull({field_expr})" if val else f"isNull({field_expr})"
 
         value = self.format_value(val)
-        map_expr = f"{self.field}['{key}']"
+
         if test == "in":
-            return f"{map_expr} IN {value}"
+            return f"{field_expr} IN {value}"
         elif test == "!in":
-            return f"{map_expr} NOT IN {value}"
+            return f"{field_expr} NOT IN {value}"
         else:
-            return f"{map_expr} {test} {value}"
+            return f"{field_expr} {test} {value}"
 
     def format_value(self, val):
         if isinstance(val, list):
@@ -66,3 +65,4 @@ cdef class ClickHouseQueryDelegate(BaseDaffodilDelegate):
 
     def call(self, predicate, *args):
         return predicate
+
