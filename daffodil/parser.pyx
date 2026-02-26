@@ -1,4 +1,5 @@
 import string
+from collections import deque
 from datetime import datetime, timezone, timedelta
 from .exceptions import ParseError
 from .predicate cimport DictionaryPredicateDelegate
@@ -472,13 +473,13 @@ cdef class DaffodilParser:
 
 cdef object _read_val(tokens):
     cdef _ArrayToken array_token
-    cdef Token token = tokens.pop(0)
+    cdef Token token = tokens.popleft()
 
     if isinstance(token, ArrayStart):
         array_token = _ArrayToken([])
         while True:
             if isinstance(tokens[0], ArrayEnd):
-                tokens.pop(0)
+                tokens.popleft()
                 array_token.raw_content = array_token.content
                 array_token.content = [
                     token.content
@@ -494,6 +495,8 @@ cdef object _read_val(tokens):
 
 cdef class Daffodil:
     def __init__(self, source, BaseDaffodilDelegate delegate=DictionaryPredicateDelegate()):
+        cdef object tokens
+
         if isinstance(source, DaffodilParser):
             self.parse_result = source
         else:
@@ -503,7 +506,8 @@ cdef class Daffodil:
 
         self.keys = set()
         self.delegate = delegate
-        self.predicate = self.make_predicate(self.parse_result.tokens)
+        tokens = deque(self.parse_result.tokens)
+        self.predicate = self.make_predicate(tokens)
 
     def clean_input_source(self, source):
         return ''.join(
@@ -523,12 +527,12 @@ cdef class Daffodil:
         cdef Token key_token, test_token
 
         if parent is None:
-            parent = tokens[0]
-            return self.make_predicate(tokens[1:], parent)
+            parent = tokens.popleft()
+            return self.make_predicate(tokens, parent)
 
         children = []
         while tokens:
-            token = tokens.pop(0)
+            token = tokens.popleft()
             if parent.is_end(token):
                 return self._handle_group(parent, children)
             elif isinstance(token, Key):
@@ -536,7 +540,7 @@ cdef class Daffodil:
                 children.append(
                     self.delegate.mk_cmp(
                         token,
-                        tokens.pop(0),
+                        tokens.popleft(),
                         _read_val(tokens),
                     )
                 )
