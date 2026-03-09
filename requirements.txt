@@ -1,4 +1,4 @@
 Cython==3.0.10
 psycopg[binary]==3.3.3
-Django==5.2.8
+Django==5.2.12
 python-dateutil==2.9.0.post0
